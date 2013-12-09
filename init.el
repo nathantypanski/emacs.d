@@ -17,12 +17,10 @@
 (require 'init-editor)
 (require 'init-terminal)
 (require 'init-copypaste) ;; My copy-paste hacks
-;; (require 'init-smartparens)
 (require 'init-autopair)
 
 (require 'init-yasnippet)
 (require 'init-auto-complete)
-;; (require 'init-company)
 
 (require 'init-projectile)
 (require 'init-helm)
@@ -39,16 +37,3 @@
 (require 'init-evil)
 (require 'init-misc)
 (require 'init-bindings)
-
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(TeX-PDF-mode t))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
