@@ -4,55 +4,62 @@
      (interactive)
      ,@commands))
 
-
 (require-package 'guide-key)
 (require 'guide-key)
 (setq guide-key/guide-key-sequence '("C-x" "C-c"))
 (setq guide-key/recursive-key-sequence-flag t)
 (guide-key-mode 1)
 
-
 (after 'smex
   (global-set-key (kbd "M-x") 'smex)
   (global-set-key (kbd "C-x C-m") 'smex)
   (global-set-key (kbd "C-c C-m") 'smex))
 
-
 (setq my-eshell-buffer-count 0)
 
-
 (after 'evil
-  (require-package 'key-chord)
-  (key-chord-mode 1)
-  (key-chord-define evil-insert-state-map "jk" 'evil-normal-state)
-  (key-chord-define evil-insert-state-map "kj" 'evil-normal-state)
+    (require-package 'key-chord)
+    (key-chord-mode 1)
+    (key-chord-define evil-insert-state-map "jk" 'evil-normal-state)
+    (key-chord-define evil-insert-state-map "kj" 'evil-normal-state)
+    (define-key evil-motion-state-map "gn" 'my-evil-next-match)
+    (define-key evil-motion-state-map "gN" 'my-evil-previous-match)
 
-  (after 'ace-jump
-    (key-chord-define evil-normal-state-map "jw" 'ace-jump-word-mode)
-    (key-chord-define evil-normal-state-map "jc" 'ace-jump-char-mode)
-    (key-chord-define evil-normal-state-map "jl" 'ace-jump-line-mode))
+    ;;; esc quits
+    (define-key evil-normal-state-map [escape] 'keyboard-quit)
+    (define-key evil-visual-state-map [escape] 'keyboard-quit)
+    (define-key minibuffer-local-map [escape] 'minibuffer-keyboard-quit)
+    (define-key minibuffer-local-ns-map [escape] 'minibuffer-keyboard-quit)
+    (define-key minibuffer-local-completion-map [escape] 'minibuffer-keyboard-quit)
+    (define-key minibuffer-local-must-match-map [escape] 'minibuffer-keyboard-quit)
+    (define-key minibuffer-local-isearch-map [escape] 'minibuffer-keyboard-quit)
 
-  (after 'evil-leader
-    (evil-leader/set-leader ",")
-    (evil-leader/set-key
-      "w" 'save-buffer
-      "e" (kbd "C-x C-e")
-      "E" (kbd "C-M-x")
-      "c" (bind
-           (evil-window-split)
-           (setq my-eshell-buffer-count (+ 1 my-eshell-buffer-count))
-           (eshell my-eshell-buffer-count))
-      "C" 'customize-group
-      "b d" 'kill-this-buffer
-      "v" (kbd "C-w v C-w l")
-      "s" (kbd "C-w s C-w j")
-      "g s" 'magit-status
-      "g l" 'magit-log
-      "g d" 'vc-diff
-      "P" 'package-list-packages
-      "V" (bind (term "vim"))
-      "h" help-map
-      "h h" 'help-for-help-internal))
+    (after 'ace-jump
+        (key-chord-define evil-normal-state-map "jw" 'ace-jump-word-mode)
+        (key-chord-define evil-normal-state-map "jc" 'ace-jump-char-mode)
+        (key-chord-define evil-normal-state-map "jl" 'ace-jump-line-mode))
+
+    (after 'evil-leader
+        (evil-leader/set-leader ",")
+        (evil-leader/set-key
+            "w" 'save-buffer
+            "e" (kbd "C-x C-e")
+            "E" (kbd "C-M-x")
+            "c" (bind
+                 (evil-window-split)
+                 (setq my-eshell-buffer-count (+ 1 my-eshell-buffer-count))
+                 (eshell my-eshell-buffer-count))
+            "C" 'customize-group
+            "b d" 'kill-this-buffer
+            "v" (kbd "C-w v C-w l")
+            "s" (kbd "C-w s C-w j")
+            "g s" 'magit-status
+            "g l" 'magit-log
+            "g d" 'vc-diff
+            "P" 'package-list-packages
+            "V" (bind (term "vim"))
+            "h" help-map
+            "h h" 'help-for-help-internal))
 
   (after 'evil-matchit
     (define-key evil-normal-state-map "%" 'evilmi-jump-items))
@@ -210,7 +217,6 @@
   (after 'angular-snippets
     (define-key web-mode-map (kbd "C-c C-d") 'ng-snip-show-docs-at-point)))
 
-
 ;; mouse scrolling in terminal
 (unless (display-graphic-p)
   (global-set-key [mouse-4] (bind (scroll-down 1)))
@@ -220,27 +226,33 @@
 (global-set-key [prior] 'previous-buffer)
 (global-set-key [next] 'next-buffer)
 
-
 (global-set-key (kbd "C-S-<left>") 'shrink-window-horizontally)
-
-
 (global-set-key (kbd "C-x C-b") 'ibuffer)
 (global-set-key (kbd "C-x C-k") 'kill-this-buffer)
 (global-set-key (kbd "C-x g") 'my-google)
 (global-set-key (kbd "C-c e") 'my-eval-and-replace)
 
-
 ;; have no use for these default bindings
 (global-unset-key (kbd "C-x m"))
 
-
-;; replace with [r]eally [q]uit
-;(global-set-key (kbd "C-x r q") 'save-buffers-kill-terminal)
-;(global-set-key (kbd "C-x C-c") (bind (message "Thou shall not quit!")))
-;(defadvice evil-quit (around advice-for-evil-quit activate)
-;  (message "Thou shall not quit!"))
-;(defadvice evil-quit-all (around advice-for-evil-quit-all activate)
-;  (message "Thou shall not quit!"))
-
+;;; C-c as general purpose escape key sequence.
+;;;
+(defun my-esc (prompt)
+  "Functionality for escaping generally.  Includes exiting Evil insert state and C-g binding. "
+  (cond
+   ;; If we're in one of the Evil states that defines [escape] key, return [escape] so as
+   ;; Key Lookup will use it.
+   ((or (evil-insert-state-p) (evil-normal-state-p) (evil-replace-state-p) (evil-visual-state-p)) [escape])
+   ;; This is the best way I could infer for now to have C-c work during evil-read-key.
+   ;; Note: As long as I return [escape] in normal-state, I don't need this.
+   ;;((eq overriding-terminal-local-map evil-read-key-map) (keyboard-quit) (kbd ""))
+   (t (kbd "C-g"))))
+(define-key key-translation-map (kbd "C-c") 'my-esc)
+;; Works around the fact that Evil uses read-event directly when in operator state, which
+;; doesn't use the key-translation-map.
+(define-key evil-operator-state-map (kbd "C-c") 'keyboard-quit)
+;; Not sure what behavior this changes, but might as well set it, seeing the Elisp manual's
+;; documentation of it.
+(set-quit-char "C-c")
 
 (provide 'init-bindings)
