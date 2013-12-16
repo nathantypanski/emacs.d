@@ -212,7 +212,6 @@
 (after 'expand-region-autoloads
   (global-set-key (kbd "C-=") 'er/expand-region))
 
-
 (after 'web-mode
   (after 'angular-snippets
     (define-key web-mode-map (kbd "C-c C-d") 'ng-snip-show-docs-at-point)))
