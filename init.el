@@ -8,19 +8,31 @@
 
 (require 'cl)
 
+;; Set online package archives and define package management functions
 (require 'init-packages)
+
+
 (require 'init-util)
+
+
 (require 'init-core)
+
+
 (require 'init-org)
+
+
 (require 'init-eyecandy)
 
-(require 'init-editor)
+;; Terminal mode hacks
 (require 'init-terminal)
-(require 'init-copypaste) ;; My copy-paste hacks
+
+;; My copy-paste hacks
+(require 'init-copypaste)
+
 (require 'init-autopair)
 
 (require 'init-yasnippet)
-(require 'init-auto-complete)
+(require 'init-auto-complete) ;; auto-complete & auto-complete-config
 
 (require 'init-projectile)
 (require 'init-helm)
@@ -33,6 +45,7 @@
 (require 'init-web)
 (require 'init-lisp)
 (require 'init-markdown)
+(require 'init-haskell)
 
 (require 'init-evil)
 (require 'init-misc)

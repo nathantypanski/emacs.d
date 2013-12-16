@@ -17,7 +17,7 @@
 
 (require-package 'ido-vertical-mode)
 (ido-vertical-mode)
-
+(ido-enable-flex-matching t)
 
 (require-package 'smex)
 (require 'smex)
