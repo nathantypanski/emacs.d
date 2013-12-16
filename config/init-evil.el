@@ -30,7 +30,12 @@
 (evil-mode t)
 (global-surround-mode 1)
 
-(dolist (mode '(eshell-mode shell-mode term-mode terminal-mode comint-mode skewer-repl-mode
+(dolist (mode '(eshell-mode
+                shell-mode
+                term-mode
+                terminal-mode
+                comint-mode
+                skewer-repl-mode
                 profiler-report-mode
                 erc-mode weechat-mode
                 direx:direx-mode
@@ -39,17 +44,6 @@
 
 (defun my-send-string-to-terminal (string)
   (unless (display-graphic-p) (send-string-to-terminal string)))
-
-(defun my-evil-modeline-change (default-color)
-  "changes the modeline color when the evil mode changes"
-  (let ((color (cond ((evil-emacs-state-p)  '("#5f0000" . "#ffffff"))
-                     (t default-color))))
-    (set-face-background 'mode-line (car color))
-    (set-face-foreground 'mode-line (cdr color))))
-
-(lexical-let ((default-color (cons (face-background 'mode-line)
-                                   (face-foreground 'mode-line))))
-  (add-hook 'post-command-hook (lambda () (my-evil-modeline-change default-color))))
 
 (evil-define-text-object my-evil-next-match (count &optional beg end type)
   "Select next match."
