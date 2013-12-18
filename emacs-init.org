@@ -1,15 +1,18 @@
 * Explanation
 This is my emacs init file. It's written in org-mode, because what better way to learn
 emacslisp and org-mode than to combine them both at once?
-
+** Major tasks
+*** TODO Figure out org-mode indentation
+*** Make org-mode display pretty '...' characters for distinguishing
+*** Integrate dotfiles for [[Magit]]
 * Settings
 Disable the toolbars in console mode (I think).
 #+BEGIN_SRC emacs-lisp
-    (when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
-    (when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
-    (unless (display-graphic-p) (menu-bar-mode -1))
+  (when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
+  (when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
+  (unless (display-graphic-p) (menu-bar-mode -1))
+  (set-default-font "Terminus-10")
 #+END_SRC
-
 * Package loading
 #+BEGIN_SRC emacs-lisp
     (add-to-list 'load-path user-emacs-directory)
@@ -24,42 +27,17 @@ Disable the toolbars in console mode (I think).
         (package-install package)))
     (require-package 'use-package)
     (require 'use-package)
-  (defmacro after (feature &rest body)
+    (defmacro after (feature &rest body)
     "After FEATURE is loaded, evaluate BODY."
     (declare (indent defun))
     `(eval-after-load ,feature
-       '(progn ,@body)))
-#+END_SRC
+        '(progn ,@body)))
 
-* Modeline hiding
-#+BEGIN_SRC emacs-lisp
-  (require-package 'diminish)
-  (use-package diminish
-    :init
-    (progn
-      (after 'diminish-autoloads
-        (diminish 'visual-line-mode)
-        (after 'autopair (diminish 'autopair-mode))
-        (after 'eldoc (diminish 'eldoc-mode))
-        (after 'smartparens (diminish 'smartparens-mode))
-        (after 'elisp-slime-nav (diminish 'elisp-slime-nav-mode))
-        (after 'git-gutter+ (diminish 'git-gutter+-mode)))
-      ))
-
-  (defmacro bind (&rest commands)
-    "Convience macro which creates a lambda interactive command."
-    `(lambda ()
-       (interactive)
-       ,@commands))
-
-  (defun my-window-killer ()
-    "closes the window, and deletes the buffer if it's the last window open."
-    (interactive)
-    (if (> buffer-display-count 1)
-        (if (= (length (window-list)) 1)
-            (kill-buffer)
-          (delete-window))
-      (kill-buffer-and-window)))
+(defmacro bind (&rest commands)
+  "Convience macro which creates a lambda interactive command."
+  `(lambda ()
+     (interactive)
+     ,@commands))
 
   (defun my-minibuffer-keyboard-quit ()
     "Abort recursive edit.
@@ -190,7 +168,17 @@ Disable the toolbars in console mode (I think).
 
   ;; narrowing
   (put 'narrow-to-region 'disabled nil)
-
+#+END_SRC
+* Dired
+** Features
+*** Omitting “uninteresting” files from Dired listings
+*** Dired local variables file: =.dired=
+*** Shell command guessing
+*** “Virtual Dired” allows you to view directories based on command output
+*** Cleaning commands
+*** Dired current file and file at point commands
+** Code
+#+BEGIN_SRC emacs-lisp
   ;; dired
   (require 'dired-x)
 
@@ -209,13 +197,20 @@ Disable the toolbars in console mode (I think).
   (setq scroll-conservatively 9999
         scroll-preserve-screen-position t)
 
+#+END_SRC
+* Uniquify
+Pretty distinct names for buffers
+#+BEGIN_SRC emacs-lisp
   ;; better buffer names for duplicates
   (require 'uniquify)
   (setq uniquify-buffer-name-style 'forward
         uniquify-separator "/"
         uniquify-ignore-buffers-re "^\\*" ; leave special buffers alone
         uniquify-after-kill-buffer-p t)
-
+#+END_SRC
+* Homeless settings garbage
+Pretty distinct names for buffers
+#+BEGIN_SRC emacs-lisp
   (defalias 'yes-or-no-p 'y-or-n-p)
 
   (xterm-mouse-mode 1)
@@ -244,6 +239,9 @@ Disable the toolbars in console mode (I think).
 
   (random t) ;; seed
 
+#+END_SRC
+* Auto-complete
+#+BEGIN_SRC emacs-lisp
   (require-package 'auto-complete)
   (use-package auto-complete
     :diminish auto-complete-mode
@@ -272,7 +270,9 @@ Disable the toolbars in console mode (I think).
         )
     )
     )
-
+#+END_SRC
+* Org-mode
+#+BEGIN_SRC emacs-lisp
   (use-package org
       :config
       (progn
@@ -304,7 +304,7 @@ Disable the toolbars in console mode (I think).
 #+BEGIN_SRC emacs-lisp
   (require-package 'pretty-mode)
   (use-package pretty-mode
-    :disable
+    :disabled t
     :config
     (progn
       (setq pretty-default-groups '(:function))
@@ -354,6 +354,17 @@ representing colors with the color they represent as background.
   (use-package rainbow-mode)
 #+END_SRC
 
+#+END_SRC
+** rainbow delimiters
+#+BEGIN_SRC emacs-lisp
+  (require-package 'rainbow-delimiters)
+  (use-package rainbow-delimiters
+    :init
+    (progn
+      (global-rainbow-delimiters-mode)
+    )
+    )
+#+END_SRC
 * Copy/paste
   Emacs copy-paste does not work by default. First, we enable X selection as a copy-paste buffer.
 #+BEGIN_SRC emacs-lisp
@@ -392,7 +403,6 @@ representing colors with the color they represent as background.
         ;; http://shreevatsa.wordpress.com/2006/10/22/emacs-copypaste-and-x/
         ;; http://www.mail-archive.com/help-gnu-emacs@gnu.org/msg03577.html
   ))
-
 #+END_SRC
 
 * Code editing
@@ -500,7 +510,58 @@ representing colors with the color they represent as background.
       (smex-initialize)
   ))
 #+END_SRC
+** Scss
+   #+BEGIN_SRC emacs-lisp
+     (require-package 'scss-mode)
+     (use-package scss-mode
+       :config
+       (progn
+         (autoload 'scss-mode "scss-mode")
+         (add-to-list 'auto-mode-alist '("\\.scss\\'" . scss-mode))
+         )
+       )
+   #+END_SRC
+** Haskell
+#+BEGIN_SRC emacs-lisp
+  (require-package 'haskell-mode)
+  (use-package haskell-mode
+    :commands haskell-mode
+    :init
+    (add-to-list 'auto-mode-alist '("\\.l?hs$" . haskell-mode))
+    :config
+    (progn
+      (define-key haskell-mode-map (kbd "C-x C-d") nil)
+      (define-key haskell-mode-map (kbd "C-c C-z") 'haskell-interactive-switch)
+      (define-key haskell-mode-map (kbd "C-c C-l") 'haskell-process-load-file)
+      (define-key haskell-mode-map (kbd "C-c C-b") 'haskell-interactive-switch)
+      (define-key haskell-mode-map (kbd "C-c C-t") 'haskell-process-do-type)
+      (define-key haskell-mode-map (kbd "C-c C-i") 'haskell-process-do-info)
+      (define-key haskell-mode-map (kbd "C-c M-.") nil)
+      (define-key haskell-mode-map (kbd "C-c C-d") nil)
+      (define-key haskell-mode-map (kbd "C-c C-c") 'haskell-compile)
+      ;; <https://github.com/prooftechnique/.emacs.d/blob/
+      ;; 6d08779adb8fe67acbe9ab82fe25e78a7fc40eb8/config/jhenahan-haskell.el>
+      (add-hook 'haskell-mode-hook
+                (lambda ()
+                  (turn-on-haskell-doc-mode)
+                  (setq evil-auto-indent nil)
+                  (turn-on-haskell-indentation)
+                  (ghc-init)))
+      (add-hook 'haskell-interactive-mode
+            (lambda ()
+            (linum-mode 0)
+            (evil-mode 0)))
+      (use-package haskell-mode-autoloads)
+      (use-package inf-haskell)
+      (use-package haskell-cabal
+        :init
+        (progn
+          (define-key haskell-cabal-mode-map (kbd "C-c C-c") 'haskell-compile))
+      )
+      (use-package hs-lint)))
+#+END_SRC
 * Git
+  <<Magit>>
 #+BEGIN_SRC emacs-lisp
   (require-package 'magit)
   (require-package 'gist)
@@ -540,45 +601,6 @@ representing colors with the color they represent as background.
       )
     )
 #+END_SRC
-* Haskell
-#+BEGIN_SRC emacs-lisp
-  (require-package 'haskell-mode)
-  (use-package haskell-mode
-    :commands haskell-mode
-    :init
-    (add-to-list 'auto-mode-alist '("\\.l?hs$" . haskell-mode))
-    :config
-    (progn
-      (define-key haskell-mode-map (kbd "C-x C-d") nil)
-      (define-key haskell-mode-map (kbd "C-c C-z") 'haskell-interactive-switch)
-      (define-key haskell-mode-map (kbd "C-c C-l") 'haskell-process-load-file)
-      (define-key haskell-mode-map (kbd "C-c C-b") 'haskell-interactive-switch)
-      (define-key haskell-mode-map (kbd "C-c C-t") 'haskell-process-do-type)
-      (define-key haskell-mode-map (kbd "C-c C-i") 'haskell-process-do-info)
-      (define-key haskell-mode-map (kbd "C-c M-.") nil)
-      (define-key haskell-mode-map (kbd "C-c C-d") nil)
-      (define-key haskell-mode-map (kbd "C-c C-c") 'haskell-compile)
-      ;; <https://github.com/prooftechnique/.emacs.d/blob/
-      ;; 6d08779adb8fe67acbe9ab82fe25e78a7fc40eb8/config/jhenahan-haskell.el>
-      (add-hook 'haskell-mode-hook
-                (lambda ()
-                  (turn-on-haskell-doc-mode)
-                  (setq evil-auto-indent nil)
-                  (turn-on-haskell-indentation)
-                  (ghc-init)))
-      (add-hook 'haskell-interactive-mode
-            (lambda ()
-            (linum-mode 0)
-            (evil-mode 0)))
-      (use-package haskell-mode-autoloads)
-      (use-package inf-haskell)
-      (use-package haskell-cabal
-        :init
-        (progn
-          (define-key haskell-cabal-mode-map (kbd "C-c C-c") 'haskell-compile))
-      )
-      (use-package hs-lint)))
-#+END_SRC
 * Evil
 #+BEGIN_SRC emacs-lisp
   (require-package 'evil)
@@ -588,7 +610,7 @@ representing colors with the color they represent as background.
   (require-package 'evil-indent-textobject)
   (require-package 'evil-matchit)
   (require-package 'surround)
-
+  
   (setq evil-want-C-u-scroll t
       evil-want-C-w-in-emacs-state t
       evil-search-module 'evil-search
@@ -607,6 +629,7 @@ representing colors with the color they represent as background.
           (evil-mode 1)
           (global-evil-leader-mode)
           (evil-leader/set-leader ",")
+          (setq my-eshell-buffer-count 0)
           (evil-leader/set-key
               "w" 'save-buffer
               "e" (kbd "C-x C-e")
@@ -637,7 +660,7 @@ representing colors with the color they represent as background.
             (global-surround-mode 1)
             )
         )
-
+  
       (dolist (mode '(eshell-mode
                       shell-mode
                       term-mode
@@ -649,30 +672,30 @@ representing colors with the color they represent as background.
                       direx:direx-mode
                       project-explorer-mode))
         (evil-set-initial-state mode 'emacs))
-
+  
       (evil-define-text-object my-evil-next-match (count &optional beg end type)
         "Select next match."
         (evil-ex-search-previous 1)
         (evil-ex-search-next count)
         (list evil-ex-search-match-beg evil-ex-search-match-end))
-
+  
       (evil-define-text-object my-evil-previous-match (count &optional beg end type)
         "Select previous match."
         (evil-ex-search-next 1)
         (evil-ex-search-previous count)
         (list evil-ex-search-match-beg evil-ex-search-match-end))
-
+  
       (define-key evil-motion-state-map "gn" 'my-evil-next-match)
       (define-key evil-motion-state-map "gN" 'my-evil-previous-match)
-
+  
       (defadvice evil-ex-search-next (after advice-for-evil-ex-search-next activate)
         (evil-scroll-line-to-center (line-number-at-pos)))
-
+  
       (defadvice evil-ex-search-previous (after advice-for-evil-ex-search-previous activate)
         (evil-scroll-line-to-center (line-number-at-pos)))
 #+END_SRC
 ** Evil-org-mode
-  From https://github.com/edwtjo/evil-org-mode/blob/master/evil-org.el
+   From https://github.com/edwtjo/evil-org-mode/blob/master/evil-org.el
 #+BEGIN_SRC emacs-lisp
   (define-minor-mode evil-org-mode
     "Buffer local minor mode for evil-org"
@@ -680,24 +703,35 @@ representing colors with the color they represent as background.
     :lighter " EvilOrg"
     :keymap (make-sparse-keymap) ; defines evil-org-mode-map
     :group 'evil-org)
-
+  
+  (define-minor-mode evil-org-src-mode
+    "Buffer local minor mode for evil-org-src"
+    :init-value nil
+    :lighter " EvilOrgSrc"
+    :keymap (make-sparse-keymap) ; defines evil-org-mode-map
+    :group 'evil-org)
+  
   (add-hook 'org-mode-hook 'evil-org-mode) ;; only load with org-mode
+  (add-hook 'org-src-mode-hook 'evil-org-src-mode)
   (setq evil-auto-indent nil)
-
+  
   (defun always-insert-item ()
     "Force insertion of org item"
     (if (not (org-in-item-p))
         (insert "\n- ")
       (org-insert-item))
     )
-
+  
   (defun evil-org-eol-call (fun)
     "Go to end of line and call provided function"
     (end-of-line)
     (funcall fun)
     (evil-append nil)
     )
-
+  
+  (evil-define-key 'normal evil-org-src-mode-map
+    "&" 'org-edit-src-exit)
+  
   ;; normal state shortcuts
   (evil-define-key 'normal evil-org-mode-map
     "gh" 'outline-up-heading
@@ -719,10 +753,11 @@ representing colors with the color they represent as background.
     "^" 'org-beginning-of-line
     "<" 'org-metaleft
     ">" 'org-metaright
+    "&" 'org-edit-src-code
     ";a" 'org-agenda
     "-" 'org-cycle-list-bullet
     (kbd "TAB") 'org-cycle)
-
+  
   ;; normal & insert state shortcuts.
   (mapc (lambda (state)
           (evil-define-key state evil-org-mode-map
@@ -747,11 +782,13 @@ representing colors with the color they represent as background.
             ))
         '(normal insert))
 #+END_SRC
-  Done with =evil-org=, but we still need to close the blocks for the =use-package evil=.
+   Done with =evil-org=, but we still need to close the blocks for the =use-package evil=.
 #+BEGIN_SRC emacs-lisp
       )
     )
-
+#+END_SRC
+* Ag: speedy inter-file grep
+#+BEGIN_SRC emacs-lisp
   (require-package 'ag)
   (use-package ag
     :init
@@ -761,6 +798,9 @@ representing colors with the color they represent as background.
     )
   )
 
+#+END_SRC
+* Project-explorer
+#+BEGIN_SRC emacs-lisp
   (require-package 'project-explorer)
   (use-package project-explorer
     :config
@@ -769,12 +809,21 @@ representing colors with the color they represent as background.
       )
     )
 
+#+END_SRC
+* ace-jump-mode
+#+BEGIN_SRC emacs-lisp
   (require-package 'ace-jump-mode)
   (use-package ace-jump-mode)
 
+#+END_SRC
+* expand-region
+#+BEGIN_SRC emacs-lisp
   (require-package 'expand-region)
   (use-package expand-region)
 
+#+END_SRC
+* editorconfig
+#+BEGIN_SRC emacs-lisp
   (require-package 'editorconfig)
   (use-package editorconfig)
 
@@ -794,14 +843,9 @@ representing colors with the color they represent as background.
       )
     )
 
-  (require-package 'rainbow-delimiters)
-  (use-package rainbow-delimiters
-    :init
-    (progn
-      (global-rainbow-delimiters-mode)
-    )
-    )
-
+#+END_SRC
+* guide-key
+#+BEGIN_SRC emacs-lisp
   (require-package 'guide-key)
   (use-package guide-key
     :diminish guide-key-mode
@@ -812,15 +856,15 @@ representing colors with the color they represent as background.
       (guide-key-mode 1)
       )
   )
-
-  (setq my-eshell-buffer-count 0)
-
+#+END_SRC
+* keybindings
+#+BEGIN_SRC emacs-lisp
   (after 'evil
       (require-package 'key-chord)
       (key-chord-mode 1)
       (define-key evil-motion-state-map "gn" 'my-evil-next-match)
       (define-key evil-motion-state-map "gN" 'my-evil-previous-match)
-
+  
       ;;; esc quits
       (define-key evil-normal-state-map [escape] 'keyboard-quit)
       (define-key evil-visual-state-map [escape] 'keyboard-quit)
@@ -829,38 +873,38 @@ representing colors with the color they represent as background.
       (define-key minibuffer-local-completion-map [escape] 'minibuffer-keyboard-quit)
       (define-key minibuffer-local-must-match-map [escape] 'minibuffer-keyboard-quit)
       (define-key minibuffer-local-isearch-map [escape] 'minibuffer-keyboard-quit)
-
+  
       (after 'ace-jump
           (key-chord-define evil-normal-state-map "jw" 'ace-jump-word-mode)
           (key-chord-define evil-normal-state-map "jc" 'ace-jump-char-mode)
           (key-chord-define evil-normal-state-map "jl" 'ace-jump-line-mode))
-
+  
     (after 'evil-matchit
       (define-key evil-normal-state-map "%" 'evilmi-jump-items))
-
+  
     (after 'git-gutter+-autoloads
       (define-key evil-normal-state-map (kbd "[ h") 'git-gutter+-previous-hunk)
       (define-key evil-normal-state-map (kbd "] h") 'git-gutter+-next-hunk)
       (define-key evil-normal-state-map (kbd ", g a") 'git-gutter+-stage-hunks)
       (define-key evil-normal-state-map (kbd ", g r") 'git-gutter+-revert-hunks)
       (evil-ex-define-cmd "Gw" (bind (git-gutter+-stage-whole-buffer))))
-
+  
     (after 'smex
       (define-key evil-visual-state-map (kbd "SPC SPC") 'smex)
       (define-key evil-normal-state-map (kbd "SPC SPC") 'smex))
-
+  
     (define-key evil-normal-state-map (kbd "SPC o") 'imenu)
     (define-key evil-normal-state-map (kbd "SPC b") 'switch-to-buffer)
     (define-key evil-normal-state-map (kbd "SPC k") 'ido-kill-buffer)
     (define-key evil-normal-state-map (kbd "SPC f") 'ido-find-file)
-
+  
     (after 'helm-autoloads
       (define-key evil-normal-state-map (kbd "SPC e") 'helm-recentf)
       (define-key evil-normal-state-map (kbd "SPC t") 'helm-etags-select)
       (define-key evil-normal-state-map (kbd "SPC l") 'helm-swoop)
       (define-key evil-normal-state-map (kbd "SPC y") 'helm-show-kill-ring)
       (define-key evil-normal-state-map [f5] 'helm-mini))
-
+  
     (define-key evil-normal-state-map (kbd "[ SPC") (bind (evil-insert-newline-above) (forward-line)))
     (define-key evil-normal-state-map (kbd "] SPC") (bind (evil-insert-newline-below) (forward-line -1)))
     (define-key evil-normal-state-map (kbd "[ e") (kbd "ddkP"))
@@ -869,46 +913,45 @@ representing colors with the color they represent as background.
     (define-key evil-normal-state-map (kbd "] b") 'next-buffer)
     (define-key evil-normal-state-map (kbd "[ q") 'previous-error)
     (define-key evil-normal-state-map (kbd "] q") 'next-error)
-
+  
     (define-key evil-normal-state-map (kbd "g p") (kbd "` [ v ` ]"))
-
+  
     (after 'etags-select
       (define-key evil-normal-state-map (kbd "g ]") 'etags-select-find-tag-at-point))
-
+  
     (define-key evil-normal-state-map (kbd "C-p") 'projectile-find-file)
     (define-key evil-normal-state-map (kbd "C-q") 'universal-argument)
-
+  
     (define-key evil-normal-state-map (kbd "C-h") 'evil-window-left)
     (define-key evil-normal-state-map (kbd "C-j") 'evil-window-down)
     (define-key evil-normal-state-map (kbd "C-k") 'evil-window-up)
     (define-key evil-normal-state-map (kbd "C-l") 'evil-window-right)
-
+  
     (define-key evil-motion-state-map "j" 'evil-next-visual-line)
     (define-key evil-motion-state-map "k" 'evil-previous-visual-line)
-
-    (define-key evil-normal-state-map (kbd "Q") 'my-window-killer)
+  
     (define-key evil-normal-state-map (kbd "Y") (kbd "y$"))
-
+  
     (define-key evil-visual-state-map (kbd ", e") 'eval-region)
-
+  
     ;; emacs lisp
     (after 'elisp-slime-nav-autoloads
       (evil-define-key 'normal emacs-lisp-mode-map (kbd "g d") 'elisp-slime-nav-find-elisp-thing-at-point)
       (evil-define-key 'normal emacs-lisp-mode-map (kbd "K") 'elisp-slime-nav-describe-elisp-thing-at-point))
-
+  
     (after 'ag-autoloads
       (define-key evil-normal-state-map (kbd "SPC /") 'ag-regexp-project-at-point))
-
+  
     (after 'multiple-cursors
       (define-key evil-visual-state-map (kbd "C->") 'mc/mark-all-like-this)
       (define-key evil-normal-state-map (kbd "C->") 'mc/mark-next-like-this)
       (define-key evil-normal-state-map (kbd "C-<") 'mc/mark-previous-like-this))
-
+  
     (after 'ace-jump-mode-autoloads
       (define-key evil-normal-state-map (kbd "SPC j") 'ace-jump-char-mode)
       (define-key evil-motion-state-map (kbd "SPC") 'evil-ace-jump-char-mode)
       (define-key evil-motion-state-map (kbd "S-SPC") 'evil-ace-jump-line-mode))
-
+  
     (after 'magit
       (define-key magit-status-mode-map (kbd "C-n") 'magit-goto-next-sibling-section)
       (define-key magit-status-mode-map (kbd "C-p") 'magit-goto-previous-sibling-section)
@@ -916,58 +959,58 @@ representing colors with the color they represent as background.
         "K" 'magit-discard-item
         "l" 'magit-key-mode-popup-logging
         "h" 'magit-toggle-diff-refine-hunk))
-
+  
     ;; butter fingers
     (evil-ex-define-cmd "Q" 'evil-quit)
     (evil-ex-define-cmd "Qa" 'evil-quit-all)
     (evil-ex-define-cmd "QA" 'evil-quit-all))
-
+  
   ;; escape minibuffer
   (define-key minibuffer-local-map [escape] 'my-minibuffer-keyboard-quit)
   (define-key minibuffer-local-ns-map [escape] 'my-minibuffer-keyboard-quit)
   (define-key minibuffer-local-completion-map [escape] 'my-minibuffer-keyboard-quit)
   (define-key minibuffer-local-must-match-map [escape] 'my-minibuffer-keyboard-quit)
   (define-key minibuffer-local-isearch-map [escape] 'my-minibuffer-keyboard-quit)
-
+  
   (define-key minibuffer-local-map (kbd "C-w") 'backward-kill-word)
-
+  
   (after 'package
     (after 'evil
       (evil-add-hjkl-bindings package-menu-mode-map 'emacs))
     )
-
+  
   (after 'project-explorer-autoloads
     (after 'project-explorer
       (after 'evil
         (define-key project-explorer-mode-map (kbd "C-l") 'evil-window-right)))
     (global-set-key [f2] 'project-explorer-open)
     (global-set-key [f3] 'pe/show-file))
-
+  
   (after 'comint
     (define-key comint-mode-map [up] 'comint-previous-input)
     (define-key comint-mode-map [down] 'comint-next-input))
-
+  
   (after 'auto-complete
     (define-key ac-completing-map (kbd "C-n") 'ac-next)
     (define-key ac-completing-map (kbd "C-p") 'ac-previous))
-
+  
   (after 'expand-region-autoloads
     (global-set-key (kbd "C-=") 'er/expand-region))
-
+  
   ;; mouse scrolling in terminal
   (unless (display-graphic-p)
     (global-set-key [mouse-4] (bind (scroll-down 1)))
     (global-set-key [mouse-5] (bind (scroll-up 1))))
-
+  
   (global-set-key [prior] 'previous-buffer)
   (global-set-key [next] 'next-buffer)
-
+  
   (global-set-key (kbd "C-S-<left>") 'shrink-window-horizontally)
   (global-set-key (kbd "C-x C-b") 'ibuffer)
   (global-set-key (kbd "C-x C-k") 'kill-this-buffer)
   (global-set-key (kbd "C-x g") 'my-google)
   (global-set-key (kbd "C-c e") 'my-eval-and-replace)
-
+  
   ;; have no use for these default bindings
   (global-unset-key (kbd "C-x m"))
 #+END_SRC
