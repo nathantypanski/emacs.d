@@ -1,23 +1,23 @@
 * Explanation
-This is my emacs init file. It's written in org-mode, because what better way to learn
-emacslisp and org-mode than to combine them both at once?
+  This is my emacs init file. It's written in org-mode, because what better way to learn
+  emacslisp and org-mode than to combine them both at once?
 ** Major tasks
 *** TODO Figure out org-mode indentation
 *** Make org-mode display pretty '...' characters for distinguishing
 *** Integrate dotfiles for [[Magit]]
 * Settings
   Disable the toolbars in console mode (I think).
-#+BEGIN_SRC emacs-lisp
+  #+BEGIN_SRC emacs-lisp
   (when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
   (when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
   (unless (display-graphic-p) (menu-bar-mode -1))
-#+END_SRC
+  #+END_SRC
   Set the default font (only matters in graphical mode).
-#+BEGIN_SRC emacs-lisp
+  #+BEGIN_SRC emacs-lisp
   (set-default-font "Terminus-10")
-#+END_SRC
+  #+END_SRC
 * Package loading
-#+BEGIN_SRC emacs-lisp
+  #+BEGIN_SRC emacs-lisp
     (add-to-list 'load-path user-emacs-directory)
     (add-to-list 'load-path (concat user-emacs-directory "config"))
     (add-to-list 'load-path (concat user-emacs-directory "elisp"))
@@ -171,7 +171,7 @@ emacslisp and org-mode than to combine them both at once?
 
   ;; narrowing
   (put 'narrow-to-region 'disabled nil)
-#+END_SRC
+  #+END_SRC
 * Dired
 ** Features
 *** Omitting “uninteresting” files from Dired listings
@@ -181,7 +181,7 @@ emacslisp and org-mode than to combine them both at once?
 *** Cleaning commands
 *** Dired current file and file at point commands
 ** Code
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
   ;; dired
   (require 'dired-x)
 
@@ -200,20 +200,20 @@ emacslisp and org-mode than to combine them both at once?
   (setq scroll-conservatively 9999
         scroll-preserve-screen-position t)
 
-#+END_SRC
+   #+END_SRC
 * Uniquify
-Pretty distinct names for buffers
-#+BEGIN_SRC emacs-lisp
+  Pretty distinct names for buffers
+  #+BEGIN_SRC emacs-lisp
   ;; better buffer names for duplicates
   (require 'uniquify)
   (setq uniquify-buffer-name-style 'forward
         uniquify-separator "/"
         uniquify-ignore-buffers-re "^\\*" ; leave special buffers alone
         uniquify-after-kill-buffer-p t)
-#+END_SRC
+  #+END_SRC
 * Homeless settings garbage
-Pretty distinct names for buffers
-#+BEGIN_SRC emacs-lisp
+  Pretty distinct names for buffers
+  #+BEGIN_SRC emacs-lisp
   (defalias 'yes-or-no-p 'y-or-n-p)
 
   (xterm-mouse-mode 1)
@@ -242,9 +242,9 @@ Pretty distinct names for buffers
 
   (random t) ;; seed
 
-#+END_SRC
+  #+END_SRC
 * Auto-complete
-#+BEGIN_SRC emacs-lisp
+  #+BEGIN_SRC emacs-lisp
   (require-package 'auto-complete)
   (use-package auto-complete
     :diminish auto-complete-mode
@@ -273,9 +273,9 @@ Pretty distinct names for buffers
         )
     )
     )
-#+END_SRC
+  #+END_SRC
 * Org-mode
-#+BEGIN_SRC emacs-lisp
+  #+BEGIN_SRC emacs-lisp
   (use-package org
       :config
       (progn
@@ -285,10 +285,10 @@ Pretty distinct names for buffers
           (use-package ob)
       )
   )
-#+END_SRC
+  #+END_SRC
 * Eyecandy
 ** Smart modelines
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
   (require-package 'smart-mode-line)
   (use-package smart-mode-line
     :config
@@ -298,12 +298,12 @@ Pretty distinct names for buffers
       (setq)
     )
     )
-#+END_SRC
-
+   #+END_SRC
+   
 ** =pretty-mode=
    This was giving me problems with a few characters that would not display in my terminal
    (<<< for instance) so it is disabled until I get that resolved.
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
   (require-package 'pretty-mode)
   (use-package pretty-mode
     :disabled t
@@ -312,18 +312,18 @@ Pretty distinct names for buffers
       (setq pretty-default-groups '(:function))
       (global-pretty-mode)
   ))
-#+END_SRC
-
-#+BEGIN_SRC emacs-lisp
+   #+END_SRC
+   
+   #+BEGIN_SRC emacs-lisp
   ;; Colors!
   (load-theme 'zenburn t)
-#+END_SRC
+   #+END_SRC
 ** Line numbers
    Line numbers are provided by =linum=, with some added hacks to make them add space
    before "short" lines, so the line number column is all the same length. There is
    also a hack in place here to get =linum= to leave one blank space before the source
    code for the file.
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
   (require-package 'linum)
   (use-package linum
     :config
@@ -347,20 +347,20 @@ Pretty distinct names for buffers
             linum-delay t)
       )
     )
-#+END_SRC
+   #+END_SRC
    #+BEGIN_SRC emacs-lisp
    #+END_SRC
-
-=rainbow-mode= is a minor mode for Emacs which displays strings
-representing colors with the color they represent as background.
-#+BEGIN_SRC emacs-lisp
+   
+   =rainbow-mode= is a minor mode for Emacs which displays strings
+   representing colors with the color they represent as background.
+   #+BEGIN_SRC emacs-lisp
   (require-package 'rainbow-mode)
   (use-package rainbow-mode)
-#+END_SRC
-
-#+END_SRC
+   #+END_SRC
+   
+   #+END_SRC
 ** rainbow delimiters
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
   (require-package 'rainbow-delimiters)
   (use-package rainbow-delimiters
     :init
@@ -368,16 +368,16 @@ representing colors with the color they represent as background.
       (global-rainbow-delimiters-mode)
     )
     )
-#+END_SRC
+   #+END_SRC
 * Copy/paste
   Emacs copy-paste does not work by default. First, we enable X selection as a copy-paste buffer.
-#+BEGIN_SRC emacs-lisp
+  #+BEGIN_SRC emacs-lisp
   ; Basic copy-paste setup. From wiki.
   (setq x-select-enable-clipboard t)
   (setq interprogram-paste-function 'x-cut-buffer-or-selection-value)
-#+END_SRC emacs-lisp
+  #+END_SRC emacs-lisp
   Now, we hack copy-paste to work in the terminal.
-#+BEGIN_SRC emacs-lisp
+  #+BEGIN_SRC emacs-lisp
   ; Brilliant working copy-paste (even in Evil mode!) ripped from:
   ; http://hugoheden.wordpress.com/2009/03/08/copypaste-with-emacs-in-terminal/
   (unless window-system
@@ -407,19 +407,19 @@ representing colors with the color they represent as background.
         ;; http://shreevatsa.wordpress.com/2006/10/22/emacs-copypaste-and-x/
         ;; http://www.mail-archive.com/help-gnu-emacs@gnu.org/msg03577.html
   ))
-#+END_SRC
-
+  #+END_SRC
+  
 * Code editing
 ** Autopair
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
   (require-package 'autopair)
   (use-package autopair
     :config
     (autopair-global-mode))
-#+END_SRC
+   #+END_SRC
 ** Projectile
    AKA =ctrl-p= for Emacs.
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
   (require-package 'projectile)
   (use-package projectile
     :diminish projectile-mode
@@ -433,20 +433,20 @@ representing colors with the color they represent as background.
       (projectile-global-mode 1)
       )
     )
-#+END_SRC
+   #+END_SRC
 ** Helm
    #+BEGIN_QUOTE
    Helm is incremental completion and selection narrowing framework
    for Emacs. It will help steer you in the right direction when
    you're looking for stuff in Emacs (like buffers, files, etc).
-
+   
    Helm is a fork of anything.el originaly written by Tamas Patrovic
    and can be considered to be its successor. Helm sets out to clean
    up the legacy code in anything.el and provide a cleaner, leaner
    and more modular tool, that's not tied in the trap of backward
    compatibility.
    #+END_QUOTE
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
   (require-package 'helm)
   (use-package helm
     :config
@@ -465,10 +465,10 @@ representing colors with the color they represent as background.
         (require-package 'helm-projectile))
       )
     )
-#+END_SRC
+   #+END_SRC
 ** Ido
    Interactive =do= mode.
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
   (use-package ido
     :config
     (progn
@@ -507,12 +507,14 @@ representing colors with the color they represent as background.
         )
       )
     )
-#+END_SRC
+   #+END_SRC
 *** Smex
-#+BEGIN_SRC emacs-lisp
-  ;; Smex is a M-x enhancement for Emacs. Built on top of IDO, it
-  ;; provides a convenient interface to your recently and most
-  ;; frequently used commands. And to all the other commands, too.
+    #+BEGIN_QUOTE
+    Smex is a M-x enhancement for Emacs. Built on top of IDO, it
+    provides a convenient interface to your recently and most
+    frequently used commands. And to all the other commands, too.
+    #+END_QUOTE
+    #+BEGIN_SRC emacs-lisp
   (require-package 'smex)
   (use-package smex
     :config
@@ -522,7 +524,7 @@ representing colors with the color they represent as background.
       (global-set-key (kbd "C-c C-m") 'smex)
       (smex-initialize)
   ))
-#+END_SRC
+    #+END_SRC
 ** Scss
    #+BEGIN_SRC emacs-lisp
      (require-package 'scss-mode)
@@ -535,7 +537,7 @@ representing colors with the color they represent as background.
        )
    #+END_SRC
 ** Haskell
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
   (require-package 'haskell-mode)
   (use-package haskell-mode
     :commands haskell-mode
@@ -573,10 +575,10 @@ representing colors with the color they represent as background.
           (define-key haskell-cabal-mode-map (kbd "C-c C-c") 'haskell-compile))
       )
       (use-package hs-lint)))
-#+END_SRC
+   #+END_SRC
 * Git
   <<Magit>>
-#+BEGIN_SRC emacs-lisp
+  #+BEGIN_SRC emacs-lisp
   (require-package 'magit)
   (require-package 'gist)
 
@@ -585,9 +587,9 @@ representing colors with the color they represent as background.
     (global-set-key (kbd "C-x g") 'magit-status))
 
   (global-git-gutter+-mode)
-#+END_SRC
+  #+END_SRC
 * Flycheck
-#+BEGIN_SRC emacs-lisp
+  #+BEGIN_SRC emacs-lisp
   (require-package 'flycheck)
   (use-package flycheck
     :config
@@ -598,9 +600,9 @@ representing colors with the color they represent as background.
       (global-flycheck-mode 1)
       )
     )
-#+END_SRC
+  #+END_SRC
 * Elisp-slime-nav
-#+BEGIN_SRC emacs-lisp
+  #+BEGIN_SRC emacs-lisp
   (require-package 'elisp-slime-nav)
   (use-package elisp-slime-nav
     :config
@@ -614,9 +616,9 @@ representing colors with the color they represent as background.
       (add-hook 'ielm-mode-hook 'my-lisp-hook)
       )
     )
-#+END_SRC
+  #+END_SRC
 * Evil
-#+BEGIN_SRC emacs-lisp
+  #+BEGIN_SRC emacs-lisp
     (require-package 'evil)
     (require-package 'evil-leader)
     (require-package 'evil-visualstar)
@@ -805,10 +807,10 @@ representing colors with the color they represent as background.
       (evil-ex-define-cmd "Q" 'evil-quit)
       (evil-ex-define-cmd "Qa" 'evil-quit-all)
       (evil-ex-define-cmd "QA" 'evil-quit-all)
-#+END_SRC
+  #+END_SRC
 ** Evil-org-mode
    From https://github.com/edwtjo/evil-org-mode/blob/master/evil-org.el
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
   (define-minor-mode evil-org-mode
     "Buffer local minor mode for evil-org"
     :init-value nil
@@ -893,14 +895,14 @@ representing colors with the color they represent as background.
                                (org-metaright))))
             ))
         '(normal insert))
-#+END_SRC
+   #+END_SRC
    Done with =evil-org=, but we still need to close the blocks for the =use-package evil=.
-#+BEGIN_SRC emacs-lisp
+   #+BEGIN_SRC emacs-lisp
       )
     )
-#+END_SRC
+   #+END_SRC
 * Ag: speedy inter-file grep
-#+BEGIN_SRC emacs-lisp
+  #+BEGIN_SRC emacs-lisp
   (require-package 'ag)
   (use-package ag
     :init
@@ -909,9 +911,9 @@ representing colors with the color they represent as background.
       (add-hook 'ag-mode-hook (lambda () (toggle-truncate-lines t)))
     )
   )
-#+END_SRC
+  #+END_SRC
 * Project-explorer
-#+BEGIN_SRC emacs-lisp
+  #+BEGIN_SRC emacs-lisp
   (require-package 'project-explorer)
   (use-package project-explorer
     :commands (progn project-explorer project-explorer-open pe/show-file)
@@ -920,21 +922,21 @@ representing colors with the color they represent as background.
         (setq pe/omit-regex (concat pe/omit-regex "\\|^node_modules$"))
       )
     )
-#+END_SRC
+  #+END_SRC
 * ace-jump-mode
-#+BEGIN_SRC emacs-lisp
+  #+BEGIN_SRC emacs-lisp
   (require-package 'ace-jump-mode)
   (use-package ace-jump-mode)
 
-#+END_SRC
+  #+END_SRC
 * expand-region
-#+BEGIN_SRC emacs-lisp
+  #+BEGIN_SRC emacs-lisp
   (require-package 'expand-region)
   (use-package expand-region)
 
-#+END_SRC
+  #+END_SRC
 * editorconfig
-#+BEGIN_SRC emacs-lisp
+  #+BEGIN_SRC emacs-lisp
   (require-package 'editorconfig)
   (use-package editorconfig)
 
@@ -954,9 +956,9 @@ representing colors with the color they represent as background.
       )
     )
 
-#+END_SRC
+  #+END_SRC
 * guide-key
-#+BEGIN_SRC emacs-lisp
+  #+BEGIN_SRC emacs-lisp
   (require-package 'guide-key)
   (use-package guide-key
     :diminish guide-key-mode
@@ -967,33 +969,33 @@ representing colors with the color they represent as background.
       (guide-key-mode 1)
       )
   )
-#+END_SRC
+  #+END_SRC
 * keybindings
   Hitting =[escape]= exits minibuffers.
-#+BEGIN_SRC emacs-lisp
+  #+BEGIN_SRC emacs-lisp
   (define-key minibuffer-local-map [escape] 'my-minibuffer-keyboard-quit)
   (define-key minibuffer-local-ns-map [escape] 'my-minibuffer-keyboard-quit)
   (define-key minibuffer-local-completion-map [escape] 'my-minibuffer-keyboard-quit)
   (define-key minibuffer-local-must-match-map [escape] 'my-minibuffer-keyboard-quit)
   (define-key minibuffer-local-isearch-map [escape] 'my-minibuffer-keyboard-quit)
-#+END_SRC
+  #+END_SRC
   This makes evil's hjkl bindings work in the package list.
-#+BEGIN_SRC emacs-lisp
+  #+BEGIN_SRC emacs-lisp
   (after 'package
     (after 'evil
       (evil-add-hjkl-bindings package-menu-mode-map 'emacs))
     )
-#+END_SRC
+  #+END_SRC
   Not sure why this needs to be corrected, but presumably Project Explorer's mappings
   interfere with Evil-mode bindings for switching windows.
-#+BEGIN_SRC emacs-lisp
+  #+BEGIN_SRC emacs-lisp
   (after 'project-explorer-autoloads
     (after 'project-explorer
       (after 'evil
         (define-key project-explorer-mode-map (kbd "C-l") 'evil-window-right)))
-#+END_SRC
+  #+END_SRC
   Quick hotkeys for project explorer, bound to function keys.
-#+BEGIN_SRC emacs-lisp
+  #+BEGIN_SRC emacs-lisp
     (global-set-key [f2] 'project-explorer-open)
     (global-set-key [f3] 'pe/show-file))
   
@@ -1021,30 +1023,30 @@ representing colors with the color they represent as background.
   
   ;; have no use for these default bindings
   (global-unset-key (kbd "C-x m"))
-#+END_SRC
+  #+END_SRC
 ** Unbound keys
-The following is taken from [[http://www.emacswiki.org/emacs/unbound.el][EmacsWiki]], and the license of =unbound.el=
-is GPL version 2 or (at your option) any later version.
-#+BEGIN_QUOTE
-unbound.el --- find convenient unbound keystrokes
-
-Copyright (C) 2007 Davis Herring
-
-Author: Davis Herring <herring@lanl.gov>
-Version: 0.1
-Maintainer: Davis Herring
-Keywords: keyboard
-#+END_QUOTE
-The author provided some commentary on the script, shown below:
-#+BEGIN_QUOTE
-Commentary:
-The only entry point is `describe-unbound-keys'; it prompts for the maximum
-complexity to allow, which should probably be at least 5 to find enough
-keys to be worthwhile.  Lisp may call just `unbound-keys' to get a list of
-key representations suitable for `define-key'.
-#+END_QUOTE
-The source code for =unbound.el= is shown below:
-#+BEGIN_SRC emacs-lisp
+   The following is taken from [[http://www.emacswiki.org/emacs/unbound.el][EmacsWiki]], and the license of =unbound.el=
+   is GPL version 2 or (at your option) any later version.
+   #+BEGIN_QUOTE
+   unbound.el --- find convenient unbound keystrokes
+   
+   Copyright (C) 2007 Davis Herring
+   
+   Author: Davis Herring <herring@lanl.gov>
+   Version: 0.1
+   Maintainer: Davis Herring
+   Keywords: keyboard
+   #+END_QUOTE
+   The author provided some commentary on the script, shown below:
+   #+BEGIN_QUOTE
+   Commentary:
+   The only entry point is `describe-unbound-keys'; it prompts for the maximum
+   complexity to allow, which should probably be at least 5 to find enough
+   keys to be worthwhile.  Lisp may call just `unbound-keys' to get a list of
+   key representations suitable for `define-key'.
+   #+END_QUOTE
+   The source code for =unbound.el= is shown below:
+   #+BEGIN_SRC emacs-lisp
   (eval-when-compile (require 'cl))       ; for `dotimes', `push' (Emacs 21)
   
   (defcustom unbound-modifiers '(control meta shift)
@@ -1159,4 +1161,4 @@ The source code for =unbound.el= is shown below:
   ;; End:
   
   ;; unbound.el ends here
-#+END_SRC
+   #+END_SRC
