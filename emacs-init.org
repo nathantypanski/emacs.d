@@ -6,15 +6,40 @@
 *** Make org-mode display pretty '...' characters for distinguishing
 *** Integrate dotfiles for [[Magit]]
 * Settings
-  Disable the toolbars in console mode (I think).
+  Disable the toolbars.
   #+BEGIN_SRC emacs-lisp
   (when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
+  #+END_SRC
+  Disable vertical scrollbars in all frames.
+  #+BEGIN_SRC emacs-lisp
   (when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
+  #+END_SRC
+  Disable the menu bar in console emacs.
+  #+BEGIN_SRC emacs-lisp
   (unless (display-graphic-p) (menu-bar-mode -1))
   #+END_SRC
   Set the default font (only matters in graphical mode).
   #+BEGIN_SRC emacs-lisp
   (set-default-font "Terminus-10")
+  #+END_SRC
+  Ediff will do horizontal splits
+  #+BEGIN_SRC emacs-lisp
+  (setq ediff-split-window-function 'split-window-horizontally)
+  #+END_SRC
+  Store the extra garbage emacs makes in =~/.cache=.
+  #+BEGIN_SRC emacs-lisp
+  (setq backup-directory-alist
+        `((".*" . ,(concat user-emacs-directory ".cache/backups")))
+        auto-save-file-name-transforms
+        `((".*" ,(concat user-emacs-directory ".cache/backups") t))
+        auto-save-list-file-prefix
+        (concat user-emacs-directory ".cache/auto-save-list/.saves-"))
+
+  #+END_SRC
+  Only scroll one line when near the bottom of the screen, instead of jumping the screen around.
+  #+BEGIN_SRC emacs-lisp
+  (setq scroll-conservatively 9999
+        scroll-preserve-screen-position t)
   #+END_SRC
 * Package loading
   #+BEGIN_SRC emacs-lisp
@@ -174,32 +199,15 @@
   #+END_SRC
 * Dired
 ** Features
-*** Omitting “uninteresting” files from Dired listings
-*** Dired local variables file: =.dired=
-*** Shell command guessing
-*** “Virtual Dired” allows you to view directories based on command output
-*** Cleaning commands
-*** Dired current file and file at point commands
+- Dired local variables file: =.dired=
+- Omitting “uninteresting” files from Dired listings
+- Shell command guessing
+- “Virtual Dired” allows you to view directories based on command output
+- Cleaning commands
+- Dired current file and file at point commands
 ** Code
    #+BEGIN_SRC emacs-lisp
-  ;; dired
-  (require 'dired-x)
-
-  ;; ediff
-  (setq ediff-split-window-function 'split-window-horizontally)
-
-  ;; store most files in the cache
-  (setq backup-directory-alist
-        `((".*" . ,(concat user-emacs-directory ".cache/backups")))
-        auto-save-file-name-transforms
-        `((".*" ,(concat user-emacs-directory ".cache/backups") t))
-        auto-save-list-file-prefix
-        (concat user-emacs-directory ".cache/auto-save-list/.saves-"))
-
-  ;; better scrolling
-  (setq scroll-conservatively 9999
-        scroll-preserve-screen-position t)
-
+   (require 'dired-x)
    #+END_SRC
 * Uniquify
   Pretty distinct names for buffers
@@ -313,7 +321,10 @@
       (global-pretty-mode)
   ))
    #+END_SRC
-   
+** Color scheme
+   I use the =zenburn= color scheme, because it is easy on my eyes and doesn't look awful
+   like most emacs themes. Emacs may have more capable syntax highlighting than vim, but
+   damned if it isn't impossible to make it pretty, too.
    #+BEGIN_SRC emacs-lisp
   ;; Colors!
   (load-theme 'zenburn t)
@@ -455,12 +466,13 @@
       (setq helm-quick-update t)
       (require-package 'helm-swoop)
       (after 'helm-autoloads
-        (global-set-key (kbd "M-x") 'helm-M-x)
-        (define-key evil-normal-state-map (kbd "SPC e") 'helm-recentf)
-        (define-key evil-normal-state-map (kbd "SPC t") 'helm-etags-select)
-        (define-key evil-normal-state-map (kbd "SPC l") 'helm-swoop)
-        (define-key evil-normal-state-map (kbd "SPC y") 'helm-show-kill-ring)
-        (define-key evil-normal-state-map [f5] 'helm-mini))
+        (after 'evil
+            (global-set-key (kbd "M-x") 'helm-M-x)
+            (define-key evil-normal-state-map (kbd "SPC e") 'helm-recentf)
+            (define-key evil-normal-state-map (kbd "SPC t") 'helm-etags-select)
+            (define-key evil-normal-state-map (kbd "SPC l") 'helm-swoop)
+            (define-key evil-normal-state-map (kbd "SPC y") 'helm-show-kill-ring)
+            (define-key evil-normal-state-map [f5] 'helm-mini)))
       (after 'projectile
         (require-package 'helm-projectile))
       )
@@ -718,11 +730,6 @@
         ;;; esc quits
         (define-key evil-normal-state-map [escape] 'keyboard-quit)
         (define-key evil-visual-state-map [escape] 'keyboard-quit)
-        (define-key minibuffer-local-map [escape] 'minibuffer-keyboard-quit)
-        (define-key minibuffer-local-ns-map [escape] 'minibuffer-keyboard-quit)
-        (define-key minibuffer-local-completion-map [escape] 'minibuffer-keyboard-quit)
-        (define-key minibuffer-local-must-match-map [escape] 'minibuffer-keyboard-quit)
-        (define-key minibuffer-local-isearch-map [escape] 'minibuffer-keyboard-quit)
     
         (after 'ace-jump
             (key-chord-define evil-normal-state-map "jw" 'ace-jump-word-mode)
@@ -958,17 +965,31 @@
 
   #+END_SRC
 * guide-key
+  Overview from the [[https://github.com/kbkbkbkb1/guide-key][GitHub page]]
+  #+BEGIN_QUOTE
+  guide-key.el displays the available key bindings automatically and dynamically. guide-key aims to be an alternative of one-key.el.
+  
+  Here are some features of this library:
+
+  - guide-key automatically pops up the keys following your favorite prefixes. Moreover, even if you change key bindings, guide-key follows the change dynamically.
+  - guide-key can highlight particular commands. This makes it easy to find a command you are looking for, and to learn its key binding.
+  - guide-key doesn’t overwrite existing commands and key bindings, so there is no interference with describe-key and describe-bindings.
+  #+END_QUOTE
   #+BEGIN_SRC emacs-lisp
-  (require-package 'guide-key)
-  (use-package guide-key
-    :diminish guide-key-mode
-    :config
-    (progn
-      (setq guide-key/guide-key-sequence '("C-x" "C-c"))
-      (setq guide-key/recursive-key-sequence-flag t)
-      (guide-key-mode 1)
-      )
-  )
+    (require-package 'guide-key)
+    (use-package guide-key
+      :diminish guide-key-mode
+      :config
+      (progn
+        (setq guide-key/guide-key-sequence '("C-x" "C-c"))
+        (setq guide-key/recursive-key-sequence-flag t)
+        (guide-key-mode 1)
+  #+END_SRC
+  I'm relatively new to emacs, so having a short delay is beneficial.
+  #+BEGIN_SRC emacs-lisp
+        (setq guide-key/idle-delay 0.1)
+        )
+    )
   #+END_SRC
 * keybindings
   Hitting =[escape]= exits minibuffers.
