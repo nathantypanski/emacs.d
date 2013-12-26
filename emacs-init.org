@@ -305,6 +305,27 @@
   )
   #+END_SRC
 * Eyecandy
+** Color scheme
+   I use the =zenburn= color scheme, because it is easy on my eyes and doesn't look awful
+   like most emacs themes. Emacs may have more capable syntax highlighting than vim, but
+   damned if it isn't impossible to make it pretty, too.
+   #+BEGIN_SRC emacs-lisp
+  ;; Colors!
+  (load-theme 'zenburn t)
+   #+END_SRC
+** Line highlighting
+   This alone is supposed to enable highlighting the current line (especially with zenburn!)
+   but it doesn't. Still, we need it in order to make line highlighting work.
+
+   This might be because of my =~/.Xresources=, but who knows.
+   #+BEGIN_SRC emacs-lisp
+     (global-hl-line-mode 1)
+   #+END_SRC
+   Now we set the background color for =hi-line=, in order to differentiate the background
+   color.
+   #+BEGIN_SRC emacs-lisp
+     (set-face-background 'hl-line "#3e4446")
+   #+END_SRC
 ** Smart modelines
    #+BEGIN_SRC emacs-lisp
   (require-package 'smart-mode-line)
@@ -330,14 +351,6 @@
       (global-pretty-mode)
   ))
    #+END_SRC
-** Color scheme
-   I use the =zenburn= color scheme, because it is easy on my eyes and doesn't look awful
-   like most emacs themes. Emacs may have more capable syntax highlighting than vim, but
-   damned if it isn't impossible to make it pretty, too.
-   #+BEGIN_SRC emacs-lisp
-  ;; Colors!
-  (load-theme 'zenburn t)
-   #+END_SRC
 ** Line numbers
    Line numbers are provided by =linum=, with some added hacks to make them add space
    before "short" lines, so the line number column is all the same length. There is
@@ -362,7 +375,6 @@
          (propertize " " 'face 'mode-line)))
       (unless window-system
         (setq linum-format 'linum-format-func))
-      (global-hl-line-mode)
       (setq linum-format "%4d "
             linum-delay t)
       )
@@ -423,7 +435,7 @@
         ;; http://www.mail-archive.com/help-gnu-emacs@gnu.org/msg03577.html
   ))
   #+END_SRC
-  
+
 * Code editing
 ** Autopair
    #+BEGIN_SRC emacs-lisp
@@ -635,7 +647,6 @@
 * Evil
   #+BEGIN_SRC emacs-lisp
     (require-package 'evil)
-    (require-package 'evil-leader)
     (require-package 'evil-visualstar)
     (require-package 'evil-nerd-commenter)
     (require-package 'evil-indent-textobject)
@@ -654,10 +665,11 @@
     (use-package evil
       :config
       (progn
+        (evil-mode 1)
+        (require-package 'evil-leader)
         (use-package evil-leader
           :config
           (progn
-            (evil-mode 1)
             (global-evil-leader-mode)
             (evil-leader/set-leader ",")
             (setq my-eshell-buffer-count 0)
@@ -817,99 +829,98 @@
       (evil-ex-define-cmd "Q" 'evil-quit)
       (evil-ex-define-cmd "Qa" 'evil-quit-all)
       (evil-ex-define-cmd "QA" 'evil-quit-all)
+      )
+    )
   #+END_SRC
 ** Evil-org-mode
    From https://github.com/edwtjo/evil-org-mode/blob/master/evil-org.el
    #+BEGIN_SRC emacs-lisp
-  (define-minor-mode evil-org-mode
-    "Buffer local minor mode for evil-org"
-    :init-value nil
-    :lighter " EvilOrg"
-    :keymap (make-sparse-keymap) ; defines evil-org-mode-map
-    :group 'evil-org)
-  
-  (define-minor-mode evil-org-src-mode
-    "Buffer local minor mode for evil-org-src"
-    :init-value nil
-    :lighter " EvilOrgSrc"
-    :keymap (make-sparse-keymap) ; defines evil-org-mode-map
-    :group 'evil-org)
-  
-  (add-hook 'org-mode-hook 'evil-org-mode) ;; only load with org-mode
-  (add-hook 'org-src-mode-hook 'evil-org-src-mode)
-  (setq evil-auto-indent nil)
-  
-  (defun always-insert-item ()
-    "Force insertion of org item"
-    (if (not (org-in-item-p))
-        (insert "\n- ")
-      (org-insert-item))
-    )
-  
-  (defun evil-org-eol-call (fun)
-    "Go to end of line and call provided function"
-    (end-of-line)
-    (funcall fun)
-    (evil-append nil)
-    )
-  
-  (evil-define-key 'normal evil-org-src-mode-map
-    "&" 'org-edit-src-exit)
-  
-  ;; normal state shortcuts
-  (evil-define-key 'normal evil-org-mode-map
-    "gh" 'outline-up-heading
-    "gj" (if (fboundp 'org-forward-same-level) ;to be backward compatible with older org version
-           'org-forward-same-level
-           'org-forward-heading-same-level)
-    "gk" (if (fboundp 'org-backward-same-level)
-           'org-backward-same-level
-           'org-backward-heading-same-level)
-    "gl" 'outline-next-visible-heading
-    "t" 'org-todo
-    "T" '(lambda () (interactive) (evil-org-eol-call '(org-insert-todo-heading nil)))
-    "H" 'org-beginning-of-line
-    "L" 'org-end-of-line
-    ";t" 'org-show-todo-tree
-    "o" '(lambda () (interactive) (evil-org-eol-call 'always-insert-item))
-    "O" '(lambda () (interactive) (evil-org-eol-call 'org-insert-heading))
-    "$" 'org-end-of-line
-    "^" 'org-beginning-of-line
-    "<" 'org-metaleft
-    ">" 'org-metaright
-    "&" 'org-edit-src-code
-    ";a" 'org-agenda
-    "-" 'org-cycle-list-bullet
-    (kbd "TAB") 'org-cycle)
-  
-  ;; normal & insert state shortcuts.
-  (mapc (lambda (state)
-          (evil-define-key state evil-org-mode-map
-            (kbd "M-l") 'org-metaright
-            (kbd "M-h") 'org-metaleft
-            (kbd "M-k") 'org-metaup
-            (kbd "M-j") 'org-metadown
-            (kbd "M-L") 'org-shiftmetaright
-            (kbd "M-H") 'org-shiftmetaleft
-            (kbd "M-K") 'org-shiftmetaup
-            (kbd "M-J") 'org-shiftmetadown
-            (kbd "M-o") '(lambda () (interactive)
-                           (evil-org-eol-call
-                            '(lambda()
-                               (org-insert-heading)
-                               (org-metaright))))
-            (kbd "M-t") '(lambda () (interactive)
-                           (evil-org-eol-call
-                            '(lambda()
-                               (org-insert-todo-heading nil)
-                               (org-metaright))))
-            ))
-        '(normal insert))
-   #+END_SRC
-   Done with =evil-org=, but we still need to close the blocks for the =use-package evil=.
-   #+BEGIN_SRC emacs-lisp
-      )
-    )
+     (after 'evil
+       (define-minor-mode evil-org-mode
+         "Buffer local minor mode for evil-org"
+         :init-value nil
+         :lighter " EvilOrg"
+         :keymap (make-sparse-keymap) ; defines evil-org-mode-map
+         :group 'evil-org)
+     
+       (define-minor-mode evil-org-src-mode
+         "Buffer local minor mode for evil-org-src"
+         :init-value nil
+         :lighter " EvilOrgSrc"
+         :keymap (make-sparse-keymap) ; defines evil-org-mode-map
+         :group 'evil-org)
+     
+       (add-hook 'org-mode-hook 'evil-org-mode) ;; only load with org-mode
+       (add-hook 'org-src-mode-hook 'evil-org-src-mode)
+       (setq evil-auto-indent nil)
+     
+       (defun always-insert-item ()
+         "Force insertion of org item"
+         (if (not (org-in-item-p))
+             (insert "\n- ")
+           (org-insert-item))
+         )
+     
+       (defun evil-org-eol-call (fun)
+         "Go to end of line and call provided function"
+         (end-of-line)
+         (funcall fun)
+         (evil-append nil)
+         )
+     
+       (evil-define-key 'normal evil-org-src-mode-map
+         "&" 'org-edit-src-exit)
+     
+       ;; normal state shortcuts
+       (evil-define-key 'normal evil-org-mode-map
+         "gh" 'outline-up-heading
+         "gj" (if (fboundp 'org-forward-same-level) ;to be backward compatible with older org version
+                  'org-forward-same-level
+                'org-forward-heading-same-level)
+         "gk" (if (fboundp 'org-backward-same-level)
+                  'org-backward-same-level
+                'org-backward-heading-same-level)
+         "gl" 'outline-next-visible-heading
+         "t" 'org-todo
+         "T" '(lambda () (interactive) (evil-org-eol-call '(org-insert-todo-heading nil)))
+         "H" 'org-beginning-of-line
+         "L" 'org-end-of-line
+         ";t" 'org-show-todo-tree
+         "o" '(lambda () (interactive) (evil-org-eol-call 'always-insert-item))
+         "O" '(lambda () (interactive) (evil-org-eol-call 'org-insert-heading))
+         "$" 'org-end-of-line
+         "^" 'org-beginning-of-line
+         "<" 'org-metaleft
+         ">" 'org-metaright
+         "&" 'org-edit-src-code
+         ";a" 'org-agenda
+         "-" 'org-cycle-list-bullet
+         (kbd "TAB") 'org-cycle)
+     
+       ;; normal & insert state shortcuts.
+       (mapc (lambda (state)
+               (evil-define-key state evil-org-mode-map
+                 (kbd "M-l") 'org-metaright
+                 (kbd "M-h") 'org-metaleft
+                 (kbd "M-k") 'org-metaup
+                 (kbd "M-j") 'org-metadown
+                 (kbd "M-L") 'org-shiftmetaright
+                 (kbd "M-H") 'org-shiftmetaleft
+                 (kbd "M-K") 'org-shiftmetaup
+                 (kbd "M-J") 'org-shiftmetadown
+                 (kbd "M-o") '(lambda () (interactive)
+                                (evil-org-eol-call
+                                 '(lambda()
+                                    (org-insert-heading)
+                                    (org-metaright))))
+                 (kbd "M-t") '(lambda () (interactive)
+                                (evil-org-eol-call
+                                 '(lambda()
+                                    (org-insert-todo-heading nil)
+                                    (org-metaright))))
+                 ))
+             '(normal insert))
+       )
    #+END_SRC
 * Ag: speedy inter-file grep
   #+BEGIN_SRC emacs-lisp
