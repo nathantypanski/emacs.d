@@ -252,14 +252,24 @@
 
   #+END_SRC
 * Auto-complete
+  [[http://www.emacswiki.org/emacs/AutoComplete][Auto-complete]] is a visual autocompletion that uses popup menus. It is nicely broken
+  with Linum enabled, but I keep it around in case one day I figure out how to make
+  it work.
   #+BEGIN_SRC emacs-lisp
   (require-package 'auto-complete)
   (use-package auto-complete
+  #+END_SRC
+  Keeping this disabled for now; as mentioned above, it is broken.
+  #+BEGIN_SRC emacs-lisp
+    :disabled t
     :diminish auto-complete-mode
     :config
     (progn
       (setq
        ac-auto-show-menu 0.01
+  #+END_SRC
+  =ac-auto-start= specifies the length of a word required to enable auto-complete.
+  #+BEGIN_SRC emacs-lisp
        ac-auto-start 2
        ac-comphist-file (expand-file-name ".cache/ac-comphist.dat" user-emacs-directory)
        ac-delay 0.01
