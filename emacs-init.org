@@ -317,7 +317,6 @@
     )
     )
    #+END_SRC
-   
 ** =pretty-mode=
    This was giving me problems with a few characters that would not display in my terminal
    (<<< for instance) so it is disabled until I get that resolved.
@@ -369,16 +368,11 @@
       )
     )
    #+END_SRC
-   #+BEGIN_SRC emacs-lisp
-   #+END_SRC
-   
    =rainbow-mode= is a minor mode for Emacs which displays strings
    representing colors with the color they represent as background.
    #+BEGIN_SRC emacs-lisp
   (require-package 'rainbow-mode)
   (use-package rainbow-mode)
-   #+END_SRC
-   
    #+END_SRC
 ** rainbow delimiters
    #+BEGIN_SRC emacs-lisp
@@ -560,43 +554,42 @@
    #+END_SRC
 ** Haskell
    #+BEGIN_SRC emacs-lisp
-  (require-package 'haskell-mode)
-  (use-package haskell-mode
-    :commands haskell-mode
-    :init
-    (add-to-list 'auto-mode-alist '("\\.l?hs$" . haskell-mode))
-    :config
-    (progn
-      (define-key haskell-mode-map (kbd "C-x C-d") nil)
-      (define-key haskell-mode-map (kbd "C-c C-z") 'haskell-interactive-switch)
-      (define-key haskell-mode-map (kbd "C-c C-l") 'haskell-process-load-file)
-      (define-key haskell-mode-map (kbd "C-c C-b") 'haskell-interactive-switch)
-      (define-key haskell-mode-map (kbd "C-c C-t") 'haskell-process-do-type)
-      (define-key haskell-mode-map (kbd "C-c C-i") 'haskell-process-do-info)
-      (define-key haskell-mode-map (kbd "C-c M-.") nil)
-      (define-key haskell-mode-map (kbd "C-c C-d") nil)
-      (define-key haskell-mode-map (kbd "C-c C-c") 'haskell-compile)
-      ;; <https://github.com/prooftechnique/.emacs.d/blob/
-      ;; 6d08779adb8fe67acbe9ab82fe25e78a7fc40eb8/config/jhenahan-haskell.el>
-      (add-hook 'haskell-mode-hook
-                (lambda ()
-                  (turn-on-haskell-doc-mode)
-                  (after 'evil
-                      (setq evil-auto-indent nil))
-                  (turn-on-haskell-indentation)
-                  (ghc-init)))
-      (add-hook 'haskell-interactive-mode
-            (lambda ()
-            (linum-mode 0)
-            (evil-mode 0)))
-      (use-package haskell-mode-autoloads)
-      (use-package inf-haskell)
-      (use-package haskell-cabal
-        :init
-        (progn
-          (define-key haskell-cabal-mode-map (kbd "C-c C-c") 'haskell-compile))
-      )
-      (use-package hs-lint)))
+     (require-package 'haskell-mode)
+     (use-package haskell-mode
+       :commands haskell-mode
+       :init
+       (add-to-list 'auto-mode-alist '("\\.l?hs$" . haskell-mode))
+       :config
+       (progn
+         (define-key haskell-mode-map (kbd "C-x C-d") nil)
+         (define-key haskell-mode-map (kbd "C-c C-z") 'haskell-interactive-switch)
+         (define-key haskell-mode-map (kbd "C-c C-l") 'haskell-process-load-file)
+         (define-key haskell-mode-map (kbd "C-c C-b") 'haskell-interactive-switch)
+         (define-key haskell-mode-map (kbd "C-c C-t") 'haskell-process-do-type)
+         (define-key haskell-mode-map (kbd "C-c C-i") 'haskell-process-do-info)
+         (define-key haskell-mode-map (kbd "C-c M-.") nil)
+         (define-key haskell-mode-map (kbd "C-c C-d") nil)
+         (define-key haskell-mode-map (kbd "C-c C-c") 'haskell-compile)
+   #+END_SRC emacs-lisp
+   [[https://github.com/prooftechnique/.emacs.d/blob/6d08779adb8fe67acbe9ab82fe25e78a7fc40eb8/config/jhenahan-haskell.el]]
+   #+BEGIN_SRC emacs-lisp
+         (add-hook 'haskell-mode-hook
+                   (lambda ()
+                     (turn-on-haskell-doc-mode)
+                     (after 'evil
+                       (setq evil-auto-indent nil))
+                     (turn-on-haskell-indentation)
+                     (ghc-init)))
+         (after 'linum (add-hook 'haskell-interactive-mode (lambda () (linum-mode 0))))
+         (after 'evil (add-hook 'haskell-interactive-mode (lambda () (evil-mode 0))))
+         (use-package haskell-mode-autoloads)
+         (use-package inf-haskell)
+         (use-package haskell-cabal
+           :init
+           (progn
+             (define-key haskell-cabal-mode-map (kbd "C-c C-c") 'haskell-compile))
+           )
+         (use-package hs-lint)))
    #+END_SRC
 * Git
   <<Magit>>
@@ -926,6 +919,7 @@
     (progn
       (setq ag-highlight-search t)
       (add-hook 'ag-mode-hook (lambda () (toggle-truncate-lines t)))
+      (add-hook 'ag-mode-hook (lambda () (linum-mode 0)))
     )
   )
   #+END_SRC
