@@ -357,28 +357,34 @@
    also a hack in place here to get =linum= to leave one blank space before the source
    code for the file.
    #+BEGIN_SRC emacs-lisp
-  (require-package 'linum)
-  (use-package linum
-    :config
-    (progn
-      (global-linum-mode 1)
-      (unless window-system
-        (add-hook 'linum-before-numbering-hook
-                  (lambda ()
-                    (setq-local linum-format-fmt
-                                (let ((w (length (number-to-string
-                                                  (count-lines (point-min) (point-max))))))
-                                  (concat "%" (number-to-string w) "d"))))))
-      (defun linum-format-func (line)
-        (concat
-         (propertize (format linum-format-fmt line) 'face 'linum)
-         (propertize " " 'face 'mode-line)))
-      (unless window-system
-        (setq linum-format 'linum-format-func))
-      (setq linum-format "%4d "
-            linum-delay t)
-      )
-    )
+     ;(require-package 'linum)
+     ;(use-package linum
+     ;  :config
+     ;  (progn
+     ;    (global-linum-mode 1)
+     ;    (unless window-system
+     ;      (add-hook 'linum-before-numbering-hook
+     ;                (lambda ()
+     ;                  (setq-local linum-format-fmt
+     ;                              (let ((w (length (number-to-string
+     ;                                                (count-lines (point-min) (point-max))))))
+     ;                                (concat "%" (number-to-string w) "d"))))))
+     ;    (defun linum-format-func (line)
+     ;      (concat
+     ;       (propertize (format linum-format-fmt line) 'face 'linum)
+     ;       (propertize " " 'face 'mode-line)))
+     ;    (unless window-system
+     ;      (setq linum-format 'linum-format-func))
+     ;    (setq linum-format "%4d "
+     ;          linum-delay t)
+     ;    )
+     ;  )
+     (require-package 'nlinum)
+     (use-package nlinum
+       :config
+       (progn
+         (nlinum-mode 1)
+     ))
    #+END_SRC
    =rainbow-mode= is a minor mode for Emacs which displays strings
    representing colors with the color they represent as background.
