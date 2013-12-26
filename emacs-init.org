@@ -907,7 +907,6 @@ representing colors with the color they represent as background.
       (add-hook 'ag-mode-hook (lambda () (toggle-truncate-lines t)))
     )
   )
-
 #+END_SRC
 * Project-explorer
 #+BEGIN_SRC emacs-lisp
@@ -968,26 +967,31 @@ representing colors with the color they represent as background.
   )
 #+END_SRC
 * keybindings
+  Hitting =[escape]= exits minibuffers.
 #+BEGIN_SRC emacs-lisp
-  
-  ;; escape minibuffer
   (define-key minibuffer-local-map [escape] 'my-minibuffer-keyboard-quit)
   (define-key minibuffer-local-ns-map [escape] 'my-minibuffer-keyboard-quit)
   (define-key minibuffer-local-completion-map [escape] 'my-minibuffer-keyboard-quit)
   (define-key minibuffer-local-must-match-map [escape] 'my-minibuffer-keyboard-quit)
   (define-key minibuffer-local-isearch-map [escape] 'my-minibuffer-keyboard-quit)
-  
-  (define-key minibuffer-local-map (kbd "C-w") 'backward-kill-word)
-  
+#+END_SRC
+  This makes evil's hjkl bindings work in the package list.
+#+BEGIN_SRC emacs-lisp
   (after 'package
     (after 'evil
       (evil-add-hjkl-bindings package-menu-mode-map 'emacs))
     )
-  
+#+END_SRC
+  Not sure why this needs to be corrected, but presumably Project Explorer's mappings
+  interfere with Evil-mode bindings for switching windows.
+#+BEGIN_SRC emacs-lisp
   (after 'project-explorer-autoloads
     (after 'project-explorer
       (after 'evil
         (define-key project-explorer-mode-map (kbd "C-l") 'evil-window-right)))
+#+END_SRC
+  Quick hotkeys for project explorer, bound to function keys.
+#+BEGIN_SRC emacs-lisp
     (global-set-key [f2] 'project-explorer-open)
     (global-set-key [f3] 'pe/show-file))
   
@@ -1006,9 +1010,6 @@ representing colors with the color they represent as background.
   (unless (display-graphic-p)
     (global-set-key [mouse-4] (bind (scroll-down 1)))
     (global-set-key [mouse-5] (bind (scroll-up 1))))
-  
-  (global-set-key [prior] 'previous-buffer)
-  (global-set-key [next] 'next-buffer)
   
   (global-set-key (kbd "C-S-<left>") 'shrink-window-horizontally)
   (global-set-key (kbd "C-x C-b") 'ibuffer)
