@@ -547,8 +547,18 @@
          (setq ido-confirm-unique-completion nil)
          (setq ido-enable-last-directory-history nil)
          (setq ido-use-filename-at-point 'guess)
-         (setq ido-save-directory-list-file (concat user-emacs-directory ".cache/ido.last"))
+         (setq ido-save-directory-list-file
+               (concat user-emacs-directory ".cache/ido.last"))
          (require-package 'ido-ubiquitous)
+         (add-hook
+          'ido-setup-hook
+          (lambda()
+            ;; On ido-find-file, let `~` mean `~/` for fastness.
+            (define-key ido-file-dir-completion-map "~"
+              (lambda ()(interactive)
+                 (ido-set-current-directory "~/")
+                 (setq ido-exit 'refresh)
+                 (exit-minibuffer)))))
          (use-package ido-ubiquitous
            :config
            (progn
