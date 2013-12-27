@@ -100,6 +100,16 @@
   #+BEGIN_SRC emacs-lisp
     (random t) ;; seed
   #+END_SRC
+  Don't let the cursor go over read-only text in minibuffers.
+  #+BEGIN_SRC emacs-lisp
+    (minibuffer-prompt-properties
+     (quote
+      (read-only t
+                 point-entered
+                 minibuffer-avoid-prompt
+                 face
+                 minibuffer-prompt))))
+  #+END_SRC
 * Package loading
   #+BEGIN_SRC emacs-lisp
         (add-to-list 'load-path user-emacs-directory)
@@ -251,7 +261,6 @@
                 recentf-max-menu-items 500)
           (recentf-mode +1)
           ))
-    
       ;; narrowing
       (put 'narrow-to-region 'disabled nil)
   #+END_SRC
@@ -345,7 +354,7 @@
 
    This might be because of my =~/.Xresources=, but who knows.
    #+BEGIN_SRC emacs-lisp
-     (global-hl-line-mode 1)
+     (global-hl-line-mode t)
    #+END_SRC
    Now we set the background color for =hi-line=, in order to differentiate the background
    color.
