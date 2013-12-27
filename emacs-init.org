@@ -402,6 +402,11 @@
     )
     )
    #+END_SRC
+** Whitespace mode
+   #+BEGIN_SRC emacs-lisp
+     (setq whitespace-style '(face lines-tail trailing))
+     (global-whitespace-mode 1)
+   #+END_SRC
 * Copy/paste
   Emacs copy-paste does not work by default. First, we enable X selection as a copy-paste buffer.
   #+BEGIN_SRC emacs-lisp
@@ -752,10 +757,6 @@
         (define-key evil-normal-state-map [escape] 'keyboard-quit)
         (define-key evil-visual-state-map [escape] 'keyboard-quit)
     
-        (after 'ace-jump
-            (key-chord-define evil-normal-state-map "jw" 'ace-jump-word-mode)
-            (key-chord-define evil-normal-state-map "jc" 'ace-jump-char-mode)
-            (key-chord-define evil-normal-state-map "jl" 'ace-jump-line-mode))
     
       (after 'evil-matchit
         (define-key evil-normal-state-map "%" 'evilmi-jump-items))
@@ -817,11 +818,6 @@
         (define-key evil-visual-state-map (kbd "C->") 'mc/mark-all-like-this)
         (define-key evil-normal-state-map (kbd "C->") 'mc/mark-next-like-this)
         (define-key evil-normal-state-map (kbd "C-<") 'mc/mark-previous-like-this))
-    
-      (after 'ace-jump-mode-autoloads
-        (define-key evil-normal-state-map (kbd "SPC j") 'ace-jump-char-mode)
-        (define-key evil-motion-state-map (kbd "SPC") 'evil-ace-jump-char-mode)
-        (define-key evil-motion-state-map (kbd "S-SPC") 'evil-ace-jump-line-mode))
     
       (after 'magit
         (define-key magit-status-mode-map (kbd "C-n") 'magit-goto-next-sibling-section)
@@ -953,9 +949,22 @@
   #+END_SRC
 * ace-jump-mode
   #+BEGIN_SRC emacs-lisp
-  (require-package 'ace-jump-mode)
-  (use-package ace-jump-mode)
-
+    (require-package 'ace-jump-mode)
+    (use-package ace-jump-mode
+      :config
+      (progn
+        (after 'evil
+          ; Not sure if the `after` here is necessary, but anyway:
+          (after 'ace-jump-mode-autoloads
+            (define-key evil-normal-state-map (kbd "SPC j") 'ace-jump-char-mode)
+            (define-key evil-motion-state-map (kbd "SPC") 'evil-ace-jump-char-mode)
+            (define-key evil-motion-state-map (kbd "S-SPC") 'evil-ace-jump-line-mode))
+          ; These will definitely work:
+          (key-chord-define evil-normal-state-map "jw" 'ace-jump-word-mode)
+          (key-chord-define evil-normal-state-map "jc" 'ace-jump-char-mode)
+          (key-chord-define evil-normal-state-map "jl" 'ace-jump-line-mode))
+        ))
+    
   #+END_SRC
 * expand-region
   #+BEGIN_SRC emacs-lisp
