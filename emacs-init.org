@@ -33,10 +33,72 @@
   ;disable auto save
   (setq auto-save-default nil)
   #+END_SRC
-  Only scroll one line when near the bottom of the screen, instead of jumping the screen around.
+  Only scroll one line when near the bottom of the screen, instead of jumping
+  the screen around.
   #+BEGIN_SRC emacs-lisp
   (setq scroll-conservatively 9999
         scroll-preserve-screen-position t)
+  #+END_SRC
+  Let me write `y` or `n` even for important stuff that would normally require
+  me to fully type `yes` or `no`.
+  #+BEGIN_SRC emacs-lisp
+  (defalias 'yes-or-no-p 'y-or-n-p)
+  #+END_SRC
+  Enable the mouse in terminal mode.
+  #+BEGIN_SRC emacs-lisp
+  (xterm-mouse-mode 1)
+  #+END_SRC
+  UTF-8 everything!
+  #+BEGIN_SRC emacs-lisp
+    (set-terminal-coding-system 'utf-8)
+    (set-keyboard-coding-system 'utf-8)
+    (set-selection-coding-system 'utf-8)
+    (prefer-coding-system 'utf-8)
+  #+END_SRC
+  This isn't a typewriter (even if it is a terminal); one space after sentences,
+  please.
+  #+BEGIN_SRC emacs-lisp
+    (setq sentence-end-double-space nil)
+  #+END_SRC
+  Flash the frame to represent a bell.
+  #+BEGIN_SRC emacs-lisp
+    (setq visible-bell t)
+  #+END_SRC
+  The default of 16 is too low. Give me a 64-object mark ring.
+  Across all files, make it 128.
+  #+BEGIN_SRC emacs-lisp
+    (setq mark-ring-max 64)
+    (setq global-mark-ring-max 128)
+  #+END_SRC
+  Display the current function name in the modeline.
+  #+BEGIN_SRC emacs-lisp
+    (which-function-mode 1)
+  #+END_SRC
+  Show me the new saved file if the contents change on disk when editing.
+  #+BEGIN_SRC emacs-lisp
+    (global-auto-revert-mode 1)
+  #+END_SRC
+  Typing newlines triggers indentation.
+  #+BEGIN_SRC emacs-lisp
+    (electric-indent-mode 1)
+  #+END_SRC
+  Indentation can never insert tabs. Note this is buffer-local, so we need
+  to do `setq-default` for it to change everywhere.
+  #+BEGIN_SRC emacs-lisp
+    (setq-default indent-tabs-mode nil)
+  #+END_SRC
+  Turn word-wrap on and redefine certain (simple) commands to work on visual
+  lines, not logical lines.
+
+  Also, show trailing whitespace.
+  #+BEGIN_SRC emacs-lisp
+    (add-hook 'find-file-hook (lambda ()
+                                (visual-line-mode)
+                                (setq show-trailing-whitespace t)))
+  #+END_SRC
+  Seed all requests for random numbers.
+  #+BEGIN_SRC emacs-lisp
+    (random t) ;; seed
   #+END_SRC
 * Package loading
   #+BEGIN_SRC emacs-lisp
@@ -214,38 +276,6 @@
         uniquify-separator "/"
         uniquify-ignore-buffers-re "^\\*" ; leave special buffers alone
         uniquify-after-kill-buffer-p t)
-  #+END_SRC
-* Homeless settings garbage
-  Pretty distinct names for buffers
-  #+BEGIN_SRC emacs-lisp
-  (defalias 'yes-or-no-p 'y-or-n-p)
-
-  (xterm-mouse-mode 1)
-  (set-terminal-coding-system 'utf-8)
-  (set-keyboard-coding-system 'utf-8)
-  (set-selection-coding-system 'utf-8)
-  (prefer-coding-system 'utf-8)
-
-  (setq sentence-end-double-space nil
-        delete-by-moving-to-trash t
-        visible-bell t
-        mark-ring-max 64
-        global-mark-ring-max 128)
-
-  (which-function-mode 1)
-  (blink-cursor-mode -1)
-  (global-auto-revert-mode 1)
-  (electric-indent-mode 1)
-
-  (setq-default
-   indent-tabs-mode nil)
-
-  (add-hook 'find-file-hook (lambda ()
-                              (visual-line-mode)
-                              (setq show-trailing-whitespace t)))
-
-  (random t) ;; seed
-
   #+END_SRC
 * Auto-complete
   [[http://www.emacswiki.org/emacs/AutoComplete][Auto-complete]] is a visual autocompletion that uses popup menus. It is nicely broken
