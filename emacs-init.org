@@ -102,13 +102,8 @@
   #+END_SRC
   Don't let the cursor go over read-only text in minibuffers.
   #+BEGIN_SRC emacs-lisp
-    (minibuffer-prompt-properties
-     (quote
-      (read-only t
-                 point-entered
-                 minibuffer-avoid-prompt
-                 face
-                 minibuffer-prompt))))
+    (plist-put minibuffer-prompt-properties
+               'point-entered 'minibuffer-avoid-prompt)
   #+END_SRC
 * Package loading
   #+BEGIN_SRC emacs-lisp
