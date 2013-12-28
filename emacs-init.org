@@ -636,7 +636,7 @@
          (define-key haskell-mode-map (kbd "C-c C-d") nil)
          (define-key haskell-mode-map (kbd "C-c C-c") 'haskell-compile)
    #+END_SRC emacs-lisp
-   [[https://github.com/prooftechnique/.emacs.d/blob/6d08779adb8fe67acbe9ab82fe25e78a7fc40eb8/config/jhenahan-haskell.el]]
+   Hack =haskell-mode= to play nice with evil. Modified code taken [[https://github.com/prooftechnique/.emacs.d/blob/6d08779adb8fe67acbe9ab82fe25e78a7fc40eb8/config/jhenahan-haskell.el][from this github]].
    #+BEGIN_SRC emacs-lisp
          (add-hook 'haskell-mode-hook
                    (lambda ()
@@ -647,7 +647,7 @@
                      (ghc-init)))
          (after 'linum (add-hook 'haskell-interactive-mode (lambda () (linum-mode 0))))
          (after 'evil (add-hook 'haskell-interactive-mode (lambda () (evil-mode 0))))
-         (use-package haskell-mode-autoloads)
+         (use-package haskell-mode-autoloads
          (use-package inf-haskell)
          (use-package haskell-cabal
            :init
