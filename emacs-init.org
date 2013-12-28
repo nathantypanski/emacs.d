@@ -765,9 +765,9 @@
                 )
               )
             (use-package evil-nerd-commenter)
-            (require 'evil-indent-textobject)
-            (require 'evil-visualstar)
-            (require 'evil-matchit)
+            (use-package evil-indent-textobject)
+            (use-package evil-visualstar)
+            (use-package evil-matchit)
             (use-package surround
               :config
                 (progn
