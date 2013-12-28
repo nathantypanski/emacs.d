@@ -374,8 +374,7 @@
     )
    #+END_SRC
 ** =purty-mode=
-   This was giving me problems with a few characters that would not display in my terminal
-   (<<< for instance) so it is disabled until I get that resolved.
+   Simple pretty print for greek letters, etc.
    #+BEGIN_SRC emacs-lisp
      (require-package 'purty-mode)
      (use-package purty-mode
