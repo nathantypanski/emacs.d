@@ -373,18 +373,16 @@
     )
     )
    #+END_SRC
-** =pretty-mode=
+** =purty-mode=
    This was giving me problems with a few characters that would not display in my terminal
    (<<< for instance) so it is disabled until I get that resolved.
    #+BEGIN_SRC emacs-lisp
-  (require-package 'pretty-mode)
-  (use-package pretty-mode
-    :disabled t
-    :config
-    (progn
-      (setq pretty-default-groups '(:function))
-      (global-pretty-mode)
-  ))
+     (require-package 'purty-mode)
+     (use-package purty-mode
+       :config
+       (progn
+         (purty-mode 1)
+         ))
    #+END_SRC
 ** Line numbers
    Line numbers are provided by =linum=, with some added hacks to make them add space
