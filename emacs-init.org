@@ -416,7 +416,6 @@
     (progn
       (setq sml/theme 'dark)
       (sml/setup)
-      (setq)
     ))
    #+END_SRC
 ** =purty-mode=
