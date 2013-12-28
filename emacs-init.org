@@ -140,6 +140,9 @@
       "Convience macro which creates a lambda interactive command."
       `(lambda ()
          (interactive)
+    ;; ',@' splices an evaluated value into the resulting list
+    ;; That is, this will take a list and put it where this
+    ;; Strange-looking construct is:
          ,@commands))
     
       (defun my-minibuffer-keyboard-quit ()
