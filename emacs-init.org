@@ -82,11 +82,6 @@
   #+BEGIN_SRC emacs-lisp
     (electric-indent-mode 1)
   #+END_SRC
-  Indentation can never insert tabs. Note this is buffer-local, so we need
-  to do `setq-default` for it to change everywhere.
-  #+BEGIN_SRC emacs-lisp
-    (setq-default indent-tabs-mode nil)
-  #+END_SRC
   Turn word-wrap on and redefine certain (simple) commands to work on visual
   lines, not logical lines.
 
@@ -105,10 +100,16 @@
     (plist-put minibuffer-prompt-properties
                'point-entered 'minibuffer-avoid-prompt)
   #+END_SRC
+  Indentation can never insert tabs. Note this is buffer-local, so we need
+  to do `setq-default` for it to change everywhere.
+  #+BEGIN_SRC emacs-lisp
+    (setq-default indent-tabs-mode nil)
+  #+END_SRC
   Use linux kernel coding style for C-like languages.
   #+BEGIN_SRC emacs-lisp
     (setq-default c-default-style "linux"
-                  c-basic-offset 8)
+                  c-basic-offset 8
+                  tab-width 8)
   #+END_SRC
 * Package loading
   #+BEGIN_SRC emacs-lisp
@@ -798,7 +799,7 @@
               (evil-ex-search-previous count)
               (list evil-ex-search-match-beg evil-ex-search-match-end))
     
-            (define-key evil-motion-state-map "gn" 'my-evil-next-match)
+            (define-key evil-motion-state-map "gN" 'my-evil-previous-match)
             (define-key evil-motion-state-map "gN" 'my-evil-previous-match)
     
             (defadvice evil-ex-search-next (after advice-for-evil-ex-search-next activate)
@@ -806,9 +807,6 @@
     
             (defadvice evil-ex-search-previous (after advice-for-evil-ex-search-previous activate)
               (evil-scroll-line-to-center (line-number-at-pos)))
-    
-            (define-key evil-motion-state-map "gn" 'my-evil-next-match)
-            (define-key evil-motion-state-map "gN" 'my-evil-previous-match)
     
             ;;; esc quits
             (define-key evil-normal-state-map [escape] 'keyboard-quit)
