@@ -105,6 +105,11 @@
     (plist-put minibuffer-prompt-properties
                'point-entered 'minibuffer-avoid-prompt)
   #+END_SRC
+  Use linux kernel coding style for C-like languages.
+  #+BEGIN_SRC emacs-lisp
+    (setq-default c-default-style "linux"
+                  c-basic-offset 8)
+  #+END_SRC
 * Package loading
   #+BEGIN_SRC emacs-lisp
         (add-to-list 'load-path user-emacs-directory)
