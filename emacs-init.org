@@ -111,6 +111,11 @@
                   c-basic-offset 8
                   tab-width 8)
   #+END_SRC
+  Pretty print expression evaluations.
+  #+BEGIN_SRC emacs-lisp
+    (global-set-key [remap eval-expression] 'pp-eval-expression)
+    (global-set-key [remap eval-last-sexp] 'pp-eval-last-sexp)
+  #+END_SRC
 * Package loading
   #+BEGIN_SRC emacs-lisp
         (add-to-list 'load-path user-emacs-directory)
@@ -329,15 +334,15 @@
   #+END_SRC
 * Org-mode
   #+BEGIN_SRC emacs-lisp
-  (use-package org
-      :config
-      (progn
-          (global-set-key (kbd "C-c c") 'org-capture)
-          (global-set-key (kbd "C-c a") 'org-agenda)
-          (setq org-default-notes-file "~/.notes.org" org-log-done t)
-          (use-package ob)
-      )
-  )
+    (use-package org
+        :config
+        (progn
+            (global-set-key (kbd "C-c c") 'org-capture)
+            (global-set-key (kbd "C-c a") 'org-agenda)
+            (setq org-default-notes-file "~/.notes.org" org-log-done t)
+            (use-package ob)
+        )
+    )
   #+END_SRC
 * Eyecandy
 ** Color scheme
@@ -370,8 +375,7 @@
       (setq sml/theme 'dark)
       (sml/setup)
       (setq)
-    )
-    )
+    ))
    #+END_SRC
 ** =purty-mode=
    Simple pretty print for greek letters, etc.
@@ -721,19 +725,21 @@
         (require-package 'evil-matchit)
         (require-package 'surround)
     
-        (setq evil-want-C-u-scroll t
-            evil-want-C-w-in-emacs-state t
-            evil-search-module 'evil-search
-            evil-magic 'very-magic
-            evil-emacs-state-cursor '("red" box)
-            evil-normal-state-cursor '("green" box)
-            evil-insert-state-cursor '("orange" bar)
-            evilnc-hotkey-comment-operator "gc"
-            )
         (use-package evil
           :config
           (progn
             (evil-mode 1)
+            (setq evil-want-C-u-scroll t
+                evil-want-C-w-in-emacs-state t
+                evil-search-module 'evil-search
+                evil-magic 'very-magic
+                evil-emacs-state-cursor '("red" box)
+                evil-normal-state-cursor '("green" box)
+                evil-insert-state-cursor '("orange" bar)
+                evilnc-hotkey-comment-operator "gc"
+                )
+            (setq evil-replace-state-cursor '("red" box))
+            
             (require-package 'evil-leader)
             (use-package evil-leader
               :config
@@ -825,6 +831,8 @@
     
           (define-key evil-normal-state-map (kbd "SPC o") 'imenu)
           (define-key evil-normal-state-map (kbd "SPC b") 'switch-to-buffer)
+          (define-key evil-normal-state-map (kbd "SPC B") 'ibuffer)
+
           (define-key evil-normal-state-map (kbd "SPC k") 'ido-kill-buffer)
           (define-key evil-normal-state-map (kbd "SPC f") 'ido-find-file)
     
@@ -898,17 +906,17 @@
          :keymap (make-sparse-keymap) ; defines evil-org-mode-map
          :group 'evil-org)
      
-       (define-minor-mode evil-org-src-mode
-         "Buffer local minor mode for evil-org-src"
-         :init-value nil
-         :lighter " EvilOrgSrc"
-         :keymap (make-sparse-keymap) ; defines evil-org-mode-map
-         :group 'evil-org
-         )
+     ;  (define-minor-mode evil-org-src-mode
+     ;    "Buffer local minor mode for evil-org-src"
+     ;    :init-value nil
+     ;    :lighter " EvilOrgSrc"
+     ;    :keymap (make-sparse-keymap) ; defines evil-org-mode-map
+     ;    :group 'evil-org
+     ;    )
      
        (add-hook 'org-mode-hook 'evil-org-mode) ;; only load with org-mode
-       (add-hook 'org-src-mode-hook 'evil-org-src-mode)
-       (add-hook 'org-src-mode-hook (lambda () ((diminish evil-org-src-mode))))
+     ;  (add-hook 'org-src-mode-hook 'evil-org-src-mode)
+     ;  (add-hook 'org-src-mode-hook (lambda () ((diminish 'evil-org-src-mode))))
        
        (setq evil-auto-indent nil)
      
@@ -926,8 +934,8 @@
          (evil-append nil)
          )
      
-       (evil-define-key 'normal evil-org-src-mode-map
-         "&" 'org-edit-src-exit)
+     ;  (evil-define-key 'normal evil-org-src-mode-map
+     ;    "&" 'org-edit-src-exit)
      
        ;; normal state shortcuts
        (evil-define-key 'normal evil-org-mode-map
