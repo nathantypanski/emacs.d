@@ -886,6 +886,7 @@
           )
           )
     )
+    )
   #+END_SRC
 ** Evil-org-mode
    From https://github.com/edwtjo/evil-org-mode/blob/master/evil-org.el
