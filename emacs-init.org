@@ -729,7 +729,6 @@
                 evil-emacs-state-cursor '("red" box)
                 evil-normal-state-cursor '("green" box)
                 evil-insert-state-cursor '("orange" bar)
-                evilnc-hotkey-comment-operator "gc"
                 )
             (setq evil-replace-state-cursor '("red" box))
             
@@ -760,10 +759,18 @@
                     "h h" 'help-for-help-internal)
                 )
               )
-            (use-package evil-nerd-commenter)
+            (use-package evil-nerd-commenter
+              :config
+              ;; Type 'gcc' to comment the current line.
+              (progn (setq evilnc-hotkey-comment-operator "gc")))
             (use-package evil-indent-textobject)
             (use-package evil-visualstar)
-            (use-package evil-matchit)
+            (use-package evil-matchit
+              :config
+              (progn
+                (after 'evil-matchit
+                  (define-key evil-normal-state-map "%" 'evilmi-jump-items))
+                ))
             (use-package surround
               :config
                 (progn
@@ -808,9 +815,6 @@
             (define-key evil-normal-state-map [escape] 'keyboard-quit)
             (define-key evil-visual-state-map [escape] 'keyboard-quit)
     
-    
-          (after 'evil-matchit
-            (define-key evil-normal-state-map "%" 'evilmi-jump-items))
     
           (after 'git-gutter+-autoloads
             (define-key evil-normal-state-map (kbd "[ h") 'git-gutter+-previous-hunk)
