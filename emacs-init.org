@@ -283,17 +283,35 @@
       ;; narrowing
       (put 'narrow-to-region 'disabled nil)
   #+END_SRC
-* Dired
+* Dired-x
+  "Extra" GNU features for Dired Mode.
 ** Features
 - Dired local variables file: =.dired=
 - Omitting “uninteresting” files from Dired listings
 - Shell command guessing
-- “Virtual Dired” allows you to view directories based on command output
+- "Virtual Dired" allows you to view directories based on command output
 - Cleaning commands
 - Dired current file and file at point commands
 ** Code
    #+BEGIN_SRC emacs-lisp
-   (require 'dired-x)
+     (require 'dired-x)
+     (use-package dired-x
+       :init
+       (progn
+          (add-hook 'dired-load-hook
+                    (lambda ()
+                      (load "dired-x")
+                      ;; Set dired-x global variables here.  For example:
+                      ;; (setq dired-guess-shell-gnutar "gtar")
+                      ;; (setq dired-x-hands-off-my-keys nil)
+                      ))
+          (add-hook 'dired-mode-hook
+                    (lambda ()
+                      ;; Set dired-x buffer-local variables here.  For example:
+                      ;; (dired-omit-mode 1)
+                      ))
+         )
+       )
    #+END_SRC
 * Uniquify
   Pretty distinct names for buffers
