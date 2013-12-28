@@ -386,6 +386,38 @@
         )
       )
   #+END_SRC
+* guide-key
+  Overview from the [[https://github.com/kbkbkbkb1/guide-key][GitHub page]]
+  #+BEGIN_QUOTE
+  guide-key.el displays the available key bindings automatically and
+  dynamically. guide-key aims to be an alternative of one-key.el.
+  
+  Here are some features of this library:
+
+  - guide-key automatically pops up the keys following your favorite prefixes.
+    Moreover, even if you change key bindings, guide-key follows the change
+    dynamically.
+  - guide-key can highlight particular commands. This makes it easy to find a
+    command you are looking for, and to learn its key binding.
+  - guide-key doesn’t overwrite existing commands and key bindings, so there is
+    no interference with describe-key and describe-bindings.
+  #+END_QUOTE
+  #+BEGIN_SRC emacs-lisp
+    (require-package 'guide-key)
+    (use-package guide-key
+      :diminish guide-key-mode
+      :config
+      (progn
+        (setq guide-key/guide-key-sequence '("C-x" "C-c"))
+        (setq guide-key/recursive-key-sequence-flag t)
+        (guide-key-mode 1)
+  #+END_SRC
+  I'm relatively new to emacs, so having a short delay is beneficial.
+  #+BEGIN_SRC emacs-lisp
+        (setq guide-key/idle-delay 0.1)
+        )
+    )
+  #+END_SRC
 * Eyecandy
 ** Color scheme
    I use the =zenburn= color scheme, because it is easy on my eyes and doesn't look awful
@@ -524,6 +556,27 @@
   ))
   #+END_SRC
 
+* editorconfig
+  #+BEGIN_SRC emacs-lisp
+  (require-package 'editorconfig)
+  (use-package editorconfig)
+
+  (require-package 'etags-select)
+  (use-package etags-select
+    :init
+      (setq etags-select-go-if-unambiguous t)
+    )
+
+  (require-package 'windsize)
+  (use-package windsize
+    :init
+    (progn
+      (setq windsize-cols 16)
+      (setq windsize-rows 8)
+      (windsize-default-keybindings)
+      )
+    )
+  #+END_SRC
 * Code editing
 ** Projectile
    AKA =ctrl-p= for Emacs.
@@ -694,21 +747,44 @@
 ;           )
 ;         (use-package hs-lint)))
    #+END_SRC
-* Git
-  <<Magit>>
-  #+BEGIN_SRC emacs-lisp
-        (require-package 'magit)
-        (use-package magit
-          :config
-          (progn 
-              (setq magit-diff-options '("--histogram"))
-              (global-set-key (kbd "C-x g") 'magit-status))
-    ;          (global-git-gutter+-mode)
-          )
-    
-    (require-package 'gist)
-      
-  #+END_SRC
+** Git
+   <<Magit>>
+   #+BEGIN_SRC emacs-lisp
+         (require-package 'magit)
+         (use-package magit
+           :config
+           (progn 
+               (setq magit-diff-options '("--histogram"))
+               (global-set-key (kbd "C-x g") 'magit-status))
+     ;          (global-git-gutter+-mode)
+           )
+     
+     (require-package 'gist)
+       
+   #+END_SRC
+** Ag: speedy inter-file grep
+   #+BEGIN_SRC emacs-lisp
+   (require-package 'ag)
+   (use-package ag
+     :init
+     (progn
+       (setq ag-highlight-search t)
+       (add-hook 'ag-mode-hook (lambda () (toggle-truncate-lines t)))
+       (add-hook 'ag-mode-hook (lambda () (linum-mode 0)))
+     )
+   )
+   #+END_SRC
+** Project-explorer
+   #+BEGIN_SRC emacs-lisp
+   (require-package 'project-explorer)
+   (use-package project-explorer
+     :commands (progn project-explorer project-explorer-open pe/show-file)
+     :config
+       (progn
+         (setq pe/omit-regex (concat pe/omit-regex "\\|^node_modules$"))
+       )
+     )
+   #+END_SRC
 * Flycheck
   #+BEGIN_SRC emacs-lisp
     (require-package 'flycheck)
@@ -722,6 +798,25 @@
         (after 'evil (add-hook 'flycheck-error-list-mode-hook (lambda () (evil-mode 0))))
         )
       )
+  #+END_SRC
+* ace-jump-mode
+  #+BEGIN_SRC emacs-lisp
+    (require-package 'ace-jump-mode)
+    (use-package ace-jump-mode
+      :config
+      (progn
+        (after 'evil
+          ; Not sure if the `after` here is necessary, but anyway:
+          (after 'ace-jump-mode-autoloads
+            (define-key evil-normal-state-map (kbd "SPC j") 'ace-jump-char-mode)
+            (define-key evil-motion-state-map (kbd "SPC") 'evil-ace-jump-char-mode)
+            (define-key evil-motion-state-map (kbd "S-SPC") 'evil-ace-jump-line-mode))
+          ; These will definitely work:
+          (key-chord-define evil-normal-state-map "jw" 'ace-jump-word-mode)
+          (key-chord-define evil-normal-state-map "jc" 'ace-jump-char-mode)
+          (key-chord-define evil-normal-state-map "jl" 'ace-jump-line-mode))
+        ))
+    
   #+END_SRC
 * Elisp-slime-nav
   #+BEGIN_SRC emacs-lisp
@@ -1029,107 +1124,11 @@
              '(normal insert))
        )
    #+END_SRC
-* Ag: speedy inter-file grep
-  #+BEGIN_SRC emacs-lisp
-  (require-package 'ag)
-  (use-package ag
-    :init
-    (progn
-      (setq ag-highlight-search t)
-      (add-hook 'ag-mode-hook (lambda () (toggle-truncate-lines t)))
-      (add-hook 'ag-mode-hook (lambda () (linum-mode 0)))
-    )
-  )
-  #+END_SRC
-* Project-explorer
-  #+BEGIN_SRC emacs-lisp
-  (require-package 'project-explorer)
-  (use-package project-explorer
-    :commands (progn project-explorer project-explorer-open pe/show-file)
-    :config
-      (progn
-        (setq pe/omit-regex (concat pe/omit-regex "\\|^node_modules$"))
-      )
-    )
-  #+END_SRC
-* ace-jump-mode
-  #+BEGIN_SRC emacs-lisp
-    (require-package 'ace-jump-mode)
-    (use-package ace-jump-mode
-      :config
-      (progn
-        (after 'evil
-          ; Not sure if the `after` here is necessary, but anyway:
-          (after 'ace-jump-mode-autoloads
-            (define-key evil-normal-state-map (kbd "SPC j") 'ace-jump-char-mode)
-            (define-key evil-motion-state-map (kbd "SPC") 'evil-ace-jump-char-mode)
-            (define-key evil-motion-state-map (kbd "S-SPC") 'evil-ace-jump-line-mode))
-          ; These will definitely work:
-          (key-chord-define evil-normal-state-map "jw" 'ace-jump-word-mode)
-          (key-chord-define evil-normal-state-map "jc" 'ace-jump-char-mode)
-          (key-chord-define evil-normal-state-map "jl" 'ace-jump-line-mode))
-        ))
-    
-  #+END_SRC
 * expand-region
   #+BEGIN_SRC emacs-lisp
   (require-package 'expand-region)
   (use-package expand-region)
 
-  #+END_SRC
-* editorconfig
-  #+BEGIN_SRC emacs-lisp
-  (require-package 'editorconfig)
-  (use-package editorconfig)
-
-  (require-package 'etags-select)
-  (use-package etags-select
-    :init
-      (setq etags-select-go-if-unambiguous t)
-    )
-
-  (require-package 'windsize)
-  (use-package windsize
-    :init
-    (progn
-      (setq windsize-cols 16)
-      (setq windsize-rows 8)
-      (windsize-default-keybindings)
-      )
-    )
-
-  #+END_SRC
-* guide-key
-  Overview from the [[https://github.com/kbkbkbkb1/guide-key][GitHub page]]
-  #+BEGIN_QUOTE
-  guide-key.el displays the available key bindings automatically and
-  dynamically. guide-key aims to be an alternative of one-key.el.
-  
-  Here are some features of this library:
-
-  - guide-key automatically pops up the keys following your favorite prefixes.
-    Moreover, even if you change key bindings, guide-key follows the change
-    dynamically.
-  - guide-key can highlight particular commands. This makes it easy to find a
-    command you are looking for, and to learn its key binding.
-  - guide-key doesn’t overwrite existing commands and key bindings, so there is
-    no interference with describe-key and describe-bindings.
-  #+END_QUOTE
-  #+BEGIN_SRC emacs-lisp
-    (require-package 'guide-key)
-    (use-package guide-key
-      :diminish guide-key-mode
-      :config
-      (progn
-        (setq guide-key/guide-key-sequence '("C-x" "C-c"))
-        (setq guide-key/recursive-key-sequence-flag t)
-        (guide-key-mode 1)
-  #+END_SRC
-  I'm relatively new to emacs, so having a short delay is beneficial.
-  #+BEGIN_SRC emacs-lisp
-        (setq guide-key/idle-delay 0.1)
-        )
-    )
   #+END_SRC
 * keybindings
   Hitting =[escape]= exits minibuffers.
