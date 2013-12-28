@@ -428,15 +428,16 @@
   (load-theme 'zenburn t)
    #+END_SRC
 ** Line highlighting
-   This alone is supposed to enable highlighting the current line (especially with zenburn!)
-   but it doesn't. Still, we need it in order to make line highlighting work.
+   This alone is supposed to enable highlighting the current line
+   (especially with zenburn!) but it doesn't. Still, we need it in order to make
+   line highlighting work. So we have to change the face afterwards to fix this.
 
    This might be because of my =~/.Xresources=, but who knows.
    #+BEGIN_SRC emacs-lisp
      (global-hl-line-mode t)
    #+END_SRC
-   Now we set the background color for =hi-line=, in order to differentiate the background
-   color.
+   Now we set the background color for =hi-line=, in order to differentiate the
+   background color.
    #+BEGIN_SRC emacs-lisp
      (set-face-background 'hl-line "#3e4446")
    #+END_SRC
