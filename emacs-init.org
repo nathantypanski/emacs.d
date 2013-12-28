@@ -367,14 +367,24 @@
 * Org-mode
   #+BEGIN_SRC emacs-lisp
     (use-package org
-        :config
-        (progn
-            (global-set-key (kbd "C-c c") 'org-capture)
-            (global-set-key (kbd "C-c a") 'org-agenda)
-            (setq org-default-notes-file "~/.notes.org" org-log-done t)
-            (use-package ob)
+      :config
+      (progn
+        (global-set-key (kbd "C-c c") 'org-capture)
+        (global-set-key (kbd "C-c a") 'org-agenda)
+        (setq org-default-notes-file "~/.notes.org" org-log-done t)
+        (use-package ob
+          :config
+          (progn
+            (org-babel-do-load-languages
+             'org-babel-load-languages
+             '((R . t)
+               (emacs-lisp . t)
+               (python . t)
+               ))
+            )
+          )
         )
-    )
+      )
   #+END_SRC
 * Eyecandy
 ** Color scheme
@@ -688,14 +698,17 @@
 * Git
   <<Magit>>
   #+BEGIN_SRC emacs-lisp
-  (require-package 'magit)
-  (require-package 'gist)
-
-  (setq magit-diff-options '("--histogram"))
-  (after 'magit
-    (global-set-key (kbd "C-x g") 'magit-status))
-
-  (global-git-gutter+-mode)
+        (require-package 'magit)
+        (use-package magit
+          :config
+          (progn 
+              (setq magit-diff-options '("--histogram"))
+              (global-set-key (kbd "C-x g") 'magit-status))
+    ;          (global-git-gutter+-mode)
+          )
+    
+    (require-package 'gist)
+      
   #+END_SRC
 * Flycheck
   #+BEGIN_SRC emacs-lisp
