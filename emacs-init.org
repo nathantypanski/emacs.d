@@ -1,10 +1,21 @@
 * Explanation
-  This is my emacs init file. It's written in org-mode, because what better way to learn
-  emacslisp and org-mode than to combine them both at once?
-** Major tasks
-*** TODO Figure out org-mode indentation
-*** Make org-mode display pretty '...' characters for distinguishing
-*** Integrate dotfiles for [[Magit]]
+  This is my emacs init file. It's written in org-mode, because what better way
+  to learn emacslisp and org-mode than to combine them both at once?
+
+  The core of this file is [[https://gitorious.org/evil/pages/Home][Evil]], an extensible vi layer for emacs.
+  It allows someone like me (multi-year vim user with a heavily tweaked
+  =~/.vimrc=) to dive into Emacs with an open mind.
+
+  While at first the journey was painful, I have undertaken the long journey
+  toward Enlightenment. There shall be no Escape-Meta-Alt-Control-Shift in my
+  text editing; only clearly defined motions, preferring single keypresses to
+  multi-key combinations with modifiers.
+
+  ... That's the idea, at least.
+
+  The foundation code for this is sourced from [[http://bling.github.io/blog/2013/10/27/emacs-as-my-leader-vim-survival-guide/][bling's .emacs.d files]], but heavily customized
+  for my liking, moved into one file, and dropped into org-mode for good
+  measure.
 * Settings
   Disable the toolbars.
   #+BEGIN_SRC emacs-lisp
