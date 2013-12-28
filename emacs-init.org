@@ -1058,13 +1058,18 @@
 * guide-key
   Overview from the [[https://github.com/kbkbkbkb1/guide-key][GitHub page]]
   #+BEGIN_QUOTE
-  guide-key.el displays the available key bindings automatically and dynamically. guide-key aims to be an alternative of one-key.el.
+  guide-key.el displays the available key bindings automatically and
+  dynamically. guide-key aims to be an alternative of one-key.el.
   
   Here are some features of this library:
 
-  - guide-key automatically pops up the keys following your favorite prefixes. Moreover, even if you change key bindings, guide-key follows the change dynamically.
-  - guide-key can highlight particular commands. This makes it easy to find a command you are looking for, and to learn its key binding.
-  - guide-key doesn’t overwrite existing commands and key bindings, so there is no interference with describe-key and describe-bindings.
+  - guide-key automatically pops up the keys following your favorite prefixes.
+    Moreover, even if you change key bindings, guide-key follows the change
+    dynamically.
+  - guide-key can highlight particular commands. This makes it easy to find a
+    command you are looking for, and to learn its key binding.
+  - guide-key doesn’t overwrite existing commands and key bindings, so there is
+    no interference with describe-key and describe-bindings.
   #+END_QUOTE
   #+BEGIN_SRC emacs-lisp
     (require-package 'guide-key)
