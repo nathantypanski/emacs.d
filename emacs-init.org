@@ -17,9 +17,13 @@
   for my liking, moved into one file, and dropped into org-mode for good
   measure.
 * Settings
-  Disable the toolbars.
+  Disable the toolbars and splash screens.
   #+BEGIN_SRC emacs-lisp
-  (when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
+    (when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
+    ;; Hide startup messages
+    (setq inhibit-splash-screen t
+          inhibit-startup-echo-area-message t
+          inhibit-startup-message t)
   #+END_SRC
   Disable vertical scrollbars in all frames.
   #+BEGIN_SRC emacs-lisp
@@ -146,7 +150,9 @@
         (declare (indent defun))
         `(eval-after-load ,feature
             '(progn ,@body)))
-    
+  #+END_SRC
+  Keybinding stuff:
+  #+BEGIN_SRC emacs-lisp
     (defmacro bind (&rest commands)
       "Convience macro which creates a lambda interactive command."
       `(lambda ()
@@ -155,7 +161,9 @@
     ;; That is, this will take a list and put it where this
     ;; Strange-looking construct is:
          ,@commands))
-    
+  #+END_SRC
+   Helper function for quitting minibuffers more easily. 
+  #+BEGIN_SRC
       (defun my-minibuffer-keyboard-quit ()
         "Abort recursive edit.
       In Delete Selection mode, if the mark is active, just deactivate it;
@@ -170,7 +178,9 @@
         "Sets the transparency of the current frame."
         (interactive "nAlpha: ")
         (set-frame-parameter nil 'alpha alpha))
-    
+  #+END_SRC
+   Google stuff.
+  #+BEGIN_SRC
       (defun my-google ()
         "Google the selected region if any, display a query prompt otherwise."
         (interactive)
@@ -238,10 +248,6 @@
       ;; (for new terminals via emacsclient).
       (my-terminal-config)
       (add-hook 'after-make-frame-functions 'my-terminal-config)
-      ;; Hide startup messages
-      (setq inhibit-splash-screen t
-            inhibit-startup-echo-area-message t
-            inhibit-startup-message t)
     
       (setq custom-file (concat user-emacs-directory "custom.el"))
       (when (file-exists-p custom-file)
@@ -427,6 +433,11 @@
        :config
        (progn
          (purty-mode 1)
+         (purty-add-pair '("::" . "::"))
+         (purty-add-pair '("=>" . "⇒"))
+         (purty-add-pair '("forall" . "∀"))
+         (purty-add-pair '("->" . "→"))
+         (purty-add-pair '("<-" . "←"))
          ))
    #+END_SRC
 ** Line numbers
@@ -702,7 +713,10 @@
                           (after 'evil
                             (setq evil-auto-indent nil))
                           (turn-on-haskell-indentation)
-                          (ghc-init)))
+                          (ghc-init)
+                          (purty-mode)
+                          )
+              )
               (use-package haskell-mode-autoloads)
               (use-package inf-haskell)
               (use-package haskell-cabal
@@ -712,7 +726,6 @@
               (use-package hs-lint)
               )
             )
-     
    #+END_SRC
 ** Ag: speedy inter-file grep
    #+BEGIN_SRC emacs-lisp
