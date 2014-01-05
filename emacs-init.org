@@ -163,7 +163,7 @@
          ,@commands))
   #+END_SRC
    Helper function for quitting minibuffers more easily. 
-  #+BEGIN_SRC
+  #+BEGIN_SRC emacs-lisp
       (defun my-minibuffer-keyboard-quit ()
         "Abort recursive edit.
       In Delete Selection mode, if the mark is active, just deactivate it;
@@ -180,78 +180,78 @@
         (set-frame-parameter nil 'alpha alpha))
   #+END_SRC
    Google stuff.
-  #+BEGIN_SRC
-      (defun my-google ()
-        "Google the selected region if any, display a query prompt otherwise."
-        (interactive)
-        (browse-url
-         (concat
-          "http://www.google.com/search?ie=utf-8&oe=utf-8&q="
-          (url-hexify-string (if mark-active
-                                 (buffer-substring (region-beginning) (region-end))
-                               (read-string "Search Google: "))))))
-    
-      (defun my-eval-and-replace ()
-        "Replace the preceding sexp with its value."
-        (interactive)
-        (backward-kill-sexp)
-        (condition-case nil
-            (prin1 (eval (read (current-kill 0)))
-                   (current-buffer))
-          (error (message "Invalid expression")
-                 (insert (current-kill 0)))))
-    
-      (defun my-rename-current-buffer-file ()
-        "Renames current buffer and file it is visiting."
-        (interactive)
-        (let ((name (buffer-name))
-              (filename (buffer-file-name)))
-          (if (not (and filename (file-exists-p filename)))
-              (error "Buffer '%s' is not visiting a file!" name)
-            (let ((new-name (read-file-name "New name: " filename)))
-              (if (get-buffer new-name)
-                  (error "A buffer named '%s' already exists!" new-name)
-                (rename-file filename new-name 1)
-                (rename-buffer new-name)
-                (set-visited-file-name new-name)
-                (set-buffer-modified-p nil)
-                (message "File '%s' successfully renamed to '%s'"
-                         name (file-name-nondirectory new-name)))))))
-    
-      (defun my-delete-current-buffer-file ()
-        "Removes file connected to current buffer and kills buffer."
-        (interactive)
-        (let ((filename (buffer-file-name))
-              (buffer (current-buffer))
-              (name (buffer-name)))
-          (if (not (and filename (file-exists-p filename)))
-              (ido-kill-buffer)
-            (when (yes-or-no-p "Are you sure you want to remove this file? ")
-              (delete-file filename)
-              (kill-buffer buffer)
-              (message "File '%s' successfully removed" filename)))))
-    
-      ;; make sure $PATH is set correctly
-      (require-package 'exec-path-from-shell)
-      (ignore-errors ;; windows
-        (exec-path-from-shell-initialize))
-    
-      (defun my-terminal-config (&optional frame)
-        "Establish settings for the current terminal."
-        (if (not frame) ;; The initial call.
-            (xterm-mouse-mode 1)
-          ;; Otherwise called via after-make-frame-functions.
-          (if xterm-mouse-mode
-              ;; Re-initialise the mode in case of a new terminal.
-              (xterm-mouse-mode 1))))
-      ;; Evaluate both now (for non-daemon emacs) and upon frame creation
-      ;; (for new terminals via emacsclient).
-      (my-terminal-config)
-      (add-hook 'after-make-frame-functions 'my-terminal-config)
-    
-      (setq custom-file (concat user-emacs-directory "custom.el"))
-      (when (file-exists-p custom-file)
-        (load custom-file))
+  #+BEGIN_SRC emacs-lisp
+    (defun my-google ()
+      "Google the selected region if any, display a query prompt otherwise."
+      (interactive)
+      (browse-url
+       (concat
+        "http://www.google.com/search?ie=utf-8&oe=utf-8&q="
+        (url-hexify-string (if mark-active
+                               (buffer-substring (region-beginning) (region-end))
+                             (read-string "Search Google: "))))))
+        
+    (defun my-eval-and-replace ()
+      "Replace the preceding sexp with its value."
+      (interactive)
+      (backward-kill-sexp)
+      (condition-case nil
+          (prin1 (eval (read (current-kill 0)))
+                 (current-buffer))
+        (error (message "Invalid expression")
+               (insert (current-kill 0)))))
+        
+    (defun my-rename-current-buffer-file ()
+      "Renames current buffer and file it is visiting."
+      (interactive)
+      (let ((name (buffer-name))
+            (filename (buffer-file-name)))
+        (if (not (and filename (file-exists-p filename)))
+            (error "Buffer '%s' is not visiting a file!" name)
+          (let ((new-name (read-file-name "New name: " filename)))
+            (if (get-buffer new-name)
+                (error "A buffer named '%s' already exists!" new-name)
+              (rename-file filename new-name 1)
+              (rename-buffer new-name)
+              (set-visited-file-name new-name)
+              (set-buffer-modified-p nil)
+              (message "File '%s' successfully renamed to '%s'"
+                       name (file-name-nondirectory new-name)))))))
+        
+    (defun my-delete-current-buffer-file ()
+      "Removes file connected to current buffer and kills buffer."
+      (interactive)
+      (let ((filename (buffer-file-name))
+            (buffer (current-buffer))
+            (name (buffer-name)))
+        (if (not (and filename (file-exists-p filename)))
+            (ido-kill-buffer)
+          (when (yes-or-no-p "Are you sure you want to remove this file? ")
+            (delete-file filename)
+            (kill-buffer buffer)
+            (message "File '%s' successfully removed" filename)))))
+        
+    ;; make sure $PATH is set correctly
+    (require-package 'exec-path-from-shell)
+    (ignore-errors ;; windows
+      (exec-path-from-shell-initialize))
+        
+    (defun my-terminal-config (&optional frame)
+      "Establish settings for the current terminal."
+      (if (not frame) ;; The initial call.
+          (xterm-mouse-mode 1)
+        ;; Otherwise called via after-make-frame-functions.
+        (if xterm-mouse-mode
+            ;; Re-initialise the mode in case of a new terminal.
+            (xterm-mouse-mode 1))))
+    ;; Evaluate both now (for non-daemon emacs) and upon frame creation
+    ;; (for new terminals via emacsclient).
+    (my-terminal-config)
+    (add-hook 'after-make-frame-functions 'my-terminal-config)
+        
+    (setq custom-file (concat user-emacs-directory "custom.el"))
+    (when (file-exists-p custom-file)
+      (load custom-file))
   #+END_SRC
   Move the cursor to the last position when I open a file.
   #+BEGIN_SRC emacs-lisp
@@ -378,6 +378,7 @@
         (global-set-key (kbd "C-c c") 'org-capture)
         (global-set-key (kbd "C-c a") 'org-agenda)
         (setq org-default-notes-file "~/.notes.org" org-log-done t)
+        (setq org-src-fontify-natively t)
         (use-package ob
           :config
           (progn
