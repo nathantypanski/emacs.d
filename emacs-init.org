@@ -132,6 +132,7 @@
     (global-set-key [remap eval-last-sexp] 'pp-eval-last-sexp)
   #+END_SRC
 * Package loading
+  Things related to the loading of packages.
   #+BEGIN_SRC emacs-lisp
         (add-to-list 'load-path user-emacs-directory)
         (add-to-list 'load-path (concat user-emacs-directory "config"))
@@ -162,22 +163,22 @@
     ;; Strange-looking construct is:
          ,@commands))
   #+END_SRC
-   Helper function for quitting minibuffers more easily. 
+   Helper function for quitting minibuffers more easily.
   #+BEGIN_SRC emacs-lisp
-      (defun my-minibuffer-keyboard-quit ()
-        "Abort recursive edit.
-      In Delete Selection mode, if the mark is active, just deactivate it;
-      then it takes a second \\[keyboard-quit] to abort the minibuffer."
-        (interactive)
-        (if (and delete-selection-mode transient-mark-mode mark-active)
-            (setq deactivate-mark t)
-          (when (get-buffer "*Completions*") (delete-windows-on "*Completions*"))
-          (abort-recursive-edit)))
-    
-      (defun set-transparency (alpha)
-        "Sets the transparency of the current frame."
-        (interactive "nAlpha: ")
-        (set-frame-parameter nil 'alpha alpha))
+    (defun my-minibuffer-keyboard-quit ()
+      "Abort recursive edit.
+    In Delete Selection mode, if the mark is active, just deactivate it;
+    then it takes a second \\[keyboard-quit] to abort the minibuffer."
+      (interactive)
+      (if (and delete-selection-mode transient-mark-mode mark-active)
+          (setq deactivate-mark t)
+        (when (get-buffer "*Completions*") (delete-windows-on "*Completions*"))
+        (abort-recursive-edit)))
+        
+    (defun set-transparency (alpha)
+      "Sets the transparency of the current frame."
+      (interactive "nAlpha: ")
+      (set-frame-parameter nil 'alpha alpha))
   #+END_SRC
    Google stuff.
   #+BEGIN_SRC emacs-lisp
@@ -252,6 +253,13 @@
     (setq custom-file (concat user-emacs-directory "custom.el"))
     (when (file-exists-p custom-file)
       (load custom-file))
+    
+    (defun my-unmount (drive)
+      "Prompts the user for input and unmounts the given device."
+      (interactive "sunmount: ")
+      (shell-command
+        (concat "/usr/bin/gksu /usr/bin/umount " (shell-quote-argument drive))))
+    
   #+END_SRC
   Move the cursor to the last position when I open a file.
   #+BEGIN_SRC emacs-lisp
@@ -392,6 +400,7 @@
           )
         )
       )
+    
   #+END_SRC
 * Eyecandy
 ** Color scheme
@@ -764,6 +773,11 @@
          (after 'evil (add-hook 'flycheck-error-list-mode-hook (lambda () (evil-mode 0))))
          )
        )
+   #+END_SRC
+** Rust
+   #+BEGIN_SRC emacs-lisp
+     (add-to-list 'load-path "~/devel/rust/rust/etc/emacs")
+     (use-package rust-mode)
    #+END_SRC
 * Elisp-slime-nav
   #+BEGIN_SRC emacs-lisp
