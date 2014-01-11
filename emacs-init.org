@@ -1334,6 +1334,7 @@
      (require-package 'ace-jump-mode)
      (use-package ace-jump-mode
        :config
+       :disabled t
        (progn
          (after 'evil
            ; Not sure if the `after` here is necessary, but anyway:
@@ -1346,5 +1347,4 @@
            (key-chord-define evil-normal-state-map "jc" 'ace-jump-char-mode)
            (key-chord-define evil-normal-state-map "jl" 'ace-jump-line-mode))
          ))
-     
    #+END_SRC
