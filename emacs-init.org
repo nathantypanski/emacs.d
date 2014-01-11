@@ -133,25 +133,27 @@
   #+END_SRC
 * Package loading
   Things related to the loading of packages.
+  
   #+BEGIN_SRC emacs-lisp
-        (add-to-list 'load-path user-emacs-directory)
-        (add-to-list 'load-path (concat user-emacs-directory "config"))
-        (add-to-list 'load-path (concat user-emacs-directory "elisp"))
-        (require 'cl)
-        (defun require-package (package)
-          "Install given PACKAGE."
-          (unless (package-installed-p package)
-            (unless (assoc package package-archive-contents)
-              (package-refresh-contents))
-            (package-install package)))
-        (require-package 'use-package)
-        (require 'use-package)
-        (defmacro after (feature &rest body)
-        "After FEATURE is loaded, evaluate BODY."
-        (declare (indent defun))
-        `(eval-after-load ,feature
-            '(progn ,@body)))
+    (add-to-list 'load-path user-emacs-directory)
+    (add-to-list 'load-path (concat user-emacs-directory "config"))
+    (add-to-list 'load-path (concat user-emacs-directory "elisp"))
+    (require 'cl)
+    (defun require-package (package)
+      "Install given PACKAGE."
+      (unless (package-installed-p package)
+        (unless (assoc package package-archive-contents)
+          (package-refresh-contents))
+        (package-install package)))
+    (require-package 'use-package)
+    (require 'use-package)
+    (defmacro after (feature &rest body)
+    "After FEATURE is loaded, evaluate BODY."
+    (declare (indent defun))
+    `(eval-after-load ,feature
+        '(progn ,@body)))
   #+END_SRC
+
   Keybinding stuff:
   #+BEGIN_SRC emacs-lisp
     (defmacro bind (&rest commands)
@@ -330,53 +332,49 @@
 * Uniquify
   Pretty distinct names for buffers
   #+BEGIN_SRC emacs-lisp
-  ;; better buffer names for duplicates
-  (require 'uniquify)
-  (setq uniquify-buffer-name-style 'forward
-        uniquify-separator "/"
-        uniquify-ignore-buffers-re "^\\*" ; leave special buffers alone
-        uniquify-after-kill-buffer-p t)
+    ;; better buffer names for duplicates
+    (require 'uniquify)
+    (setq uniquify-buffer-name-style 'forward
+          uniquify-separator "/"
+          uniquify-ignore-buffers-re "^\\*" ; leave special buffers alone
+          uniquify-after-kill-buffer-p t)
   #+END_SRC
 * Auto-complete
   [[http://www.emacswiki.org/emacs/AutoComplete][Auto-complete]] is a visual autocompletion that uses popup menus. It is nicely broken
   with Linum enabled, but I keep it around in case one day I figure out how to make
   it work.
-  #+BEGIN_SRC emacs-lisp
-  (require-package 'auto-complete)
-  (use-package auto-complete
-  #+END_SRC
   Keeping this disabled for now; as mentioned above, it is broken.
-  #+BEGIN_SRC emacs-lisp
-    :disabled t
-    :diminish auto-complete-mode
-    :config
-    (progn
-      (setq
-       ac-auto-show-menu 0.01
-  #+END_SRC
   =ac-auto-start= specifies the length of a word required to enable auto-complete.
   #+BEGIN_SRC emacs-lisp
-       ac-auto-start 2
-       ac-comphist-file (expand-file-name ".cache/ac-comphist.dat" user-emacs-directory)
-       ac-delay 0.01
-       ac-quick-help-delay 0.5
-       ac-use-fuzzy t
-       ac-show-menu-immediately-on-auto-complete t)
-       (dolist (mode '(vimrc-mode))
-         (add-to-list 'ac-modes mode))
-       (after 'linum
-         (ac-linum-workaround))
-      (defadvice ac-expand (before advice-for-ac-expand activate)
+    (require-package 'auto-complete)
+    (use-package auto-complete
+      :disabled t
+      :diminish auto-complete-mode
+      :config
+      (progn
+        (setq
+         ac-auto-show-menu 0.01
+         ac-auto-start 2
+         ac-comphist-file (expand-file-name ".cache/ac-comphist.dat" user-emacs-directory)
+         ac-delay 0.01
+         ac-quick-help-delay 0.5
+         ac-use-fuzzy t
+         ac-show-menu-immediately-on-auto-complete t)
+        (dolist (mode '(vimrc-mode))
+          (add-to-list 'ac-modes mode))
+        (after 'linum
+          (ac-linum-workaround))
+        (defadvice ac-expand (before advice-for-ac-expand activate)
           (when (yas-expand)
             (ac-stop)))
-      (use-package auto-complete-config
-        :config
-        (progn
-          (ac-config-default)
+        (use-package auto-complete-config
+          :config
+          (progn
+            (ac-config-default)
+            )
           )
         )
-    )
-    )
+      )
   #+END_SRC
 * Org-mode
   #+BEGIN_SRC emacs-lisp
@@ -386,21 +384,31 @@
         (global-set-key (kbd "C-c c") 'org-capture)
         (global-set-key (kbd "C-c a") 'org-agenda)
         (setq org-default-notes-file "~/.notes.org" org-log-done t)
-        (setq org-src-fontify-natively t)
-        (use-package ob
-          :config
-          (progn
-            (org-babel-do-load-languages
-             'org-babel-load-languages
-             '((R . t)
-               (emacs-lisp . t)
-               (python . t)
-               ))
-            )
+        (defface org-block-begin-line '((t ( org-meta-line :background "gray27" :overline "gray20" :underline "gray20" :height 0.8)))
+        "Face used for the line delimiting the begin of source blocks.")
+
+        (defface org-block-background
+        '((t (:background "#FFFFEA")))
+        "Face used for the source block background.")
+
+        (defface org-block-end-line
+        '((t ( org-meta-line :background "gray27" :overline "gray20" :underline "gray20" :height 0.8)))
+        "Face used for the line delimiting the end of source blocks.")
+
+      (setq org-src-fontify-natively t)
+      (use-package ob
+        :config
+        (progn
+          (org-babel-do-load-languages
+           'org-babel-load-languages
+           '((R . t)
+             (emacs-lisp . t)
+             (python . t)
+             ))
           )
         )
       )
-    
+    )
   #+END_SRC
 * Eyecandy
 ** Color scheme
@@ -678,15 +686,15 @@
     frequently used commands. And to all the other commands, too.
     #+END_QUOTE
     #+BEGIN_SRC emacs-lisp
-  (require-package 'smex)
-  (use-package smex
-    :config
-    (progn
-      (setq smex-save-file (concat user-emacs-directory ".cache/smex-items"))
-      (global-set-key (kbd "C-x C-m") 'smex)
-      (global-set-key (kbd "C-c C-m") 'smex)
-      (smex-initialize)
-  ))
+      (require-package 'smex)
+      (use-package smex
+        :config
+        (progn
+          (setq smex-save-file (concat user-emacs-directory ".cache/smex-items"))
+          (global-set-key (kbd "C-x C-m") 'smex)
+          (global-set-key (kbd "C-c C-m") 'smex)
+          (smex-initialize)
+      ))
     #+END_SRC
 ** Scss
    #+BEGIN_SRC emacs-lisp
@@ -999,6 +1007,7 @@
        (define-minor-mode evil-org-mode
          "Buffer local minor mode for evil-org"
          :init-value nil
+         :diminsh evil-org-mode
          :lighter " EvilOrg"
          :keymap (make-sparse-keymap) ; defines evil-org-mode-map
          :group 'evil-org)
@@ -1089,7 +1098,6 @@
   #+BEGIN_SRC emacs-lisp
   (require-package 'expand-region)
   (use-package expand-region)
-
   #+END_SRC
 * keybindings
   Hitting =[escape]= exits minibuffers.
