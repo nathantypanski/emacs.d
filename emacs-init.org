@@ -346,8 +346,8 @@
   Keeping this disabled for now; as mentioned above, it is broken.
   =ac-auto-start= specifies the length of a word required to enable auto-complete.
   #+BEGIN_SRC emacs-lisp
-    (require-package 'auto-complete)
     (use-package auto-complete
+      :ensure auto-complete
       :disabled t
       :diminish auto-complete-mode
       :config
@@ -435,8 +435,8 @@
    #+END_SRC
 ** Smart modelines
    #+BEGIN_SRC emacs-lisp
-  (require-package 'smart-mode-line)
   (use-package smart-mode-line
+    :ensure smart-mode-line
     :config
     (progn
       (setq sml/theme 'dark)
@@ -446,8 +446,8 @@
 ** =purty-mode=
    Simple pretty print for greek letters, etc.
    #+BEGIN_SRC emacs-lisp
-     (require-package 'purty-mode)
      (use-package purty-mode
+       :ensure purty-mode
        :config
        (progn
          (purty-mode 1)
@@ -464,11 +464,12 @@
    also a hack in place here to get =linum= to leave one blank space before the source
    code for the file.
    #+BEGIN_SRC emacs-lisp
-     ;(require-package 'linum)
-     ;(use-package linum
-     ;  :config
-     ;  (progn
-     ;    (global-linum-mode 1)
+    ; (use-package linum
+    ;   :ensure linum
+    ;   :disabled
+    ;   :config
+    ;   (progn
+    ;     (global-linum-mode 1)
      ;    (unless window-system
      ;      (add-hook 'linum-before-numbering-hook
      ;                (lambda ()
@@ -480,34 +481,28 @@
      ;      (concat
      ;       (propertize (format linum-format-fmt line) 'face 'linum)
      ;       (propertize " " 'face 'mode-line)))
-     ;    (unless window-system
-     ;      (setq linum-format 'linum-format-func))
-     ;    (setq linum-format "%4d "
-     ;          linum-delay t)
-     ;    )
-     ;  )
-     (require-package 'nlinum)
-     (use-package nlinum
-       :config
-       (progn
-         (nlinum-mode 1)
-     ))
+    ;     (unless window-system
+    ;       (setq linum-format 'linum-format-func))
+    ;     (setq linum-format "%4d "
+    ;           linum-delay t)
+    ;     )
+    ;     )
    #+END_SRC
    =rainbow-mode= is a minor mode for Emacs which displays strings
    representing colors with the color they represent as background.
    #+BEGIN_SRC emacs-lisp
-  (require-package 'rainbow-mode)
-  (use-package rainbow-mode)
+     (use-package rainbow-mode
+       :ensure rainbow-mode)
    #+END_SRC
 ** rainbow delimiters
    #+BEGIN_SRC emacs-lisp
-  (require-package 'rainbow-delimiters)
-  (use-package rainbow-delimiters
-    :init
-    (progn
-      (global-rainbow-delimiters-mode)
-    )
-    )
+     (use-package rainbow-delimiters
+       :ensure rainbow-delimiters
+       :init
+       (progn
+         (global-rainbow-delimiters-mode)
+       )
+       )
    #+END_SRC
 ** Whitespace mode
    #+BEGIN_SRC emacs-lisp
@@ -517,82 +512,81 @@
 ** Windsize
    Easy resizing of Emacs windows.
    #+BEGIN_SRC emacs-lisp
-   (require-package 'windsize)
-   (use-package windsize
-     :init
-     (progn
-       (setq windsize-cols 16)
-       (setq windsize-rows 8)
-       (windsize-default-keybindings)
+     (use-package windsize
+       :ensure windsize
+       :init
+       (progn
+         (setq windsize-cols 16)
+         (setq windsize-rows 8)
+         (windsize-default-keybindings)
+         )
        )
-     )
    #+END_SRC
 * Copy/paste
   Emacs copy-paste does not work by default. First, we enable X selection as a copy-paste buffer.
   #+BEGIN_SRC emacs-lisp
-  ; Basic copy-paste setup. From wiki.
-  (setq x-select-enable-clipboard t)
-  (setq interprogram-paste-function 'x-cut-buffer-or-selection-value)
+    ; Basic copy-paste setup. From wiki.
+    (setq x-select-enable-clipboard t)
+    (setq interprogram-paste-function 'x-cut-buffer-or-selection-value)
   #+END_SRC emacs-lisp
   Now, we hack copy-paste to work in the terminal.
   #+BEGIN_SRC emacs-lisp
-  ; Brilliant working copy-paste (even in Evil mode!) ripped from:
-  ; http://hugoheden.wordpress.com/2009/03/08/copypaste-with-emacs-in-terminal/
-  (unless window-system
-      (when (getenv "DISPLAY")
-        ;; Callback for when user cuts
-        (defun xsel-cut-function (text &optional push)
-          ;; Insert text to temp-buffer, and "send" content to xsel stdin
-          (with-temp-buffer
-            (insert text)
-            ;; I prefer using the "clipboard" selection (the one the
-            ;; typically is used by c-c/c-v) before the primary selection
-            ;; (that uses mouse-select/middle-button-click)
-            (call-process-region (point-min) (point-max) "xsel" nil 0 nil "--clipboard" "--input")))
-        ;; Call back for when user pastes
-        (defun xsel-paste-function()
-          ;; Find out what is current selection by xsel. If it is different
-          ;; from the top of the kill-ring (car kill-ring), then return
-          ;; it. Else, nil is returned, so whatever is in the top of the
-          ;; kill-ring will be used.
-          (let ((xsel-output (shell-command-to-string "xsel --clipboard --output")))
-            (unless (string= (car kill-ring) xsel-output)
-              xsel-output )))
-        ;; Attach callbacks to hooks
-        (setq interprogram-cut-function 'xsel-cut-function)
-        (setq interprogram-paste-function 'xsel-paste-function)
-        ;; Idea from
-        ;; http://shreevatsa.wordpress.com/2006/10/22/emacs-copypaste-and-x/
-        ;; http://www.mail-archive.com/help-gnu-emacs@gnu.org/msg03577.html
-  ))
+    ; Brilliant working copy-paste (even in Evil mode!) ripped from:
+    ; http://hugoheden.wordpress.com/2009/03/08/copypaste-with-emacs-in-terminal/
+    (unless window-system
+        (when (getenv "DISPLAY")
+          ;; Callback for when user cuts
+          (defun xsel-cut-function (text &optional push)
+            ;; Insert text to temp-buffer, and "send" content to xsel stdin
+            (with-temp-buffer
+              (insert text)
+              ;; I prefer using the "clipboard" selection (the one the
+              ;; typically is used by c-c/c-v) before the primary selection
+              ;; (that uses mouse-select/middle-button-click)
+              (call-process-region (point-min) (point-max) "xsel" nil 0 nil "--clipboard" "--input")))
+          ;; Call back for when user pastes
+          (defun xsel-paste-function()
+            ;; Find out what is current selection by xsel. If it is different
+            ;; from the top of the kill-ring (car kill-ring), then return
+            ;; it. Else, nil is returned, so whatever is in the top of the
+            ;; kill-ring will be used.
+            (let ((xsel-output (shell-command-to-string "xsel --clipboard --output")))
+              (unless (string= (car kill-ring) xsel-output)
+                xsel-output )))
+          ;; Attach callbacks to hooks
+          (setq interprogram-cut-function 'xsel-cut-function)
+          (setq interprogram-paste-function 'xsel-paste-function)
+          ;; Idea from
+          ;; http://shreevatsa.wordpress.com/2006/10/22/emacs-copypaste-and-x/
+          ;; http://www.mail-archive.com/help-gnu-emacs@gnu.org/msg03577.html
+    ))
   #+END_SRC
-
 * Code editing
 ** Etags Select
    Offer a choice for equivalent etags. e.g. if overloaded.
    #+BEGIN_SRC emacs-lisp
-   (require-package 'etags-select)
-   (use-package etags-select
-     :init
-       (setq etags-select-go-if-unambiguous t)
-     )
+     (use-package etags-select
+       :ensure etags-select
+       :init
+         (setq etags-select-go-if-unambiguous t)
+       )
    #+END_SRC
 ** Projectile
    AKA =ctrl-p= for Emacs.
    #+BEGIN_SRC emacs-lisp
-  (require-package 'projectile)
-  (use-package projectile
-    :diminish projectile-mode
-    :config
-    (progn
-      (setq projectile-cache-file (concat user-emacs-directory ".cache/projectile.cache"))
-      (setq projectile-known-projects-file (concat user-emacs-directory ".cache/projectile-bookmarks.eld"))
-      (add-to-list 'projectile-globally-ignored-directories "elpa")
-      (add-to-list 'projectile-globally-ignored-directories ".cache")
-      (add-to-list 'projectile-globally-ignored-directories "node_modules")
-      (projectile-global-mode 1)
-      )
-    )
+     (use-package projectile
+       :ensure projectile
+       :diminish projectile-mode
+       :config
+       (progn
+         (setq projectile-cache-file (concat user-emacs-directory ".cache/projectile.cache"))
+         (setq projectile-known-projects-file (concat user-emacs-directory ".cache/projectile-bookmarks.eld"))
+         (add-to-list 'projectile-globally-ignored-directories "elpa")
+         (add-to-list 'projectile-globally-ignored-directories ".cache")
+         (add-to-list 'projectile-globally-ignored-directories "node_modules")
+         (projectile-global-mode 1)
+         )
+       )
    #+END_SRC
 ** Helm
    #+BEGIN_QUOTE
@@ -607,25 +601,31 @@
    compatibility.
    #+END_QUOTE
    #+BEGIN_SRC emacs-lisp
-  (require-package 'helm)
-  (use-package helm
-    :config
-    (progn
-      (setq helm-command-prefix-key "C-c h")
-      (setq helm-quick-update t)
-      (require-package 'helm-swoop)
-      (after 'helm-autoloads
-        (after 'evil
-            (global-set-key (kbd "M-x") 'helm-M-x)
-            (define-key evil-normal-state-map (kbd "SPC e") 'helm-recentf)
-            (define-key evil-normal-state-map (kbd "SPC t") 'helm-etags-select)
-            (define-key evil-normal-state-map (kbd "SPC l") 'helm-swoop)
-            (define-key evil-normal-state-map (kbd "SPC y") 'helm-show-kill-ring)
-            (define-key evil-normal-state-map [f5] 'helm-mini)))
-      (after 'projectile
-        (require-package 'helm-projectile))
-      )
-    )
+     (use-package helm
+       :ensure helm
+       :config
+       (progn
+         (setq helm-command-prefix-key "C-c h")
+         (setq helm-quick-update t)
+         (use-package helm-swoop
+           :ensure helm-swoop)
+         (after 'helm-autoloads
+           (global-set-key (kbd "C-x C-m") 'helm-M-x)
+           (global-set-key (kbd "C-c C-m") 'helm-M-x)
+           (after 'evil
+             (define-key evil-visual-state-map (kbd "SPC SPC") 'smex)
+             (define-key evil-normal-state-map (kbd "SPC SPC") 'smex)
+             (define-key evil-normal-state-map (kbd "SPC o")   'helm-imenu)
+             (define-key evil-normal-state-map (kbd "SPC e")   'helm-recentf)
+             (define-key evil-normal-state-map (kbd "SPC t")   'helm-etags-select)
+             (define-key evil-normal-state-map (kbd "SPC l")   'helm-swoop)
+             (define-key evil-normal-state-map (kbd "SPC y")   'helm-show-kill-ring)
+             (define-key evil-normal-state-map [f5] 'helm-mini)))
+         (after 'projectile
+           (use-package helm-projectile
+             :ensure helm-projectile))
+         )
+       )
    #+END_SRC
 ** Ido
    Interactive =do= mode.
@@ -645,36 +645,40 @@
          (setq ido-use-filename-at-point 'guess)
          (setq ido-save-directory-list-file
                (concat user-emacs-directory ".cache/ido.last"))
-         (require-package 'ido-ubiquitous)
+         (use-package ido-ubiquitous
+           :ensure ido-ubiquitous)
          (add-hook
           'ido-setup-hook
           (lambda()
             ;; On ido-find-file, let `~` mean `~/` for fastness.
             (define-key ido-file-dir-completion-map "~"
               (lambda ()(interactive)
-                 (ido-set-current-directory "~/")
-                 (setq ido-exit 'refresh)
-                 (exit-minibuffer)))))
+                (ido-set-current-directory "~/")
+                (setq ido-exit 'refresh)
+                (exit-minibuffer)))))
          (use-package ido-ubiquitous
            :config
            (progn
              (ido-ubiquitous-mode 1)
              )
            )
-         (require-package 'flx-ido)
          (use-package flx-ido
+           :ensure flx-ido
            :defines (ido-cur-item ido-default-item ido-cur-list)
            :config
            (progn
              (flx-ido-mode 1)
              )
            )
-         (require-package 'ido-vertical-mode)
          (use-package ido-vertical-mode
+           :ensure ido-vertical-mode
            :config
            (progn
              (ido-vertical-mode)
              )
+           )
+         (after 'evil
+           (define-key evil-normal-state-map (kbd "SPC b") 'ibuffer)
            )
          )
        )
@@ -686,20 +690,19 @@
     frequently used commands. And to all the other commands, too.
     #+END_QUOTE
     #+BEGIN_SRC emacs-lisp
-      (require-package 'smex)
       (use-package smex
+        :ensure smex
         :config
         (progn
+          (global-set-key (kbd "M-x") 'smex)
           (setq smex-save-file (concat user-emacs-directory ".cache/smex-items"))
-          (global-set-key (kbd "C-x C-m") 'smex)
-          (global-set-key (kbd "C-c C-m") 'smex)
           (smex-initialize)
       ))
     #+END_SRC
 ** Scss
    #+BEGIN_SRC emacs-lisp
-     (require-package 'scss-mode)
      (use-package scss-mode
+       :ensure scss-mode
        :config
        (progn
          (autoload 'scss-mode "scss-mode")
@@ -709,79 +712,81 @@
    #+END_SRC
 ** Haskell
    #+BEGIN_SRC emacs-lisp
-          (require-package 'haskell-mode)
-          (use-package haskell-mode
-            :mode ("\\.hs\\'" . haskell-mode)
-            :config
-            (progn
-     ;         (after 'linum (add-hook 'haskell-interactive-mode (lambda () (linum-mode 0))))
-     ;         (after 'evil (add-hook 'haskell-interactive-mode (lambda () (evil-mode 0))))
-              (define-key haskell-mode-map (kbd "C-x C-d") nil)
-              (define-key haskell-mode-map (kbd "C-c C-z") 'haskell-interactive-switch)
-              (define-key haskell-mode-map (kbd "C-c C-l") 'haskell-process-load-file)
-              (define-key haskell-mode-map (kbd "C-c C-b") 'haskell-interactive-switch)
-              (define-key haskell-mode-map (kbd "C-c C-t") 'haskell-process-do-type)
-              (define-key haskell-mode-map (kbd "C-c C-i") 'haskell-process-do-info)
-              (define-key haskell-mode-map (kbd "C-c M-.") nil)
-              (define-key haskell-mode-map (kbd "C-c C-d") nil)
-              (define-key haskell-mode-map (kbd "C-c C-c") 'haskell-compile)
-              (add-hook 'haskell-mode-hook
-                        (lambda ()
-                          (turn-on-haskell-doc-mode)
-                          (after 'evil
-                            (setq evil-auto-indent nil))
-                          (turn-on-haskell-indentation)
-                          (ghc-init)
-                          (purty-mode)
-                          )
-              )
-              (use-package haskell-mode-autoloads)
-              (use-package inf-haskell)
-              (use-package haskell-cabal
-                :init
-                (define-key haskell-cabal-mode-map (kbd "C-c C-c") 'haskell-compile)
-                )
-              (use-package hs-lint)
-              )
-            )
+     (use-package haskell-mode
+       :ensure haskell-mode
+       :mode ("\\.hs\\'" . haskell-mode)
+       :config
+       (progn
+         (define-key haskell-mode-map (kbd "C-x C-d") nil)
+         (define-key haskell-mode-map (kbd "C-c C-z") 'haskell-interactive-switch)
+         (define-key haskell-mode-map (kbd "C-c C-l") 'haskell-process-load-file)
+         (define-key haskell-mode-map (kbd "C-c C-b") 'haskell-interactive-switch)
+         (define-key haskell-mode-map (kbd "C-c C-t") 'haskell-process-do-type)
+         (define-key haskell-mode-map (kbd "C-c C-i") 'haskell-process-do-info)
+         (define-key haskell-mode-map (kbd "C-c M-.") nil)
+         (define-key haskell-mode-map (kbd "C-c C-d") nil)
+         (define-key haskell-mode-map (kbd "C-c C-c") 'haskell-compile)
+         (add-hook 'haskell-mode-hook
+                   (lambda ()
+                     (turn-on-haskell-doc-mode)
+                     (after 'evil
+                       (setq evil-auto-indent nil))
+                     (turn-on-haskell-indentation)
+                     (ghc-init)
+                     (purty-mode)
+                     )
+                   )
+         (use-package haskell-mode-autoloads)
+         (use-package inf-haskell)
+         (use-package haskell-cabal
+           :init
+           (define-key haskell-cabal-mode-map (kbd "C-c C-c") 'haskell-compile)
+           )
+         (use-package hs-lint)
+         )
+       )
    #+END_SRC
 ** Ag: speedy inter-file grep
    #+BEGIN_SRC emacs-lisp
-   (require-package 'ag)
-   (use-package ag
-     :init
-     (progn
-       (setq ag-highlight-search t)
-       (add-hook 'ag-mode-hook (lambda () (toggle-truncate-lines t)))
-       (add-hook 'ag-mode-hook (lambda () (linum-mode 0)))
-     )
-   )
-   #+END_SRC
-** Project-explorer
-   #+BEGIN_SRC emacs-lisp
-   (require-package 'project-explorer)
-   (use-package project-explorer
-     :commands (progn project-explorer project-explorer-open pe/show-file)
-     :config
+     (use-package ag
+       :ensure ag
+       :init
        (progn
-         (setq pe/omit-regex (concat pe/omit-regex "\\|^node_modules$"))
+         (setq ag-highlight-search t)
+         (add-hook 'ag-mode-hook (lambda () (toggle-truncate-lines t)))
+         (add-hook 'ag-mode-hook (lambda () (linum-mode 0)))
        )
      )
    #+END_SRC
+** Project-explorer
+   #+BEGIN_SRC emacs-lisp
+     (use-package project-explorer
+       :ensure project-explorer
+       :commands (progn project-explorer project-explorer-open pe/show-file)
+       :config
+         (progn
+           (setq pe/omit-regex (concat pe/omit-regex "\\|^node_modules$"))
+         )
+       )
+   #+END_SRC
 ** Flycheck
    #+BEGIN_SRC emacs-lisp
-     (require-package 'flycheck)
      (use-package flycheck
+       :ensure flycheck
        :config
        (progn
          (setq flycheck-check-syntax-automatically '(save mode-enabled))
          (setq flycheck-checkers (delq 'emacs-lisp-checkdoc flycheck-checkers))
          (setq flycheck-checkers (delq 'html-tidy flycheck-checkers))
          (global-flycheck-mode 1)
-         (after 'evil (add-hook 'flycheck-error-list-mode-hook (lambda () (evil-mode 0))))
-         )
-       )
+        (after 'evil (add-hook 'flycheck-error-list-mode-hook (lambda () (evil-mode 0))))
+        )
+    )
    #+END_SRC
+** Parentheses
+   #+begin_src emacs-lisp
+     (show-paren-mode 1)
+   #+end_src
 ** Rust
    #+BEGIN_SRC emacs-lisp
      (add-to-list 'load-path "~/devel/rust/rust/etc/emacs")
@@ -789,24 +794,25 @@
    #+END_SRC
 * Elisp-slime-nav
   #+BEGIN_SRC emacs-lisp
-  (require-package 'elisp-slime-nav)
-  (use-package elisp-slime-nav
-    :config
-    (progn
-      (defun my-lisp-hook ()
-        (progn
-          (elisp-slime-nav-mode)
-          (turn-on-eldoc-mode)))
-      (add-hook 'emacs-lisp-mode-hook 'my-lisp-hook)
-      (add-hook 'lisp-interaction-mode-hook 'my-lisp-hook)
-      (add-hook 'ielm-mode-hook 'my-lisp-hook)
+    (use-package elisp-slime-nav
+      :ensure elisp-slime-nav
+      :config
+      (progn
+        (defun my-lisp-hook ()
+          (progn
+            (elisp-slime-nav-mode)
+            (turn-on-eldoc-mode)))
+        (add-hook 'emacs-lisp-mode-hook 'my-lisp-hook)
+        (add-hook 'lisp-interaction-mode-hook 'my-lisp-hook)
+        (add-hook 'ielm-mode-hook 'my-lisp-hook)
+        )
       )
-    )
   #+END_SRC
 * Key chords
   #+BEGIN_SRC emacs-lisp
-    (require-package 'key-chord)
-    (use-package key-chord :diminish key-chord-mode
+    (use-package key-chord
+      :ensure key-chord
+      :diminish key-chord-mode
       :config
       (progn
         (key-chord-mode 1)))
@@ -814,19 +820,13 @@
 * Evil
   Note: requires undo-tree.
   #+BEGIN_SRC emacs-lisp
-    (require-package 'undo-tree)
     (use-package undo-tree
+      :ensure undo-tree
       :diminish undo-tree-mode
       :init
       (progn
-        (require-package 'evil)
-        (require-package 'evil-visualstar)
-        (require-package 'evil-nerd-commenter)
-        (require-package 'evil-indent-textobject)
-        (require-package 'evil-matchit)
-        (require-package 'surround)
-    
         (use-package evil
+          :ensure evil
           :config
           (progn
             (evil-mode 1)
@@ -840,8 +840,8 @@
                 )
             (setq evil-replace-state-cursor '("red" box))
             
-            (require-package 'evil-leader)
             (use-package evil-leader
+              :ensure evil-leader
               :config
               (progn
                 (global-evil-leader-mode)
@@ -868,18 +868,23 @@
                 )
               )
             (use-package evil-nerd-commenter
+              :ensure evil-nerd-commenter
               :config
               ;; Type 'gcc' to comment the current line.
               (progn (setq evilnc-hotkey-comment-operator "gc")))
-            (use-package evil-indent-textobject)
-            (use-package evil-visualstar)
+            (use-package evil-indent-textobject
+              :ensure evil-indent-textobject)
+            (use-package evil-visualstar
+              :ensure evil-visualstar)
             (use-package evil-matchit
+              :ensure evil-matchit
               :config
               (progn
                 (after 'evil-matchit
                   (define-key evil-normal-state-map "%" 'evilmi-jump-items))
                 ))
             (use-package surround
+              :ensure surround
               :config
                 (progn
                   (global-surround-mode 1)
@@ -930,12 +935,6 @@
             (define-key evil-normal-state-map (kbd ", g a") 'git-gutter+-stage-hunks)
             (define-key evil-normal-state-map (kbd ", g r") 'git-gutter+-revert-hunks)
             (evil-ex-define-cmd "Gw" (bind (git-gutter+-stage-whole-buffer))))
-    
-          (define-key evil-visual-state-map (kbd "SPC SPC") 'helm-M-x)
-          (define-key evil-normal-state-map (kbd "SPC SPC") 'helm-M-x)
-    
-          (define-key evil-normal-state-map (kbd "SPC o") 'helm-imenu)
-          (define-key evil-normal-state-map (kbd "SPC b") 'helm-buffers-list)
           (define-key evil-normal-state-map (kbd "SPC B") 'ibuffer)
     
           (define-key evil-normal-state-map (kbd "SPC k") 'ido-kill-buffer)
@@ -1096,8 +1095,8 @@
    #+END_SRC
 * expand-region
   #+BEGIN_SRC emacs-lisp
-  (require-package 'expand-region)
-  (use-package expand-region)
+    (use-package expand-region
+      :ensure expand-region)
   #+END_SRC
 * keybindings
   Hitting =[escape]= exits minibuffers.
@@ -1308,8 +1307,8 @@
      no interference with describe-key and describe-bindings.
    #+END_QUOTE
    #+BEGIN_SRC emacs-lisp
-     (require-package 'guide-key)
      (use-package guide-key
+       :ensure guide-key
        :diminish guide-key-mode
        :config
        (progn
@@ -1324,6 +1323,8 @@
      )
    #+END_SRC
 ** ace-jump-mode
+   - Note taken on [2014-01-11 Sat 20:54] \\
+     Nice but I accidentally toggle it quite often.
    #+BEGIN_QUOTE
    AceJump-mode is a minor mode for Emacs, enabling fast/direct cursor
    movement in current view.
@@ -1331,10 +1332,10 @@
    Do things like offer highlighted words as choices and let me type the first
    character in them to select them, etc.
    #+BEGIN_SRC emacs-lisp
-     (require-package 'ace-jump-mode)
      (use-package ace-jump-mode
-       :config
+       :ensure ace-jump-mode
        :disabled t
+       :config
        (progn
          (after 'evil
            ; Not sure if the `after` here is necessary, but anyway:
