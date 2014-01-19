@@ -416,8 +416,13 @@
    like most emacs themes. Emacs may have more capable syntax highlighting than vim, but
    damned if it isn't impossible to make it pretty, too.
    #+BEGIN_SRC emacs-lisp
-  ;; Colors!
-  (load-theme 'zenburn t)
+     ;; Colors!
+     (use-package zenburn-theme
+       :ensure zenburn-theme
+       :config
+       (progn
+         (load-theme 'zenburn t)))
+     
    #+END_SRC
 ** Line highlighting
    This alone is supposed to enable highlighting the current line
@@ -820,7 +825,7 @@
 * Evil
   Note: requires undo-tree.
   #+BEGIN_SRC emacs-lisp
-    (use-package undo-tree
+   (use-package undo-tree
       :ensure undo-tree
       :diminish undo-tree-mode
       :init
@@ -928,7 +933,10 @@
             (define-key evil-normal-state-map [escape] 'keyboard-quit)
             (define-key evil-visual-state-map [escape] 'keyboard-quit)
     
-    
+            ;; paragraph bindings
+            (dolist (key '("\M-k" "\M-j" "\M-h" "\M-l"))
+            (global-unset-key key))
+            
           (after 'git-gutter+-autoloads
             (define-key evil-normal-state-map (kbd "[ h") 'git-gutter+-previous-hunk)
             (define-key evil-normal-state-map (kbd "] h") 'git-gutter+-next-hunk)
