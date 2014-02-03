@@ -133,7 +133,7 @@
   #+END_SRC
 * Package loading
   Things related to the loading of packages.
-  
+
   #+BEGIN_SRC emacs-lisp
     (add-to-list 'load-path user-emacs-directory)
     (add-to-list 'load-path (concat user-emacs-directory "config"))
@@ -176,7 +176,7 @@
           (setq deactivate-mark t)
         (when (get-buffer "*Completions*") (delete-windows-on "*Completions*"))
         (abort-recursive-edit)))
-        
+    
     (defun set-transparency (alpha)
       "Sets the transparency of the current frame."
       (interactive "nAlpha: ")
@@ -348,7 +348,7 @@
   #+BEGIN_SRC emacs-lisp
     (use-package auto-complete
       :ensure auto-complete
-      :disabled t
+      :disabled f
       :diminish auto-complete-mode
       :config
       (progn
@@ -422,7 +422,6 @@
        :config
        (progn
          (load-theme 'zenburn t)))
-     
    #+END_SRC
 ** Line highlighting
    This alone is supposed to enable highlighting the current line
@@ -825,187 +824,187 @@
 * Evil
   Note: requires undo-tree.
   #+BEGIN_SRC emacs-lisp
-   (use-package undo-tree
-      :ensure undo-tree
-      :diminish undo-tree-mode
-      :init
-      (progn
-        (use-package evil
-          :ensure evil
-          :config
-          (progn
-            (evil-mode 1)
-            (setq evil-want-C-u-scroll t
-                evil-want-C-w-in-emacs-state t
-                evil-search-module 'evil-search
-                evil-magic 'very-magic
-                evil-emacs-state-cursor '("red" box)
-                evil-normal-state-cursor '("green" box)
-                evil-insert-state-cursor '("orange" bar)
-                )
-            (setq evil-replace-state-cursor '("red" box))
-            
-            (use-package evil-leader
-              :ensure evil-leader
-              :config
-              (progn
-                (global-evil-leader-mode)
-                (evil-leader/set-leader ",")
-                (setq my-eshell-buffer-count 0)
-                (evil-leader/set-key
-                    "w" 'save-buffer
-                    "e" (kbd "C-x C-e")
-                    "E" (kbd "C-M-x")
-                    "c" (bind
-                         (evil-window-split)
-                         (setq my-eshell-buffer-count (+ 1 my-eshell-buffer-count))
-                         (eshell my-eshell-buffer-count))
-                    "C" 'customize-group
-                    "b d" 'kill-this-buffer
-                    "v" (kbd "C-w v C-w l")
-                    "s" (kbd "C-w s C-w j")
-                    "g s" 'magit-status
-                    "g l" 'magit-log
-                    "g d" 'vc-diff
-                    "P" 'package-list-packages
-                    "h" help-map
-                    "h h" 'help-for-help-internal)
-                )
-              )
-            (use-package evil-nerd-commenter
-              :ensure evil-nerd-commenter
-              :config
-              ;; Type 'gcc' to comment the current line.
-              (progn (setq evilnc-hotkey-comment-operator "gc")))
-            (use-package evil-indent-textobject
-              :ensure evil-indent-textobject)
-            (use-package evil-visualstar
-              :ensure evil-visualstar)
-            (use-package evil-matchit
-              :ensure evil-matchit
-              :config
-              (progn
-                (after 'evil-matchit
-                  (define-key evil-normal-state-map "%" 'evilmi-jump-items))
-                ))
-            (use-package surround
-              :ensure surround
-              :config
-                (progn
-                  (global-surround-mode 1)
-                  )
-              )
-    
-            (dolist (mode '(eshell-mode
-                            shell-mode
-                            term-mode
-                            terminal-mode
-                            comint-mode
-                            skewer-repl-mode
-                            profiler-report-mode
-                            erc-mode weechat-mode
-                            direx:direx-mode
-                            project-explorer-mode))
-              (evil-set-initial-state mode 'emacs))
-    
-            (evil-define-text-object my-evil-next-match (count &optional beg end type)
-              "Select next match."
-              (evil-ex-search-previous 1)
-              (evil-ex-search-next count)
-              (list evil-ex-search-match-beg evil-ex-search-match-end))
-    
-            (evil-define-text-object my-evil-previous-match (count &optional beg end type)
-              "Select previous match."
-              (evil-ex-search-next 1)
-              (evil-ex-search-previous count)
-              (list evil-ex-search-match-beg evil-ex-search-match-end))
-    
-            (define-key evil-motion-state-map "gN" 'my-evil-previous-match)
-            (define-key evil-motion-state-map "gN" 'my-evil-previous-match)
-    
-            (defadvice evil-ex-search-next (after advice-for-evil-ex-search-next activate)
-              (evil-scroll-line-to-center (line-number-at-pos)))
-    
-            (defadvice evil-ex-search-previous (after advice-for-evil-ex-search-previous activate)
-              (evil-scroll-line-to-center (line-number-at-pos)))
-    
-            ;;; esc quits
-            (define-key evil-normal-state-map [escape] 'keyboard-quit)
-            (define-key evil-visual-state-map [escape] 'keyboard-quit)
-    
-            ;; paragraph bindings
-            (dolist (key '("\M-k" "\M-j" "\M-h" "\M-l"))
-            (global-unset-key key))
-            
-          (after 'git-gutter+-autoloads
-            (define-key evil-normal-state-map (kbd "[ h") 'git-gutter+-previous-hunk)
-            (define-key evil-normal-state-map (kbd "] h") 'git-gutter+-next-hunk)
-            (define-key evil-normal-state-map (kbd ", g a") 'git-gutter+-stage-hunks)
-            (define-key evil-normal-state-map (kbd ", g r") 'git-gutter+-revert-hunks)
-            (evil-ex-define-cmd "Gw" (bind (git-gutter+-stage-whole-buffer))))
-          (define-key evil-normal-state-map (kbd "SPC B") 'ibuffer)
-    
-          (define-key evil-normal-state-map (kbd "SPC k") 'ido-kill-buffer)
-          (define-key evil-normal-state-map (kbd "SPC f") 'ido-find-file)
-    
-          (define-key evil-normal-state-map (kbd "[ SPC") (bind (evil-insert-newline-above) (forward-line)))
-          (define-key evil-normal-state-map (kbd "] SPC") (bind (evil-insert-newline-below) (forward-line -1)))
-          (define-key evil-normal-state-map (kbd "[ e") (kbd "ddkP"))
-          (define-key evil-normal-state-map (kbd "] e") (kbd "ddp"))
-          (define-key evil-normal-state-map (kbd "[ b") 'previous-buffer)
-          (define-key evil-normal-state-map (kbd "] b") 'next-buffer)
-          (define-key evil-normal-state-map (kbd "[ q") 'previous-error)
-          (define-key evil-normal-state-map (kbd "] q") 'next-error)
-    
-          (define-key evil-normal-state-map (kbd "g p") (kbd "` [ v ` ]"))
-    
-          (after 'etags-select
-            (define-key evil-normal-state-map (kbd "g ]") 'etags-select-find-tag-at-point))
-    
-          (define-key evil-normal-state-map (kbd "C-p") 'projectile-find-file)
-          (define-key evil-normal-state-map (kbd "C-q") 'universal-argument)
-    
-          (define-key evil-normal-state-map (kbd "C-h") 'evil-window-left)
-          (define-key evil-normal-state-map (kbd "C-j") 'evil-window-down)
-          (define-key evil-normal-state-map (kbd "C-k") 'evil-window-up)
-          (define-key evil-normal-state-map (kbd "C-l") 'evil-window-right)
-    
-          (define-key evil-motion-state-map "j" 'evil-next-visual-line)
-          (define-key evil-motion-state-map "k" 'evil-previous-visual-line)
-    
-          (define-key evil-normal-state-map (kbd "Y") (kbd "y$"))
-    
-          (define-key evil-visual-state-map (kbd ", e") 'eval-region)
-    
-          ;; emacs lisp
-          (after 'elisp-slime-nav-autoloads
-            (evil-define-key 'normal emacs-lisp-mode-map (kbd "g d") 'elisp-slime-nav-find-elisp-thing-at-point)
-            (evil-define-key 'normal emacs-lisp-mode-map (kbd "K") 'elisp-slime-nav-describe-elisp-thing-at-point))
-    
-          (after 'ag-autoloads
-            (define-key evil-normal-state-map (kbd "SPC /") 'ag-regexp-project-at-point))
-    
-          (after 'multiple-cursors
-            (define-key evil-visual-state-map (kbd "C->") 'mc/mark-all-like-this)
-            (define-key evil-normal-state-map (kbd "C->") 'mc/mark-next-like-this)
-            (define-key evil-normal-state-map (kbd "C-<") 'mc/mark-previous-like-this))
-    
-          (after 'magit
-            (define-key magit-status-mode-map (kbd "C-n") 'magit-goto-next-sibling-section)
-            (define-key magit-status-mode-map (kbd "C-p") 'magit-goto-previous-sibling-section)
-            (evil-add-hjkl-bindings magit-status-mode-map 'emacs
-              "K" 'magit-discard-item
-              "l" 'magit-key-mode-popup-logging
-              "h" 'magit-toggle-diff-refine-hunk))
-    
-          ;; butter fingers
-          (evil-ex-define-cmd "Q" 'evil-quit)
-          (evil-ex-define-cmd "Qa" 'evil-quit-all)
-          (evil-ex-define-cmd "QA" 'evil-quit-all)
-          )
-          )
-    )
-    )
+    (use-package undo-tree
+       :ensure undo-tree
+       :diminish undo-tree-mode
+       :init
+       (progn
+         (use-package evil
+           :ensure evil
+           :config
+           (progn
+             (evil-mode 1)
+             (setq evil-want-C-u-scroll t
+                 evil-want-C-w-in-emacs-state t
+                 evil-search-module 'evil-search
+                 evil-magic 'very-magic
+                 evil-emacs-state-cursor '("red" box)
+                 evil-normal-state-cursor '("green" box)
+                 evil-insert-state-cursor '("orange" bar)
+                 )
+             (setq evil-replace-state-cursor '("red" box))
+             
+             (use-package evil-leader
+               :ensure evil-leader
+               :config
+               (progn
+                 (global-evil-leader-mode)
+                 (evil-leader/set-leader ",")
+                 (setq my-eshell-buffer-count 0)
+                 (evil-leader/set-key
+                     "w" 'save-buffer
+                     "e" (kbd "C-x C-e")
+                     "E" (kbd "C-M-x")
+                     "c" (bind
+                          (evil-window-split)
+                          (setq my-eshell-buffer-count (+ 1 my-eshell-buffer-count))
+                          (eshell my-eshell-buffer-count))
+                     "C" 'customize-group
+                     "b d" 'kill-this-buffer
+                     "v" (kbd "C-w v C-w l")
+                     "s" (kbd "C-w s C-w j")
+                     "g s" 'magit-status
+                     "g l" 'magit-log
+                     "g d" 'vc-diff
+                     "P" 'package-list-packages
+                     "h" help-map
+                     "h h" 'help-for-help-internal)
+                 )
+               )
+             (use-package evil-nerd-commenter
+               :ensure evil-nerd-commenter
+               :config
+               ;; Type 'gcc' to comment the current line.
+               (progn (setq evilnc-hotkey-comment-operator "gc")))
+             (use-package evil-indent-textobject
+               :ensure evil-indent-textobject)
+             (use-package evil-visualstar
+               :ensure evil-visualstar)
+             (use-package evil-matchit
+               :ensure evil-matchit
+               :config
+               (progn
+                 (after 'evil-matchit
+                   (define-key evil-normal-state-map "%" 'evilmi-jump-items))
+                 ))
+             (use-package surround
+               :ensure surround
+               :config
+                 (progn
+                   (global-surround-mode 1)
+                   )
+               )
+     
+             (dolist (mode '(eshell-mode
+                             shell-mode
+                             term-mode
+                             terminal-mode
+                             comint-mode
+                             skewer-repl-mode
+                             profiler-report-mode
+                             erc-mode weechat-mode
+                             direx:direx-mode
+                             project-explorer-mode))
+               (evil-set-initial-state mode 'emacs))
+     
+             (evil-define-text-object my-evil-next-match (count &optional beg end type)
+               "Select next match."
+               (evil-ex-search-previous 1)
+               (evil-ex-search-next count)
+               (list evil-ex-search-match-beg evil-ex-search-match-end))
+     
+             (evil-define-text-object my-evil-previous-match (count &optional beg end type)
+               "Select previous match."
+               (evil-ex-search-next 1)
+               (evil-ex-search-previous count)
+               (list evil-ex-search-match-beg evil-ex-search-match-end))
+     
+             (define-key evil-motion-state-map "gN" 'my-evil-previous-match)
+             (define-key evil-motion-state-map "gN" 'my-evil-previous-match)
+     
+             (defadvice evil-ex-search-next (after advice-for-evil-ex-search-next activate)
+               (evil-scroll-line-to-center (line-number-at-pos)))
+     
+             (defadvice evil-ex-search-previous (after advice-for-evil-ex-search-previous activate)
+               (evil-scroll-line-to-center (line-number-at-pos)))
+     
+             ;;; esc quits
+             (define-key evil-normal-state-map [escape] 'keyboard-quit)
+             (define-key evil-visual-state-map [escape] 'keyboard-quit)
+     
+             ;; paragraph bindings
+             (dolist (key '("\M-k" "\M-j" "\M-h" "\M-l"))
+             (global-unset-key key))
+             
+           (after 'git-gutter+-autoloads
+             (define-key evil-normal-state-map (kbd "[ h") 'git-gutter+-previous-hunk)
+             (define-key evil-normal-state-map (kbd "] h") 'git-gutter+-next-hunk)
+             (define-key evil-normal-state-map (kbd ", g a") 'git-gutter+-stage-hunks)
+             (define-key evil-normal-state-map (kbd ", g r") 'git-gutter+-revert-hunks)
+             (evil-ex-define-cmd "Gw" (bind (git-gutter+-stage-whole-buffer))))
+           (define-key evil-normal-state-map (kbd "SPC B") 'ibuffer)
+     
+           (define-key evil-normal-state-map (kbd "SPC k") 'ido-kill-buffer)
+           (define-key evil-normal-state-map (kbd "SPC f") 'ido-find-file)
+     
+           (define-key evil-normal-state-map (kbd "[ SPC") (bind (evil-insert-newline-above) (forward-line)))
+           (define-key evil-normal-state-map (kbd "] SPC") (bind (evil-insert-newline-below) (forward-line -1)))
+           (define-key evil-normal-state-map (kbd "[ e") (kbd "ddkP"))
+           (define-key evil-normal-state-map (kbd "] e") (kbd "ddp"))
+           (define-key evil-normal-state-map (kbd "[ b") 'previous-buffer)
+           (define-key evil-normal-state-map (kbd "] b") 'next-buffer)
+           (define-key evil-normal-state-map (kbd "[ q") 'previous-error)
+           (define-key evil-normal-state-map (kbd "] q") 'next-error)
+     
+           (define-key evil-normal-state-map (kbd "g p") (kbd "` [ v ` ]"))
+     
+           (after 'etags-select
+             (define-key evil-normal-state-map (kbd "g ]") 'etags-select-find-tag-at-point))
+     
+           (define-key evil-normal-state-map (kbd "C-p") 'projectile-find-file)
+           (define-key evil-normal-state-map (kbd "C-q") 'universal-argument)
+     
+           (define-key evil-normal-state-map (kbd "C-h") 'evil-window-left)
+           (define-key evil-normal-state-map (kbd "C-j") 'evil-window-down)
+           (define-key evil-normal-state-map (kbd "C-k") 'evil-window-up)
+           (define-key evil-normal-state-map (kbd "C-l") 'evil-window-right)
+     
+           (define-key evil-motion-state-map "j" 'evil-next-visual-line)
+           (define-key evil-motion-state-map "k" 'evil-previous-visual-line)
+     
+           (define-key evil-normal-state-map (kbd "Y") (kbd "y$"))
+     
+           (define-key evil-visual-state-map (kbd ", e") 'eval-region)
+     
+           ;; emacs lisp
+           (after 'elisp-slime-nav-autoloads
+             (evil-define-key 'normal emacs-lisp-mode-map (kbd "g d") 'elisp-slime-nav-find-elisp-thing-at-point)
+             (evil-define-key 'normal emacs-lisp-mode-map (kbd "K") 'elisp-slime-nav-describe-elisp-thing-at-point))
+     
+           (after 'ag-autoloads
+             (define-key evil-normal-state-map (kbd "SPC /") 'ag-regexp-project-at-point))
+     
+           (after 'multiple-cursors
+             (define-key evil-visual-state-map (kbd "C->") 'mc/mark-all-like-this)
+             (define-key evil-normal-state-map (kbd "C->") 'mc/mark-next-like-this)
+             (define-key evil-normal-state-map (kbd "C-<") 'mc/mark-previous-like-this))
+     
+           (after 'magit
+             (define-key magit-status-mode-map (kbd "C-n") 'magit-goto-next-sibling-section)
+             (define-key magit-status-mode-map (kbd "C-p") 'magit-goto-previous-sibling-section)
+             (evil-add-hjkl-bindings magit-status-mode-map 'emacs
+               "K" 'magit-discard-item
+               "l" 'magit-key-mode-popup-logging
+               "h" 'magit-toggle-diff-refine-hunk))
+     
+           ;; butter fingers
+           (evil-ex-define-cmd "Q" 'evil-quit)
+           (evil-ex-define-cmd "Qa" 'evil-quit-all)
+           (evil-ex-define-cmd "QA" 'evil-quit-all)
+           )
+           )
+     )
+     )
   #+END_SRC
 ** Evil-org-mode
    Code copied directly from [[https://github.com/edwtjo/evil-org-mode/blob/master/evil-org.el][GitHub repo]].
@@ -1109,56 +1108,56 @@
 * keybindings
   Hitting =[escape]= exits minibuffers.
   #+BEGIN_SRC emacs-lisp
-  (define-key minibuffer-local-map [escape] 'my-minibuffer-keyboard-quit)
-  (define-key minibuffer-local-ns-map [escape] 'my-minibuffer-keyboard-quit)
-  (define-key minibuffer-local-completion-map [escape] 'my-minibuffer-keyboard-quit)
-  (define-key minibuffer-local-must-match-map [escape] 'my-minibuffer-keyboard-quit)
-  (define-key minibuffer-local-isearch-map [escape] 'my-minibuffer-keyboard-quit)
+    (define-key minibuffer-local-map [escape] 'my-minibuffer-keyboard-quit)
+    (define-key minibuffer-local-ns-map [escape] 'my-minibuffer-keyboard-quit)
+    (define-key minibuffer-local-completion-map [escape] 'my-minibuffer-keyboard-quit)
+    (define-key minibuffer-local-must-match-map [escape] 'my-minibuffer-keyboard-quit)
+    (define-key minibuffer-local-isearch-map [escape] 'my-minibuffer-keyboard-quit)
   #+END_SRC
   This makes evil's hjkl bindings work in the package list.
   #+BEGIN_SRC emacs-lisp
-  (after 'package
-    (after 'evil
-      (evil-add-hjkl-bindings package-menu-mode-map 'emacs))
-    )
+    (after 'package
+      (after 'evil
+        (evil-add-hjkl-bindings package-menu-mode-map 'emacs))
+      )
   #+END_SRC
   Not sure why this needs to be corrected, but presumably Project Explorer's mappings
   interfere with Evil-mode bindings for switching windows.
   #+BEGIN_SRC emacs-lisp
-  (after 'project-explorer-autoloads
-    (after 'project-explorer
-      (after 'evil
-        (define-key project-explorer-mode-map (kbd "C-l") 'evil-window-right)))
+    (after 'project-explorer-autoloads
+      (after 'project-explorer
+        (after 'evil
+          (define-key project-explorer-mode-map (kbd "C-l") 'evil-window-right)))
   #+END_SRC
   Quick hotkeys for project explorer, bound to function keys.
   #+BEGIN_SRC emacs-lisp
-    (global-set-key [f2] 'project-explorer-open)
-    (global-set-key [f3] 'pe/show-file))
-  
-  (after 'comint
-    (define-key comint-mode-map [up] 'comint-previous-input)
-    (define-key comint-mode-map [down] 'comint-next-input))
-  
-  (after 'auto-complete
-    (define-key ac-completing-map (kbd "C-n") 'ac-next)
-    (define-key ac-completing-map (kbd "C-p") 'ac-previous))
-  
-  (after 'expand-region-autoloads
-    (global-set-key (kbd "C-=") 'er/expand-region))
-  
-  ;; mouse scrolling in terminal
-  (unless (display-graphic-p)
-    (global-set-key [mouse-4] (bind (scroll-down 1)))
-    (global-set-key [mouse-5] (bind (scroll-up 1))))
-  
-  (global-set-key (kbd "C-S-<left>") 'shrink-window-horizontally)
-  (global-set-key (kbd "C-x C-b") 'ibuffer)
-  (global-set-key (kbd "C-x C-k") 'kill-this-buffer)
-  (global-set-key (kbd "C-x g") 'my-google)
-  (global-set-key (kbd "C-c e") 'my-eval-and-replace)
-  
-  ;; have no use for these default bindings
-  (global-unset-key (kbd "C-x m"))
+      (global-set-key [f2] 'project-explorer-open)
+      (global-set-key [f3] 'pe/show-file))
+    
+    (after 'comint
+      (define-key comint-mode-map [up] 'comint-previous-input)
+      (define-key comint-mode-map [down] 'comint-next-input))
+    
+    (after 'auto-complete
+      (define-key ac-completing-map (kbd "C-n") 'ac-next)
+      (define-key ac-completing-map (kbd "C-p") 'ac-previous))
+    
+    (after 'expand-region-autoloads
+      (global-set-key (kbd "C-=") 'er/expand-region))
+    
+    ;; mouse scrolling in terminal
+    (unless (display-graphic-p)
+      (global-set-key [mouse-4] (bind (scroll-down 1)))
+      (global-set-key [mouse-5] (bind (scroll-up 1))))
+    
+    (global-set-key (kbd "C-S-<left>") 'shrink-window-horizontally)
+    (global-set-key (kbd "C-x C-b") 'ibuffer)
+    (global-set-key (kbd "C-x C-k") 'kill-this-buffer)
+    (global-set-key (kbd "C-x g") 'my-google)
+    (global-set-key (kbd "C-c e") 'my-eval-and-replace)
+    
+    ;; have no use for these default bindings
+    (global-unset-key (kbd "C-x m"))
   #+END_SRC
 ** Unbound keys
    The following is taken from [[http://www.emacswiki.org/emacs/unbound.el][EmacsWiki]], and the license of =unbound.el=
@@ -1183,120 +1182,120 @@
    #+END_QUOTE
    The source code for =unbound.el= is shown below:
    #+BEGIN_SRC emacs-lisp
-  (eval-when-compile (require 'cl))       ; for `dotimes', `push' (Emacs 21)
-  
-  (defcustom unbound-modifiers '(control meta shift)
-  "Modifiers to consider when searching for unbound keys."
-  :type '(set (const control) (const meta) (const shift)
-             (const super) (const hyper) (const alt)))
-  
-  (defvar unbound-key-list
-  (let (keys)
-   (dotimes (i (- ?\d ?\  -1))
-     (push (+ i ?\ ) keys))
-   (dotimes (i 12)
-     (push (intern (format "f%s" (1+ i))) keys))
-   (append '(?\t ?\r ?\e) (nreverse keys)
-           '(insert delete home end prior next up down left right)))
-  "Keys to consider when searching for unbound keys.")
-  
-  (defun key-complexity (key)
-  "Return a complexity score for key sequence KEY.
-  Currently KEY must be of the [(control shift ?s) ...] format."
-  (let ((ret 0))
-   (dotimes (i (length key) ret)
-     (setq ret (+ ret (* i 2) (key-complexity-1 (aref key i)))))))
-  
-  ;; This is somewhat biased for US keyboards.
-  (defun key-complexity-1 (key)           ; key:=(modifiers... key)
-  (+ (if (memq 'control key) 1 0)
-    (if (memq 'meta key) 2 0)
-    (if (memq 'shift key) 3 0)
-    (if (memq 'super key) 4 0)
-    (if (memq 'hyper key) 4 0)
-    (if (memq 'alt key) 3 0)
-    (* 2 (1- (length key)))
-    (progn
-      (setq key (car (last key)))
-      (if (integerp key)
-          (cond ((and (>= key ?a) (<= key ?z)) 0)
-                ((and (>= key ?A) (<= key ?Z)) 6) ; capitals are weird
-                ((and (>= key ?0) (<= key ?9)) 2)
-                ((memq key '(?\b ?\r ?\ )) 1)
-                ;; Unshifted punctuation (US keyboards)
-                ((memq key '(?` ?- ?= ?\t ?[ ?] ?\\ ?\; ?' ?, ?. ?/)) 3)
-                ;; Other letters -- presume that one's keyboard has them if
-                ;; we're going to consider binding them.
-                ((let (case-fold-search)
-                   (string-match
-                    "[016A]" (category-set-mnemonics
-                              (char-category-set key)))) 2)
-                (t 5))
-        7))))
-  
-  ;; Quiet the byte compiler
-  (defvar unbound-keys nil
-  "Used internally by `unbound-keys'.")
-  
-  (defun unbound-keys (max)
-  "Return a list of unbound keystrokes of complexity no greater than MAX.
-  Keys are sorted by their complexity; `key-complexity' determines it."
-  (let (unbound-keys)
-   (unbound-keys-1 max nil nil)
-   (mapcar 'car (sort unbound-keys (lambda (k l) (< (cdr k) (cdr l)))))))
-  
-  ;; Adds to `unbound-keys'.
-  (defun unbound-keys-1 (max map pfx)
-  (dolist (base unbound-key-list)
-   (dotimes (modi (lsh 1 (length unbound-modifiers)))
-     (let ((key (list base)))
-       (dotimes (j (length unbound-modifiers))
-         (unless (zerop (logand modi (lsh 1 j)))
-           (push (nth j unbound-modifiers) key)))
-       (let ((total (vconcat pfx (list key))) comp)
-         ;; Don't use things that get translated and bound.  This isn't
-         ;; perfect: it assumes that the entire key sequence is translated.
-         (unless (or (let ((trans (lookup-key function-key-map total)))
-                       (and (vectorp trans) (key-binding trans)))
-                     ;; Don't add `shift' to any graphic character; can't
-                     ;; type it, or it's redundant.
-                     (and (memq 'shift key) (integerp base)
-                          (> base ?\ ) (<= base ?~))
-                     ;; Don't add `control' when it generates another
-                     ;; character we use:
-                     (and (memq 'control key) (integerp base)
-                          (< base ?`)
-                          (memq (- base 64) unbound-key-list))
-                     ;; Limit the total complexity:
-                     (> (setq comp (key-complexity total)) max))
-           (let ((res (if map (lookup-key map (vector key))
-                        (key-binding (vector (if (cdr key) key (car key)))))))
-             (cond ((keymapp res)
-                    ;; Don't add anything after an ESC, to avoid Meta
-                    ;; confusion.
-                    (unless (eq base ?\e)
-                      (unbound-keys-1 max res total)))
-                   (res)
-                   (t (push (cons total comp) unbound-keys))))))))))
-  
-  ;;;###autoload
-  (defun describe-unbound-keys (max)
-  "Display a list of unbound keystrokes of complexity no greater than MAX.
-  Keys are sorted by their complexity; `key-complexity' determines it."
-  (interactive "nMaximum key complexity: ")
-  (with-output-to-temp-buffer "*Unbound Keys*"
-   (let ((keys (unbound-keys max)))
-     (princ (format "%s unbound keys with complexity at most %s:\n"
-                    (length keys) max))
-     (princ (mapconcat 'key-description keys "\n")))))
-  
-  (provide 'unbound)
-  
-  ;; Local variables:
-  ;; indent-tabs-mode: nil
-  ;; End:
-  
-  ;; unbound.el ends here
+     (eval-when-compile (require 'cl))       ; for `dotimes', `push' (Emacs 21)
+     
+     (defcustom unbound-modifiers '(control meta shift)
+     "Modifiers to consider when searching for unbound keys."
+     :type '(set (const control) (const meta) (const shift)
+                (const super) (const hyper) (const alt)))
+     
+     (defvar unbound-key-list
+     (let (keys)
+      (dotimes (i (- ?\d ?\  -1))
+        (push (+ i ?\ ) keys))
+      (dotimes (i 12)
+        (push (intern (format "f%s" (1+ i))) keys))
+      (append '(?\t ?\r ?\e) (nreverse keys)
+              '(insert delete home end prior next up down left right)))
+     "Keys to consider when searching for unbound keys.")
+     
+     (defun key-complexity (key)
+     "Return a complexity score for key sequence KEY.
+     Currently KEY must be of the [(control shift ?s) ...] format."
+     (let ((ret 0))
+      (dotimes (i (length key) ret)
+        (setq ret (+ ret (* i 2) (key-complexity-1 (aref key i)))))))
+     
+     ;; This is somewhat biased for US keyboards.
+     (defun key-complexity-1 (key)           ; key:=(modifiers... key)
+     (+ (if (memq 'control key) 1 0)
+       (if (memq 'meta key) 2 0)
+       (if (memq 'shift key) 3 0)
+       (if (memq 'super key) 4 0)
+       (if (memq 'hyper key) 4 0)
+       (if (memq 'alt key) 3 0)
+       (* 2 (1- (length key)))
+       (progn
+         (setq key (car (last key)))
+         (if (integerp key)
+             (cond ((and (>= key ?a) (<= key ?z)) 0)
+                   ((and (>= key ?A) (<= key ?Z)) 6) ; capitals are weird
+                   ((and (>= key ?0) (<= key ?9)) 2)
+                   ((memq key '(?\b ?\r ?\ )) 1)
+                   ;; Unshifted punctuation (US keyboards)
+                   ((memq key '(?` ?- ?= ?\t ?[ ?] ?\\ ?\; ?' ?, ?. ?/)) 3)
+                   ;; Other letters -- presume that one's keyboard has them if
+                   ;; we're going to consider binding them.
+                   ((let (case-fold-search)
+                      (string-match
+                       "[016A]" (category-set-mnemonics
+                                 (char-category-set key)))) 2)
+                   (t 5))
+           7))))
+     
+     ;; Quiet the byte compiler
+     (defvar unbound-keys nil
+     "Used internally by `unbound-keys'.")
+     
+     (defun unbound-keys (max)
+     "Return a list of unbound keystrokes of complexity no greater than MAX.
+     Keys are sorted by their complexity; `key-complexity' determines it."
+     (let (unbound-keys)
+      (unbound-keys-1 max nil nil)
+      (mapcar 'car (sort unbound-keys (lambda (k l) (< (cdr k) (cdr l)))))))
+     
+     ;; Adds to `unbound-keys'.
+     (defun unbound-keys-1 (max map pfx)
+     (dolist (base unbound-key-list)
+      (dotimes (modi (lsh 1 (length unbound-modifiers)))
+        (let ((key (list base)))
+          (dotimes (j (length unbound-modifiers))
+            (unless (zerop (logand modi (lsh 1 j)))
+              (push (nth j unbound-modifiers) key)))
+          (let ((total (vconcat pfx (list key))) comp)
+            ;; Don't use things that get translated and bound.  This isn't
+            ;; perfect: it assumes that the entire key sequence is translated.
+            (unless (or (let ((trans (lookup-key function-key-map total)))
+                          (and (vectorp trans) (key-binding trans)))
+                        ;; Don't add `shift' to any graphic character; can't
+                        ;; type it, or it's redundant.
+                        (and (memq 'shift key) (integerp base)
+                             (> base ?\ ) (<= base ?~))
+                        ;; Don't add `control' when it generates another
+                        ;; character we use:
+                        (and (memq 'control key) (integerp base)
+                             (< base ?`)
+                             (memq (- base 64) unbound-key-list))
+                        ;; Limit the total complexity:
+                        (> (setq comp (key-complexity total)) max))
+              (let ((res (if map (lookup-key map (vector key))
+                           (key-binding (vector (if (cdr key) key (car key)))))))
+                (cond ((keymapp res)
+                       ;; Don't add anything after an ESC, to avoid Meta
+                       ;; confusion.
+                       (unless (eq base ?\e)
+                         (unbound-keys-1 max res total)))
+                      (res)
+                      (t (push (cons total comp) unbound-keys))))))))))
+     
+     ;;;###autoload
+     (defun describe-unbound-keys (max)
+     "Display a list of unbound keystrokes of complexity no greater than MAX.
+     Keys are sorted by their complexity; `key-complexity' determines it."
+     (interactive "nMaximum key complexity: ")
+     (with-output-to-temp-buffer "*Unbound Keys*"
+      (let ((keys (unbound-keys max)))
+        (princ (format "%s unbound keys with complexity at most %s:\n"
+                       (length keys) max))
+        (princ (mapconcat 'key-description keys "\n")))))
+     
+     (provide 'unbound)
+     
+     ;; Local variables:
+     ;; indent-tabs-mode: nil
+     ;; End:
+     
+     ;; unbound.el ends here
    #+END_SRC
 ** guide-key
    Overview from the [[https://github.com/kbkbkbkb1/guide-key][GitHub page]]
@@ -1323,9 +1322,7 @@
          (setq guide-key/guide-key-sequence '("C-x" "C-c"))
          (setq guide-key/recursive-key-sequence-flag t)
          (guide-key-mode 1)
-   #+END_SRC
-   I'm relatively new to emacs, so having a short delay is beneficial.
-   #+BEGIN_SRC emacs-lisp
+         ; I'm relatively new to emacs, so having a short delay is beneficial.
          (setq guide-key/idle-delay 0.1)
          )
      )
