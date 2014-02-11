@@ -5,8 +5,6 @@
 (require 'package)
 (package-initialize)
 (setq package-enable-at-startup nil)
+(add-to-list 'load-path (concat user-emacs-directory "config"))
 
-
-;; init.el for this setup. Must use Emacs 24
-(org-babel-load-file
-(expand-file-name "emacs-init.org" user-emacs-directory))
+(require 'startup)
