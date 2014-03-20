@@ -85,6 +85,8 @@
 (global-set-key [remap eval-expression] 'pp-eval-expression)
 (global-set-key [remap eval-last-sexp] 'pp-eval-last-sexp)
 
+(linum-mode)
+
 (add-to-list 'load-path user-emacs-directory)
 (add-to-list 'load-path (concat user-emacs-directory "config"))
 (add-to-list 'load-path (concat user-emacs-directory "elisp"))
@@ -136,7 +138,7 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
     (url-hexify-string (if mark-active
                            (buffer-substring (region-beginning) (region-end))
                          (read-string "Search Google: "))))))
-    
+
 (defun my-eval-and-replace ()
   "Replace the preceding sexp with its value."
   (interactive)
@@ -146,7 +148,7 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
              (current-buffer))
     (error (message "Invalid expression")
            (insert (current-kill 0)))))
-    
+
 (defun my-rename-current-buffer-file ()
   "Renames current buffer and file it is visiting."
   (interactive)
@@ -163,7 +165,7 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
           (set-buffer-modified-p nil)
           (message "File '%s' successfully renamed to '%s'"
                    name (file-name-nondirectory new-name)))))))
-    
+
 (defun my-delete-current-buffer-file ()
   "Removes file connected to current buffer and kills buffer."
   (interactive)
@@ -176,12 +178,12 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
         (delete-file filename)
         (kill-buffer buffer)
         (message "File '%s' successfully removed" filename)))))
-    
+
 ;; make sure $PATH is set correctly
 (require-package 'exec-path-from-shell)
 (ignore-errors ;; windows
   (exec-path-from-shell-initialize))
-    
+
 (defun my-terminal-config (&optional frame)
   "Establish settings for the current terminal."
   (if (not frame) ;; The initial call.
@@ -194,7 +196,7 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 ;; (for new terminals via emacsclient).
 (my-terminal-config)
 (add-hook 'after-make-frame-functions 'my-terminal-config)
-    
+
 (setq custom-file (concat user-emacs-directory "custom.el"))
 (when (file-exists-p custom-file)
   (load custom-file))
@@ -662,7 +664,7 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
              evil-insert-state-cursor '("orange" bar)
              )
          (setq evil-replace-state-cursor '("red" box))
-         
+
          (use-package evil-leader
            :ensure evil-leader
            :config
@@ -713,7 +715,7 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
                (global-surround-mode 1)
                )
            )
- 
+
          (dolist (mode '(eshell-mode
                          shell-mode
                          term-mode
@@ -725,36 +727,36 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
                          direx:direx-mode
                          project-explorer-mode))
            (evil-set-initial-state mode 'emacs))
- 
+
          (evil-define-text-object my-evil-next-match (count &optional beg end type)
            "Select next match."
            (evil-ex-search-previous 1)
            (evil-ex-search-next count)
            (list evil-ex-search-match-beg evil-ex-search-match-end))
- 
+
          (evil-define-text-object my-evil-previous-match (count &optional beg end type)
            "Select previous match."
            (evil-ex-search-next 1)
            (evil-ex-search-previous count)
            (list evil-ex-search-match-beg evil-ex-search-match-end))
- 
+
          (define-key evil-motion-state-map "gN" 'my-evil-previous-match)
          (define-key evil-motion-state-map "gN" 'my-evil-previous-match)
- 
+
          (defadvice evil-ex-search-next (after advice-for-evil-ex-search-next activate)
            (evil-scroll-line-to-center (line-number-at-pos)))
- 
+
          (defadvice evil-ex-search-previous (after advice-for-evil-ex-search-previous activate)
            (evil-scroll-line-to-center (line-number-at-pos)))
- 
+
          ;;; esc quits
          (define-key evil-normal-state-map [escape] 'keyboard-quit)
          (define-key evil-visual-state-map [escape] 'keyboard-quit)
- 
+
          ;; paragraph bindings
          (dolist (key '("\M-k" "\M-j" "\M-h" "\M-l"))
          (global-unset-key key))
-         
+
        (after 'git-gutter+-autoloads
          (define-key evil-normal-state-map (kbd "[ h") 'git-gutter+-previous-hunk)
          (define-key evil-normal-state-map (kbd "] h") 'git-gutter+-next-hunk)
@@ -762,10 +764,10 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
          (define-key evil-normal-state-map (kbd ", g r") 'git-gutter+-revert-hunks)
          (evil-ex-define-cmd "Gw" (bind (git-gutter+-stage-whole-buffer))))
        (define-key evil-normal-state-map (kbd "SPC B") 'ibuffer)
- 
+
        (define-key evil-normal-state-map (kbd "SPC k") 'ido-kill-buffer)
        (define-key evil-normal-state-map (kbd "SPC f") 'ido-find-file)
- 
+
        (define-key evil-normal-state-map (kbd "[ SPC") (bind (evil-insert-newline-above) (forward-line)))
        (define-key evil-normal-state-map (kbd "] SPC") (bind (evil-insert-newline-below) (forward-line -1)))
        (define-key evil-normal-state-map (kbd "[ e") (kbd "ddkP"))
@@ -774,40 +776,40 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
        (define-key evil-normal-state-map (kbd "] b") 'next-buffer)
        (define-key evil-normal-state-map (kbd "[ q") 'previous-error)
        (define-key evil-normal-state-map (kbd "] q") 'next-error)
- 
+
        (define-key evil-normal-state-map (kbd "g p") (kbd "` [ v ` ]"))
- 
+
        (after 'etags-select
          (define-key evil-normal-state-map (kbd "g ]") 'etags-select-find-tag-at-point))
- 
+
        (define-key evil-normal-state-map (kbd "C-p") 'projectile-find-file)
        (define-key evil-normal-state-map (kbd "C-q") 'universal-argument)
- 
+
        (define-key evil-normal-state-map (kbd "C-h") 'evil-window-left)
        (define-key evil-normal-state-map (kbd "C-j") 'evil-window-down)
        (define-key evil-normal-state-map (kbd "C-k") 'evil-window-up)
        (define-key evil-normal-state-map (kbd "C-l") 'evil-window-right)
- 
+
        (define-key evil-motion-state-map "j" 'evil-next-visual-line)
        (define-key evil-motion-state-map "k" 'evil-previous-visual-line)
- 
+
        (define-key evil-normal-state-map (kbd "Y") (kbd "y$"))
- 
+
        (define-key evil-visual-state-map (kbd ", e") 'eval-region)
- 
+
        ;; emacs lisp
        (after 'elisp-slime-nav-autoloads
          (evil-define-key 'normal emacs-lisp-mode-map (kbd "g d") 'elisp-slime-nav-find-elisp-thing-at-point)
          (evil-define-key 'normal emacs-lisp-mode-map (kbd "K") 'elisp-slime-nav-describe-elisp-thing-at-point))
- 
+
        (after 'ag-autoloads
          (define-key evil-normal-state-map (kbd "SPC /") 'ag-regexp-project-at-point))
- 
+
        (after 'multiple-cursors
          (define-key evil-visual-state-map (kbd "C->") 'mc/mark-all-like-this)
          (define-key evil-normal-state-map (kbd "C->") 'mc/mark-next-like-this)
          (define-key evil-normal-state-map (kbd "C-<") 'mc/mark-previous-like-this))
- 
+
        (after 'magit
          (define-key magit-status-mode-map (kbd "C-n") 'magit-goto-next-sibling-section)
          (define-key magit-status-mode-map (kbd "C-p") 'magit-goto-previous-sibling-section)
@@ -815,7 +817,7 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
            "K" 'magit-discard-item
            "l" 'magit-key-mode-popup-logging
            "h" 'magit-toggle-diff-refine-hunk))
- 
+
        ;; butter fingers
        (evil-ex-define-cmd "Q" 'evil-quit)
        (evil-ex-define-cmd "Qa" 'evil-quit-all)
@@ -845,7 +847,7 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
   (add-hook 'org-mode-hook 'evil-org-mode) ;; only load with org-mode
 ;  (add-hook 'org-src-mode-hook 'evil-org-src-mode)
 ;  (add-hook 'org-src-mode-hook (lambda () ((diminish 'evil-org-src-mode))))
-  
+
   (setq evil-auto-indent nil)
 
   (defun always-insert-item ()
