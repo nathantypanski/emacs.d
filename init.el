@@ -7,4 +7,6 @@
 (setq package-enable-at-startup nil)
 (add-to-list 'load-path (concat user-emacs-directory "config"))
 
-(require 'startup)
+(require 'my-startup)
+(require 'my-filetypes)
+(require 'my-unbound-keys)

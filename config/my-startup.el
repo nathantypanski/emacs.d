@@ -1,112 +1,3 @@
-;; Disable toolbars and splash screens.
-(when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
-
-;; Hide startup messages
-(setq inhibit-splash-screen t
-      inhibit-startup-echo-area-message t
-      inhibit-startup-message t)
-
-;; Line numbers!
-(nlinum-mode 1)
-
-;; Disable vertical scrollbars in all frames.
-(when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
-
-;; Disable the menu bar in console emacs.
-(unless (display-graphic-p) (menu-bar-mode -1))
-
-;; Set the default font (only matters in graphical mode).
-(set-default-font "Terminus-10")
-
-;; Ediff with horizontal splits.
-(setq ediff-split-window-function 'split-window-horizontally)
-
-;; disable backup
-(setq backup-inhibited t)
-
-;; disable auto save
-(setq auto-save-default nil)
-
-;; Only scroll one line when near the bottom of the screen, instead
-;; of jumping the screen around.
-(setq scroll-conservatively 9999
-      scroll-preserve-screen-position t)
-
-;; Let me write `y` or `n` even for important stuff that would normally require
-;; me to fully type `yes` or `no`.
-(defalias 'yes-or-no-p 'y-or-n-p)
-
-;; Enable the mouse in terminal mode.
-(xterm-mouse-mode 1)
-
-;; UTF-8 everything!
-(set-terminal-coding-system 'utf-8)
-(set-keyboard-coding-system 'utf-8)
-(set-selection-coding-system 'utf-8)
-(prefer-coding-system 'utf-8)
-
-;; This isn't a typewriter (even if it is a terminal); one space after sentences,
-;; please.
-(setq sentence-end-double-space nil)
-
-;; Flash the frame to represent a bell.
-(setq visible-bell t)
-
-;; The default of 16 is too low. Give me a 64-object mark ring.
-;; Across all files, make it 128.
-(setq mark-ring-max 64)
-(setq global-mark-ring-max 128)
-
-;; Display the current function name in the modeline.
-(which-function-mode 1)
-
-;; Show me the new saved file if the contents change on disk when editing.
-(global-auto-revert-mode 1)
-
-;; Typing newlines triggers indentation.
-(electric-indent-mode 1)
-
-;; Ignoring electric indentation
-(defun electric-indent-ignore-python (char)
-  "Ignore electric indentation for python-mode"
-  (if (equal major-mode 'python-mode)
-      `no-indent'
-    nil))
-(add-hook 'electric-indent-functions 'electric-indent-ignore-python)
-
-;; Enter key executes newline-and-indent
-(defun set-newline-and-indent ()
-  "Map the return key with `newline-and-indent'"
-  (local-set-key (kbd "RET") 'newline-and-indent))
-(add-hook 'python-mode-hook 'set-newline-and-indent)
-
-;; Turn word-wrap on and redefine certain (simple) commands to work on visual
-;; lines, not logical lines.
-;;
-;; Also, show trailing whitespace.
-(add-hook 'find-file-hook (lambda ()
-                            (visual-line-mode)
-                            (setq show-trailing-whitespace t)))
-
-(random t) ;; seed
-
-(plist-put minibuffer-prompt-properties
-           'point-entered 'minibuffer-avoid-prompt)
-
-(setq-default indent-tabs-mode nil)
-
-(setq-default c-default-style "linux"
-              c-basic-offset 8
-              tab-width 8)
-
-(global-set-key [remap eval-expression] 'pp-eval-expression)
-(global-set-key [remap eval-last-sexp] 'pp-eval-last-sexp)
-
-(linum-mode)
-
-(add-to-list 'load-path user-emacs-directory)
-(add-to-list 'load-path (concat user-emacs-directory "config"))
-(add-to-list 'load-path (concat user-emacs-directory "elisp"))
 (require 'cl)
 (defun require-package (package)
   "Install given PACKAGE."
@@ -122,155 +13,16 @@
 `(eval-after-load ,feature
     '(progn ,@body)))
 
-(defmacro bind (&rest commands)
-  "Convience macro which creates a lambda interactive command."
-  `(lambda ()
-     (interactive)
-;; ',@' splices an evaluated value into the resulting list
-;; That is, this will take a list and put it where this
-;; Strange-looking construct is:
-     ,@commands))
-
-(defun my-minibuffer-keyboard-quit ()
-  "Abort recursive edit.
-In Delete Selection mode, if the mark is active, just deactivate it;
-then it takes a second \\[keyboard-quit] to abort the minibuffer."
-  (interactive)
-  (if (and delete-selection-mode transient-mark-mode mark-active)
-      (setq deactivate-mark t)
-    (when (get-buffer "*Completions*") (delete-windows-on "*Completions*"))
-    (abort-recursive-edit)))
-
-(defun set-transparency (alpha)
-  "Sets the transparency of the current frame."
-  (interactive "nAlpha: ")
-  (set-frame-parameter nil 'alpha alpha))
-
-(defun my-google ()
-  "Google the selected region if any, display a query prompt otherwise."
-  (interactive)
-  (browse-url
-   (concat
-    "http://www.google.com/search?ie=utf-8&oe=utf-8&q="
-    (url-hexify-string (if mark-active
-                           (buffer-substring (region-beginning) (region-end))
-                         (read-string "Search Google: "))))))
-
-(defun my-eval-and-replace ()
-  "Replace the preceding sexp with its value."
-  (interactive)
-  (backward-kill-sexp)
-  (condition-case nil
-      (prin1 (eval (read (current-kill 0)))
-             (current-buffer))
-    (error (message "Invalid expression")
-           (insert (current-kill 0)))))
-
-(defun my-rename-current-buffer-file ()
-  "Renames current buffer and file it is visiting."
-  (interactive)
-  (let ((name (buffer-name))
-        (filename (buffer-file-name)))
-    (if (not (and filename (file-exists-p filename)))
-        (error "Buffer '%s' is not visiting a file!" name)
-      (let ((new-name (read-file-name "New name: " filename)))
-        (if (get-buffer new-name)
-            (error "A buffer named '%s' already exists!" new-name)
-          (rename-file filename new-name 1)
-          (rename-buffer new-name)
-          (set-visited-file-name new-name)
-          (set-buffer-modified-p nil)
-          (message "File '%s' successfully renamed to '%s'"
-                   name (file-name-nondirectory new-name)))))))
-
-(defun my-delete-current-buffer-file ()
-  "Removes file connected to current buffer and kills buffer."
-  (interactive)
-  (let ((filename (buffer-file-name))
-        (buffer (current-buffer))
-        (name (buffer-name)))
-    (if (not (and filename (file-exists-p filename)))
-        (ido-kill-buffer)
-      (when (yes-or-no-p "Are you sure you want to remove this file? ")
-        (delete-file filename)
-        (kill-buffer buffer)
-        (message "File '%s' successfully removed" filename)))))
-
 ;; make sure $PATH is set correctly
 (require-package 'exec-path-from-shell)
 (ignore-errors ;; windows
   (exec-path-from-shell-initialize))
 
-(defun my-terminal-config (&optional frame)
-  "Establish settings for the current terminal."
-  (if (not frame) ;; The initial call.
-      (xterm-mouse-mode 1)
-    ;; Otherwise called via after-make-frame-functions.
-    (if xterm-mouse-mode
-        ;; Re-initialise the mode in case of a new terminal.
-        (xterm-mouse-mode 1))))
-;; Evaluate both now (for non-daemon emacs) and upon frame creation
-;; (for new terminals via emacsclient).
-(my-terminal-config)
-(add-hook 'after-make-frame-functions 'my-terminal-config)
+(require 'my-functions)
+(require 'my-dirs)
 
-(setq custom-file (concat user-emacs-directory "custom.el"))
-(when (file-exists-p custom-file)
-  (load custom-file))
-
-(defun my-unmount (drive)
-  "Prompts the user for input and unmounts the given device."
-  (interactive "sunmount: ")
-  (shell-command
-    (concat "/usr/bin/gksu /usr/bin/umount " (shell-quote-argument drive))))
-
-(use-package saveplace
-  :config
-  (progn
-    (setq save-place-file (concat user-emacs-directory ".cache/places"))
-    (setq-default save-place t)
-    )
-  )
-
-(use-package savehist
-  :config
-    (progn
-        (setq savehist-file (concat user-emacs-directory ".cache/savehist")
-            savehist-additional-variables '(search ring regexp-search-ring)
-            savehist-autosave-interval 60)
-        (savehist-mode +1)
-    )
-)
-
-(use-package recentf
-  :config
-  (progn
-    (setq recentf-save-file (concat user-emacs-directory ".cache/recentf")
-          recentf-max-saved-items 1000
-          recentf-max-menu-items 500)
-    (recentf-mode +1)
-    ))
 ;; narrowing
 (put 'narrow-to-region 'disabled nil)
-
-(require 'dired-x)
-(use-package dired-x
-  :init
-  (progn
-     (add-hook 'dired-load-hook
-               (lambda ()
-                 (load "dired-x")
-                 ;; Set dired-x global variables here.  For example:
-                 ;; (setq dired-guess-shell-gnutar "gtar")
-                 ;; (setq dired-x-hands-off-my-keys nil)
-                 ))
-     (add-hook 'dired-mode-hook
-               (lambda ()
-                 ;; Set dired-x buffer-local variables here.  For example:
-                 ;; (dired-omit-mode 1)
-                 ))
-    )
-  )
 
 ;; better buffer names for duplicates
 (require 'uniquify)
@@ -565,9 +317,6 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
     (add-to-list 'auto-mode-alist '("\\.scss\\'" . scss-mode))
     )
   )
-
-;; Do verilog
-(add-to-list 'auto-mode-alist '("\\.v\\'" . verilog-mode))
 
 (use-package haskell-mode
   :ensure haskell-mode
@@ -1036,67 +785,6 @@ Currently KEY must be of the [(control shift ?s) ...] format."
               (t 5))
       7))))
 
-;; Quiet the byte compiler
-(defvar unbound-keys nil
-"Used internally by `unbound-keys'.")
-
-(defun unbound-keys (max)
-"Return a list of unbound keystrokes of complexity no greater than MAX.
-Keys are sorted by their complexity; `key-complexity' determines it."
-(let (unbound-keys)
- (unbound-keys-1 max nil nil)
- (mapcar 'car (sort unbound-keys (lambda (k l) (< (cdr k) (cdr l)))))))
-
-;; Adds to `unbound-keys'.
-(defun unbound-keys-1 (max map pfx)
-(dolist (base unbound-key-list)
- (dotimes (modi (lsh 1 (length unbound-modifiers)))
-   (let ((key (list base)))
-     (dotimes (j (length unbound-modifiers))
-       (unless (zerop (logand modi (lsh 1 j)))
-         (push (nth j unbound-modifiers) key)))
-     (let ((total (vconcat pfx (list key))) comp)
-       ;; Don't use things that get translated and bound.  This isn't
-       ;; perfect: it assumes that the entire key sequence is translated.
-       (unless (or (let ((trans (lookup-key function-key-map total)))
-                     (and (vectorp trans) (key-binding trans)))
-                   ;; Don't add `shift' to any graphic character; can't
-                   ;; type it, or it's redundant.
-                   (and (memq 'shift key) (integerp base)
-                        (> base ?\ ) (<= base ?~))
-                   ;; Don't add `control' when it generates another
-                   ;; character we use:
-                   (and (memq 'control key) (integerp base)
-                        (< base ?`)
-                        (memq (- base 64) unbound-key-list))
-                   ;; Limit the total complexity:
-                   (> (setq comp (key-complexity total)) max))
-         (let ((res (if map (lookup-key map (vector key))
-                      (key-binding (vector (if (cdr key) key (car key)))))))
-           (cond ((keymapp res)
-                  ;; Don't add anything after an ESC, to avoid Meta
-                  ;; confusion.
-                  (unless (eq base ?\e)
-                    (unbound-keys-1 max res total)))
-                 (res)
-                 (t (push (cons total comp) unbound-keys))))))))))
-
-;;;###autoload
-(defun describe-unbound-keys (max)
-"Display a list of unbound keystrokes of complexity no greater than MAX.
-Keys are sorted by their complexity; `key-complexity' determines it."
-(interactive "nMaximum key complexity: ")
-(with-output-to-temp-buffer "*Unbound Keys*"
- (let ((keys (unbound-keys max)))
-   (princ (format "%s unbound keys with complexity at most %s:\n"
-                  (length keys) max))
-   (princ (mapconcat 'key-description keys "\n")))))
-
-;; Local variables:
-;; indent-tabs-mode: nil
-;; End:
-
-;; unbound.el ends here
 
 (use-package guide-key
   :ensure guide-key
@@ -1109,7 +797,7 @@ Keys are sorted by their complexity; `key-complexity' determines it."
     ; I'm relatively new to emacs, so having a short delay is beneficial.
     (setq guide-key/idle-delay 0.1)
     )
-)
+  )
 
 (use-package ace-jump-mode
   :ensure ace-jump-mode
@@ -1127,4 +815,4 @@ Keys are sorted by their complexity; `key-complexity' determines it."
       (key-chord-define evil-normal-state-map "jl" 'ace-jump-line-mode))
     ))
 
-(provide 'startup)
+(provide 'my-startup)
