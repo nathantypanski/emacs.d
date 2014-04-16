@@ -6,6 +6,9 @@
       inhibit-startup-echo-area-message t
       inhibit-startup-message t)
 
+;; Line numbers!
+(nlinum-mode 1)
+
 ;; Disable vertical scrollbars in all frames.
 (when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 
@@ -62,6 +65,20 @@
 
 ;; Typing newlines triggers indentation.
 (electric-indent-mode 1)
+
+;; Ignoring electric indentation
+(defun electric-indent-ignore-python (char)
+  "Ignore electric indentation for python-mode"
+  (if (equal major-mode 'python-mode)
+      `no-indent'
+    nil))
+(add-hook 'electric-indent-functions 'electric-indent-ignore-python)
+
+;; Enter key executes newline-and-indent
+(defun set-newline-and-indent ()
+  "Map the return key with `newline-and-indent'"
+  (local-set-key (kbd "RET") 'newline-and-indent))
+(add-hook 'python-mode-hook 'set-newline-and-indent)
 
 ;; Turn word-wrap on and redefine certain (simple) commands to work on visual
 ;; lines, not logical lines.
@@ -347,37 +364,31 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
   :ensure purty-mode
   :config
   (progn
-    (purty-mode 1)
+    (purty-mode)
     (purty-add-pair '("::" . "::"))
     (purty-add-pair '("=>" . "⇒"))
     (purty-add-pair '("forall" . "∀"))
     (purty-add-pair '("->" . "→"))
     (purty-add-pair '("<-" . "←"))
+    (purty-add-pair '(\"Xi\" . \"Ξ\"))
     ))
 
-; (use-package linum
-;   :ensure linum
-;   :disabled
-;   :config
-;   (progn
-;     (global-linum-mode 1)
- ;    (unless window-system
- ;      (add-hook 'linum-before-numbering-hook
- ;                (lambda ()
- ;                  (setq-local linum-format-fmt
- ;                              (let ((w (length (number-to-string
- ;                                                (count-lines (point-min) (point-max))))))
- ;                                (concat "%" (number-to-string w) "d"))))))
- ;    (defun linum-format-func (line)
- ;      (concat
- ;       (propertize (format linum-format-fmt line) 'face 'linum)
- ;       (propertize " " 'face 'mode-line)))
-;     (unless window-system
-;       (setq linum-format 'linum-format-func))
-;     (setq linum-format "%4d "
-;           linum-delay t)
-;     )
-;     )
+
+;;      (lambda ()
+;;                  (setq-local linum-format-fmt
+;;                              (let ((w (length (number-to-string
+;;                                                (count-lines (point-min) (point-max))))))
+;;                                (concat "%" (number-to-string w) "d"))))))
+;;    (defun linum-format-func (line)
+;;      (concat
+;;       (propertize (format linum-format-fmt line) 'face 'linum)
+;;       (propertize " " 'face 'mode-line)))
+;;    (unless window-system
+;;      (setq linum-format 'linum-format-func))
+;;    (setq linum-format "%4d "
+;;          linum-delay t)
+;;    )
+;;  )
 
 (use-package rainbow-mode
   :ensure rainbow-mode)
@@ -390,7 +401,8 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
   )
   )
 
-(setq whitespace-style '(face lines-tail trailing))
+;; 80 column
+(setq whitespace-style '(trailing))
 (global-whitespace-mode 1)
 
 (use-package windsize
@@ -554,6 +566,9 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
     )
   )
 
+;; Do verilog
+(add-to-list 'auto-mode-alist '("\\.v\\'" . verilog-mode))
+
 (use-package haskell-mode
   :ensure haskell-mode
   :mode ("\\.hs\\'" . haskell-mode)
@@ -590,6 +605,7 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 
 (use-package ag
   :ensure ag
+  :commands (ag ag-mode ag-files ag-regexp-at-point)
   :init
   (progn
     (setq ag-highlight-search t)
@@ -602,8 +618,8 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
   :ensure project-explorer
   :commands (progn project-explorer project-explorer-open pe/show-file)
   :config
-    (progn
-      (setq pe/omit-regex (concat pe/omit-regex "\\|^node_modules$"))
+  (progn
+    (setq pe/omit-regex (concat pe/omit-regex "\\|^node_modules$"))
     )
   )
 
@@ -743,11 +759,14 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
          (define-key evil-motion-state-map "gN" 'my-evil-previous-match)
          (define-key evil-motion-state-map "gN" 'my-evil-previous-match)
 
-         (defadvice evil-ex-search-next (after advice-for-evil-ex-search-next activate)
+         (defadvice evil-ex-search-next
+           (after advice-for-evil-ex-search-next activate)
            (evil-scroll-line-to-center (line-number-at-pos)))
 
-         (defadvice evil-ex-search-previous (after advice-for-evil-ex-search-previous activate)
-           (evil-scroll-line-to-center (line-number-at-pos)))
+         (defadvice evil-ex-search-previous
+           (after advice-for-evil-ex-search-previous activate)
+           (evil-scroll-line-to-center
+            (line-number-at-pos)))
 
          ;;; esc quits
          (define-key evil-normal-state-map [escape] 'keyboard-quit)
@@ -767,6 +786,7 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 
        (define-key evil-normal-state-map (kbd "SPC k") 'ido-kill-buffer)
        (define-key evil-normal-state-map (kbd "SPC f") 'ido-find-file)
+       (define-key evil-normal-state-map (kbd "SPC F") 'dired-at-point)
 
        (define-key evil-normal-state-map (kbd "[ SPC") (bind (evil-insert-newline-above) (forward-line)))
        (define-key evil-normal-state-map (kbd "] SPC") (bind (evil-insert-newline-below) (forward-line -1)))
@@ -1072,8 +1092,6 @@ Keys are sorted by their complexity; `key-complexity' determines it."
                   (length keys) max))
    (princ (mapconcat 'key-description keys "\n")))))
 
-(provide 'unbound)
-
 ;; Local variables:
 ;; indent-tabs-mode: nil
 ;; End:
@@ -1095,7 +1113,6 @@ Keys are sorted by their complexity; `key-complexity' determines it."
 
 (use-package ace-jump-mode
   :ensure ace-jump-mode
-  :disabled t
   :config
   (progn
     (after 'evil
