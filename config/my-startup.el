@@ -20,38 +20,26 @@
 
 (require 'my-functions)
 (require 'my-dirs)
-
-;; narrowing
-(put 'narrow-to-region 'disabled nil)
-
-;; better buffer names for duplicates
-(require 'uniquify)
-(setq uniquify-buffer-name-style 'forward
-      uniquify-separator "/"
-      uniquify-ignore-buffers-re "^\\*" ; leave special buffers alone
-      uniquify-after-kill-buffer-p t)
+(require 'my-buffers)
 
 (use-package auto-complete
   :ensure auto-complete
-  :disabled f
+  :disabled t
   :diminish auto-complete-mode
   :config
   (progn
     (setq
-     ac-auto-show-menu 0.01
+     ac-auto-show-menu 0.8
      ac-auto-start 2
      ac-comphist-file (expand-file-name ".cache/ac-comphist.dat" user-emacs-directory)
-     ac-delay 0.01
-     ac-quick-help-delay 0.5
+     ac-delay 0.1
+     ac-quick-help-delay nil
      ac-use-fuzzy t
-     ac-show-menu-immediately-on-auto-complete t)
+     ac-show-menu-immediately-on-auto-complete nil)
     (dolist (mode '(vimrc-mode))
       (add-to-list 'ac-modes mode))
     (after 'linum
       (ac-linum-workaround))
-    (defadvice ac-expand (before advice-for-ac-expand activate)
-      (when (yas-expand)
-        (ac-stop)))
     (use-package auto-complete-config
       :config
       (progn
