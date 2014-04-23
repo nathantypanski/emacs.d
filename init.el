@@ -6,7 +6,9 @@
 (package-initialize)
 (setq package-enable-at-startup nil)
 (add-to-list 'load-path (concat user-emacs-directory "config"))
+(add-to-list 'load-path (concat user-emacs-directory "elisp"))
 
+(setq backup-directory-alist `(("." . "~/.emacs.d/.saves")))
 (require 'my-startup)
 (require 'my-filetypes)
 (require 'my-unbound-keys)

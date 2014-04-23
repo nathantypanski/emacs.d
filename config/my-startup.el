@@ -144,6 +144,7 @@
 ;; 80 column
 (setq whitespace-style '(trailing))
 (global-whitespace-mode 1)
+(diminish 'global-whitespace-mode)
 
 (use-package windsize
   :ensure windsize
@@ -284,6 +285,8 @@
       )
     (after 'evil
       (define-key evil-normal-state-map (kbd "SPC b") 'ibuffer)
+      (define-key evil-normal-state-map (kbd "SPC k") 'ido-kill-buffer)
+      (define-key evil-normal-state-map (kbd "SPC f") 'ido-find-file)
       )
     )
   )
@@ -312,6 +315,7 @@
   :config
   (progn
     (define-key haskell-mode-map (kbd "C-x C-d") nil)
+
     (define-key haskell-mode-map (kbd "C-c C-z") 'haskell-interactive-switch)
     (define-key haskell-mode-map (kbd "C-c C-l") 'haskell-process-load-file)
     (define-key haskell-mode-map (kbd "C-c C-b") 'haskell-interactive-switch)
@@ -362,6 +366,7 @@
 
 (use-package flycheck
    :ensure flycheck
+   :diminsh flycheck-mode 
    :config
    (progn
      (setq flycheck-check-syntax-automatically '(save mode-enabled))
@@ -372,6 +377,7 @@
     )
 )
 
+
 (show-paren-mode 1)
 
 (add-to-list 'load-path "~/devel/rust/rust/etc/emacs")
@@ -379,6 +385,7 @@
 
 (use-package elisp-slime-nav
   :ensure elisp-slime-nav
+  :diminish elisp-slime-nav-mode
   :config
   (progn
     (defun my-lisp-hook ()
@@ -519,10 +526,10 @@
          (define-key evil-normal-state-map (kbd ", g a") 'git-gutter+-stage-hunks)
          (define-key evil-normal-state-map (kbd ", g r") 'git-gutter+-revert-hunks)
          (evil-ex-define-cmd "Gw" (bind (git-gutter+-stage-whole-buffer))))
-       (define-key evil-normal-state-map (kbd "SPC B") 'ibuffer)
+       
+       ;; Normal Evil bindings
 
-       (define-key evil-normal-state-map (kbd "SPC k") 'ido-kill-buffer)
-       (define-key evil-normal-state-map (kbd "SPC f") 'ido-find-file)
+       (define-key evil-normal-state-map (kbd ", k") 'kill-buffer)
        (define-key evil-normal-state-map (kbd "SPC F") 'dired-at-point)
 
        (define-key evil-normal-state-map (kbd "[ SPC") (bind (evil-insert-newline-above) (forward-line)))
@@ -556,7 +563,9 @@
 
        ;; emacs lisp
        (after 'elisp-slime-nav-autoloads
+	 ;; TODO: how do I close this file afterwards (for an easy way to jump back to where I was working?)
          (evil-define-key 'normal emacs-lisp-mode-map (kbd "g d") 'elisp-slime-nav-find-elisp-thing-at-point)
+	 ;; TODO: find a way to make this automatically switch to the buffer it opens
          (evil-define-key 'normal emacs-lisp-mode-map (kbd "K") 'elisp-slime-nav-describe-elisp-thing-at-point))
 
        (after 'ag-autoloads
