@@ -22,10 +22,14 @@
 (setq ediff-split-window-function 'split-window-horizontally)
 
 ;; disable backup
-(setq backup-inhibited t)
-
-;; disable auto save
-(setq auto-save-default nil)
+(setq
+   backup-by-copying t      ; don't clobber symlinks
+   backup-directory-alist
+    '(("." . "~/.saves"))    ; don't litter my fs tree
+   delete-old-versions t
+   kept-new-versions 6
+   kept-old-versions 2
+   version-control t)       ; use versioned backups
 
 ;; Only scroll one line when near the bottom of the screen, instead
 ;; of jumping the screen around.
@@ -63,23 +67,6 @@
 ;; Show me the new saved file if the contents change on disk when editing.
 (global-auto-revert-mode 1)
 
-;; Typing newlines triggers indentation.
-(electric-indent-mode 1)
-
-;; Ignoring electric indentation
-(defun electric-indent-ignore-python (char)
-  "Ignore electric indentation for python-mode"
-  (if (equal major-mode 'python-mode)
-      `no-indent'
-    nil))
-(add-hook 'electric-indent-functions 'electric-indent-ignore-python)
-
-;; Enter key executes newline-and-indent
-(defun set-newline-and-indent ()
-  "Map the return key with `newline-and-indent'"
-  (local-set-key (kbd "RET") 'newline-and-indent))
-(add-hook 'python-mode-hook 'set-newline-and-indent)
-
 ;; Turn word-wrap on and redefine certain (simple) commands to work on visual
 ;; lines, not logical lines.
 ;;
@@ -107,5 +94,10 @@
 (add-to-list 'load-path user-emacs-directory)
 (add-to-list 'load-path (concat user-emacs-directory "config"))
 (add-to-list 'load-path (concat user-emacs-directory "elisp"))
+
+; Show parentheses
+(show-paren-mode 1)
+; highlight entire expression
+(setq show-paren-style 'expression)
 
 (provide 'my-globals)
