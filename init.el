@@ -2,6 +2,7 @@
                          ("org" . "http://orgmode.org/elpa/")
                          ("marmalade" . "http://marmalade-repo.org/packages/")
                          ("gnu" . "http://elpa.gnu.org/packages/")))
+(byte-recompile-directory "~/.emacs.d")
 (require 'package)
 (package-initialize)
 (setq package-enable-at-startup nil)
@@ -10,5 +11,3 @@
 
 (setq backup-directory-alist `(("." . "~/.emacs.d/.saves")))
 (require 'my-startup)
-(require 'my-filetypes)
-(require 'my-unbound-keys)

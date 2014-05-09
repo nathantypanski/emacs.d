@@ -8,9 +8,7 @@
 ;;          )
 
 ;; zsh shell script mode
-(add-to-list 'auto-mode-alist '("\\.zsh\\'" . shell-script-mode))
 (require 'rust-mode)
 
-(add-hook 'rust-mode-hook (lambda ()
-   setq tab-width 4))
+
 (provide 'my-filetypes)

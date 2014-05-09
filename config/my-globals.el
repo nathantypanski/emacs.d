@@ -1,3 +1,30 @@
+;; Don't show those horrible buttons
+(tool-bar-mode -1)
+
+;; for `dotimes', `push' (Emacs 21)
+(eval-when-compile (require 'cl))
+
+(defun require-package (package)
+  "Install given PACKAGE."
+  (unless (package-installed-p package)
+    (unless (assoc package package-archive-contents)
+      (package-refresh-contents))
+    (package-install package)))
+(require-package 'use-package)
+(require 'use-package)
+
+(defmacro after (feature &rest body)
+  "After FEATURE is loaded, evaluate BODY."
+  (declare (indent defun))
+  `(eval-after-load ,feature
+     '(progn ,@body)))
+
+;; make sure $PATH is set correctly
+(require-package 'exec-path-from-shell)
+(ignore-errors ;; windows
+  (exec-path-from-shell-initialize))
+
+
 ;; Disable toolbars and splash screens.
 (when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 
@@ -15,9 +42,6 @@
 ;; Disable the menu bar in console emacs.
 (unless (display-graphic-p) (menu-bar-mode -1))
 
-;; Set the default font (only matters in graphical mode).
-(set-default-font "Terminus-10")
-
 ;; Ediff with horizontal splits.
 (setq ediff-split-window-function 'split-window-horizontally)
 
@@ -29,6 +53,8 @@
    delete-old-versions t
    kept-new-versions 6
    kept-old-versions 2
+   vc-follow-symlinks t
+   vc-make-backup-files nil ; don't make backups for vc projects
    version-control t)       ; use versioned backups
 
 ;; Only scroll one line when near the bottom of the screen, instead
@@ -82,10 +108,6 @@
 
 (setq-default indent-tabs-mode nil)
 
-(setq-default c-default-style "linux"
-              c-basic-offset 8
-              tab-width 8)
-
 (global-set-key [remap eval-expression] 'pp-eval-expression)
 (global-set-key [remap eval-last-sexp] 'pp-eval-last-sexp)
 
@@ -99,5 +121,10 @@
 (show-paren-mode 1)
 ; highlight entire expression
 (setq show-paren-style 'expression)
+
+
+;; Set the default font (only matters in graphical mode).
+(set-face-attribute 'default nil :font "Terminus-10" )
+(set-frame-font "Terminus-10" nil t)
 
 (provide 'my-globals)

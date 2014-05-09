@@ -44,4 +44,10 @@
     )
   )
 
+;; TODO: make ffap stop jumping to completions when I want to create a file.
+;;
+;; (add-hook 'find-file-hook
+;; 	  (lambda () (
+;; )))
+
 (provide 'my-dirs)

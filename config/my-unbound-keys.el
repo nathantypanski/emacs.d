@@ -60,4 +60,53 @@ Keys are sorted by their complexity; `key-complexity' determines it."
 
 ;; unbound.el ends here
 
+(defcustom unbound-modifiers '(control meta shift)
+  "Modifiers to consider when searching for unbound keys."
+  :type '(set (const control) (const meta) (const shift)
+	      (const super) (const hyper) (const alt)))
+
+(defvar unbound-key-list
+  (let (keys)
+    (dotimes (i (- ?\d ?\  -1))
+      (push (+ i ?\ ) keys))
+    (dotimes (i 12)
+      (push (intern (format "f%s" (1+ i))) keys))
+    (append '(?\t ?\r ?\e) (nreverse keys)
+	    '(insert delete home end prior next up down left right)))
+  "Keys to consider when searching for unbound keys.")
+
+(defun key-complexity (key)
+  "Return a complexity score for key sequence KEY.
+Currently KEY must be of the [(control shift ?s) ...] format."
+  (let ((ret 0))
+    (dotimes (i (length key) ret)
+      (setq ret (+ ret (* i 2) (key-complexity-1 (aref key i)))))))
+
+;; This is somewhat biased for US keyboards.
+(defun key-complexity-1 (key)           ; key:=(modifiers... key)
+  (+ (if (memq 'control key) 1 0)
+     (if (memq 'meta key) 2 0)
+     (if (memq 'shift key) 3 0)
+     (if (memq 'super key) 4 0)
+     (if (memq 'hyper key) 4 0)
+     (if (memq 'alt key) 3 0)
+     (* 2 (1- (length key)))
+     (progn
+       (setq key (car (last key)))
+       (if (integerp key)
+	   (cond ((and (>= key ?a) (<= key ?z)) 0)
+		 ((and (>= key ?A) (<= key ?Z)) 6) ; capitals are weird
+		 ((and (>= key ?0) (<= key ?9)) 2)
+		 ((memq key '(?\b ?\r ?\ )) 1)
+		 ;; Unshifted punctuation (US keyboards)
+		 ((memq key '(?` ?- ?= ?\t ?[ ?] ?\\ ?\; ?' ?, ?. ?/)) 3)
+		 ;; Other letters -- presume that one's keyboard has them if
+		 ;; we're going to consider binding them.
+		 ((let (case-fold-search)
+		    (string-match
+		     "[016A]" (category-set-mnemonics
+			       (char-category-set key)))) 2)
+		 (t 5))
+	 7))))
+
 (provide 'my-unbound-keys)
