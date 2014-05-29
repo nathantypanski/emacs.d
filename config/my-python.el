@@ -7,32 +7,38 @@
   :init
   (progn
     (when (featurep 'python) (unload-feature 'python t))
-
+    (autoload 'python-mode "python3-mode" "Python editing mode." t)
     )
   :config
   (progn
-    (autoload 'python-mode "python-mode" "Python editing mode." t)
-    (use-package flycheck-pyflakes
-      :ensure flycheck-pyflakes
-      :commands python-mode
+    (use-package python-pylint
+      :ensure python-pylint
       :init
-      (progn (add-hook 'python-mode-hook 'flycheck-mode)
-             (add-to-list 'flycheck-disabled-checkers 'python-flake8)
-             (add-to-list 'flycheck-disabled-checkers 'python-pylint)
-      )
+      (progn
+        (add-to-list 'flycheck-disabled-checkers 'python-flake8)
+        (add-to-list 'flycheck-disabled-checkers 'python-pyflake)
+        (setq flycheck-python-pylint-executable "pylint3")
+        ;(add-hook 'python3-mode-hook 'flycheck-mode)
+        )
       :config
       (progn
-        ))
-    (add-hook 'python-mode-hook 'flycheck-mode)
+        )
+      )
     (use-package jedi
+      :commands jedi:setup
       :ensure jedi
       :init
       (progn
         (add-hook 'python-mode-hook 'jedi:setup)
+        (add-hook 'python-mode-hook 'jedi:ac-setup)
         )
       :config
       (progn
         (setq jedi:complete-on-dot t)
+        (setq jedi:environment-root "jedi")  ; or any other name you like
+        (setq jedi:environment-virtualenv
+              (append python-environment-virtualenv
+                      '("--python" "/usr/bin/python3")))
         )
       )
     )

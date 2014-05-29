@@ -18,25 +18,24 @@
 	  )
 
     (use-package evil-leader
+      :commands (evil-leader-mode)
       :ensure evil-leader
+      :demand evil-leader
+      :init
+	(global-evil-leader-mode)
       :config
       (progn
-	(global-evil-leader-mode)
 	(evil-leader/set-leader ",")
-	(setq my-eshell-buffer-count 0)
 	(evil-leader/set-key
 	  "w" 'save-buffer
 	  "e" (kbd "C-x C-e")
 	  "E" (kbd "C-M-x")
-	  "c" (bind
-	       (evil-window-split)
-	       (setq my-eshell-buffer-count (+ 1 my-eshell-buffer-count))
-	       (eshell my-eshell-buffer-count))
 	  "C" 'customize-group
 	  "b d" 'kill-this-buffer
 	  "v" (kbd "C-w v C-w l")
 	  "s" (kbd "C-w s C-w j")
 	  "g s" 'magit-status
+	  "g b" 'magit-status
 	  "g l" 'magit-log
 	  "g d" 'vc-diff
 	  "P" 'package-list-packages
@@ -44,6 +43,7 @@
 	  "h h" 'help-for-help-internal)
 	)
       )
+
     (use-package evil-nerd-commenter
       :ensure evil-nerd-commenter
       :config
@@ -71,6 +71,7 @@
     (dolist (mode '(eshell-mode
 		    shell-mode
 		    term-mode
+                    Magit
 		    terminal-mode
 		    comint-mode
 		    skewer-repl-mode
@@ -85,7 +86,9 @@
       :diminish key-chord-mode
       :config
       (progn
-        (key-chord-mode 1)))
+        (key-chord-mode 1)
+        )
+      )
 
     (evil-define-text-object my-evil-next-match (count &optional beg end type)
       "Select next match."
@@ -101,6 +104,13 @@
 
     (define-key evil-motion-state-map "gN" 'my-evil-previous-match)
     (define-key evil-motion-state-map "gN" 'my-evil-previous-match)
+
+    (define-key minibuffer-local-map [escape] 'my-minibuffer-keyboard-quit)
+    (define-key minibuffer-local-ns-map [escape] 'my-minibuffer-keyboard-quit)
+    (define-key minibuffer-local-completion-map [escape] 'my-minibuffer-keyboard-quit)
+    (define-key minibuffer-local-must-match-map [escape] 'my-minibuffer-keyboard-quit)
+    (define-key minibuffer-local-isearch-map [escape] 'my-minibuffer-keyboard-quit)
+
 
     (defadvice evil-ex-search-next
       (after advice-for-evil-ex-search-next activate)
@@ -119,22 +129,18 @@
     (dolist (key '("\M-k" "\M-j" "\M-h" "\M-l"))
       (global-unset-key key))
 
-    (after 'git-gutter+-autoloads
-      (define-key evil-normal-state-map (kbd "[ h") 'git-gutter+-previous-hunk)
-      (define-key evil-normal-state-map (kbd "] h") 'git-gutter+-next-hunk)
-      (define-key evil-normal-state-map (kbd ", g a") 'git-gutter+-stage-hunks)
-      (define-key evil-normal-state-map (kbd ", g r") 'git-gutter+-revert-hunks)
-      (evil-ex-define-cmd "Gw" (bind (git-gutter+-stage-whole-buffer))))
-
     ;; Normal Evil bindings
 
     (define-key evil-normal-state-map (kbd ", k") 'kill-buffer)
-    (define-key evil-normal-state-map (kbd "SPC F") 'dired-at-point)
+    (define-key evil-normal-state-map (kbd "SPC a") 'ag)
+    (define-key evil-normal-state-map (kbd "SPC F") 'ffap)
+    (define-key evil-visual-state-map (kbd "SPC F") 'ffap)
 
     (define-key evil-normal-state-map (kbd "[ SPC") (bind (evil-insert-newline-above) (forward-line)))
     (define-key evil-normal-state-map (kbd "] SPC") (bind (evil-insert-newline-below) (forward-line -1)))
     (define-key evil-normal-state-map (kbd "[ e") (kbd "ddkP"))
     (define-key evil-normal-state-map (kbd "] e") (kbd "ddp"))
+    (define-key evil-normal-state-map (kbd "-") (kbd "dd"))
     (define-key evil-normal-state-map (kbd "[ b") 'previous-buffer)
     (define-key evil-normal-state-map (kbd "] b") 'next-buffer)
     (define-key evil-normal-state-map (kbd "[ q") 'previous-error)
@@ -143,7 +149,8 @@
     (define-key evil-normal-state-map (kbd "g p") (kbd "` [ v ` ]"))
 
     (after 'etags-select
-      (define-key evil-normal-state-map (kbd "g ]") 'etags-select-find-tag-at-point))
+      (define-key evil-normal-state-map (kbd "g ]")
+        'etags-select-find-tag-at-point))
 
     (define-key evil-normal-state-map (kbd "C-p") 'projectile-find-file)
     (define-key evil-normal-state-map (kbd "C-q") 'universal-argument)
@@ -153,8 +160,15 @@
     (define-key evil-normal-state-map (kbd "C-k") 'evil-window-up)
     (define-key evil-normal-state-map (kbd "C-l") 'evil-window-right)
 
+    (define-key evil-normal-state-map "j" 'evil-next-visual-line)
+    (define-key evil-normal-state-map "k" 'evil-previous-visual-line)
+    (define-key evil-normal-state-map "$" 'my-smart-end)
+    (define-key evil-normal-state-map "0" 'my-smart-home)
+
     (define-key evil-motion-state-map "j" 'evil-next-visual-line)
     (define-key evil-motion-state-map "k" 'evil-previous-visual-line)
+    (define-key evil-motion-state-map "$" 'evil-end-of-line)
+    (define-key evil-motion-state-map "0" 'evil-beginning-of-line)
 
     (define-key evil-normal-state-map (kbd "Y") (kbd "y$"))
 
@@ -162,116 +176,115 @@
 
     ;; emacs lisp
     (after 'elisp-slime-nav-autoloads
-      ;; TODO: how do I close this file afterwards (for an easy way to jump back to where I was working?)
       (evil-define-key 'normal emacs-lisp-mode-map (kbd "g d") 'elisp-slime-nav-find-elisp-thing-at-point)
+
       ;; TODO: find a way to make this automatically switch to the buffer it opens
-      (evil-define-key 'normal emacs-lisp-mode-map (kbd "K") 'elisp-slime-nav-describe-elisp-thing-at-point))
+      (defun my-jump-to-elisp-docs (sym-name)
+        "Jump to a pane and do elisp-slime-nav-describe-elisp-thing-at-point"
+        (interactive (list (elisp-slime-nav--read-symbol-at-point)))
+        (help-xref-interned (intern sym-name))
+        (switch-to-buffer-other-window "*Help*" t))
 
-    (after 'ag-autoloads
-      (define-key evil-normal-state-map (kbd "SPC /") 'ag-regexp-project-at-point))
+      (evil-define-key 'normal emacs-lisp-mode-map (kbd "K")
+        'my-jump-to-elisp-docs)
 
-    (after 'multiple-cursors
-      (define-key evil-visual-state-map (kbd "C->") 'mc/mark-all-like-this)
-      (define-key evil-normal-state-map (kbd "C->") 'mc/mark-next-like-this)
-      (define-key evil-normal-state-map (kbd "C-<") 'mc/mark-previous-like-this))
+      (after 'ag-autoloads
+        (define-key evil-normal-state-map (kbd "SPC /") 'ag-regexp-project-at-point))
 
-    (after 'magit
-      (define-key magit-status-mode-map (kbd "C-n") 'magit-goto-next-sibling-section)
-      (define-key magit-status-mode-map (kbd "C-p") 'magit-goto-previous-sibling-section)
-      (evil-add-hjkl-bindings magit-status-mode-map 'emacs
-	"K" 'magit-discard-item
-	"l" 'magit-key-mode-popup-logging
-	"h" 'magit-toggle-diff-refine-hunk))
+      (after 'multiple-cursors
+        (define-key evil-visual-state-map (kbd "C->") 'mc/mark-all-like-this)
+        (Define-key evil-normal-state-map (kbd "C->") 'mc/mark-next-like-this)
+        (define-key evil-normal-state-map (kbd "C-<") 'mc/mark-previous-like-this))
 
-    ;; butter fingers
-    (evil-ex-define-cmd "Q" 'evil-quit)
-    (evil-ex-define-cmd "Qa" 'evil-quit-all)
-    (evil-ex-define-cmd "QA" 'evil-quit-all)
-    )
-  )
+      (after 'magit
+        (define-key magit-status-mode-map (kbd "C-n") 'magit-goto-next-sibling-section)
+        (define-key magit-status-mode-map (kbd "C-p") 'magit-goto-previous-sibling-section)
+        (evil-add-hjkl-bindings magit-status-mode-map 'emacs
+          "K" 'magit-discard-item
+          "l" 'magit-key-mode-popup-logging
+          "h" 'magit-toggle-diff-refine-hunk))
 
-(after 'evil
-    (define-minor-mode evil-org-mode
-        "Buffer local minor mode for evil-org"
-        :init-value nil
-        :diminsh evil-org-mode
-        :lighter " EvilOrg"
-        :keymap (make-sparse-keymap) ; defines evil-org-mode-map
-        :group 'evil-org)
-  (add-hook 'org-mode-hook 'evil-org-mode) ;; only load with org-mode
-  (setq evil-auto-indent nil)
-  (defun always-insert-item ()
-    "Force insertion of org item"
-    (if (not (org-in-item-p))
-        (insert "\n- ")
-      (org-insert-item))
-    )
+      ;; butter fingers
+      (evil-ex-define-cmd "Q" 'evil-quit)
+      (evil-ex-define-cmd "Qa" 'evil-quit-all)
+      (evil-ex-define-cmd "QA" 'evil-quit-all)
+      )
+    ))
 
-  (defun evil-org-eol-call (fun)
-    "Go to end of line and call provided function"
-    (end-of-line)
-    (funcall fun)
-    (evil-append nil)
-    )
-  ;; normal state shortcuts
-  (evil-define-key 'normal evil-org-mode-map
-    "gh" 'outline-up-heading
-    "gj" (if (fboundp 'org-forward-same-level) ;to be backward compatible with older org version
-             'org-forward-same-level
-           'org-forward-heading-same-level)
-    "gk" (if (fboundp 'org-backward-same-level)
-             'org-backward-same-level
-           'org-backward-heading-same-level)
-    "gl" 'outline-next-visible-heading
-    "t" 'org-todo
-    "T" '(lambda () (interactive) (evil-org-eol-call '(org-insert-todo-heading nil)))
-    "H" 'org-beginning-of-line
-    "L" 'org-end-of-line
-    ";t" 'org-show-todo-tree
-    "o" '(lambda () (interactive) (evil-org-eol-call 'always-insert-item))
-    "O" '(lambda () (interactive) (evil-org-eol-call 'org-insert-heading))
-    "$" 'org-end-of-line
-    "^" 'org-beginning-of-line
-    "<" 'org-metaleft
-    ">" 'org-metaright
-    "&" 'org-edit-src-code
-    ";a" 'org-agenda
-    "-" 'org-cycle-list-bullet
-    (kbd "TAB") 'org-cycle)
 
-  ;; normal & insert state shortcuts.
-  (mapc (lambda (state)
-          (evil-define-key state evil-org-mode-map
-            (kbd "M-l") 'org-metaright
-            (kbd "M-h") 'org-metaleft
-            (kbd "M-k") 'org-metaup
-            (kbd "M-j") 'org-metadown
-            (kbd "M-L") 'org-shiftmetaright
-            (kbd "M-H") 'org-shiftmetaleft
-            (kbd "M-K") 'org-shiftmetaup
-            (kbd "M-J") 'org-shiftmetadown
-            (kbd "M-o") '(lambda () (interactive)
-                           (evil-org-eol-call
-                            '(lambda()
-                               (org-insert-heading)
-                               (org-metaright))))
-            (kbd "M-t") '(lambda () (interactive)
-                           (evil-org-eol-call
-                            '(lambda()
-                               (org-insert-todo-heading nil)
-                               (org-metaright))))
-            ))
-        '(normal insert)))
-
-(define-key minibuffer-local-map [escape] 'my-minibuffer-keyboard-quit)
-(define-key minibuffer-local-ns-map [escape] 'my-minibuffer-keyboard-quit)
-(define-key minibuffer-local-completion-map [escape] 'my-minibuffer-keyboard-quit)
-(define-key minibuffer-local-must-match-map [escape] 'my-minibuffer-keyboard-quit)
-(define-key minibuffer-local-isearch-map [escape] 'my-minibuffer-keyboard-quit)
-
-(after 'package
   (after 'evil
-    (evil-add-hjkl-bindings package-menu-mode-map 'emacs))
-  )
+    (setq evil-auto-indent 1)
+
+    (define-minor-mode evil-org-mode
+      "Buffer local minor mode for evil-org"
+      :init-value nil
+      :diminsh evil-org-mode
+      :lighter " EvilOrg"
+      :keymap (make-sparse-keymap) ; defines evil-org-mode-map
+      :group 'evil-org)
+    (add-hook 'org-mode-hook 'evil-org-mode) ;; only load with org-mode
+
+    (defun always-insert-item ()
+      "Force insertion of org item"
+      (if (not (org-in-item-p))
+          (insert "\n- ")
+        (org-insert-item))
+      )
+
+    (defun evil-org-eol-call (fun)
+      "Go to end of line and call provided function"
+      (end-of-line)
+      (funcall fun)
+      (evil-append nil)
+      )
+    ;; normal state shortcuts
+    (evil-define-key 'normal evil-org-mode-map
+      "gh" 'outline-up-heading
+      "gj" (if (fboundp 'org-forward-same-level) ;to be backward compatible with older org version
+               'org-forward-same-level
+             'org-forward-heading-same-level)
+      "gk" (if (fboundp 'org-backward-same-level)
+               'org-backward-same-level
+             'org-backward-heading-same-level)
+      "gl" 'outline-next-visible-heading
+      "t" 'org-todo
+      "T" '(lambda () (interactive) (evil-org-eol-call '(org-insert-todo-heading nil)))
+      "H" 'org-beginning-of-line
+      "L" 'org-end-of-line
+      ";t" 'org-show-todo-tree
+      "o" '(lambda () (interactive) (evil-org-eol-call 'always-insert-item))
+      "O" '(lambda () (interactive) (evil-org-eol-call 'org-insert-heading))
+      "$" 'org-end-of-line
+      "^" 'org-beginning-of-line
+      "<" 'org-metaleft
+      ">" 'org-metaright
+      "&" 'org-edit-src-code
+      ";a" 'org-agenda
+      "-" 'org-cycle-list-bullet
+      (kbd "TAB") 'org-cycle)
+
+    ;; normal & insert state shortcuts.
+    (mapc (lambda (state)
+            (evil-define-key state evil-org-mode-map
+              (kbd "M-l") 'org-metaright
+              (kbd "M-h") 'org-metaleft
+              (kbd "M-k") 'org-metaup
+              (kbd "M-j") 'org-metadown
+              (kbd "M-L") 'org-shiftmetaright
+              (kbd "M-H") 'org-shiftmetaleft
+              (kbd "M-K") 'org-shiftmetaup
+              (kbd "M-J") 'org-shiftmetadown
+              (kbd "M-o") '(lambda () (interactive)
+                             (evil-org-eol-call
+                              '(lambda()
+                                 (org-insert-heading)
+                                 (org-metaright))))
+              (kbd "M-t") '(lambda () (interactive)
+                             (evil-org-eol-call
+                              '(lambda()
+                                 (org-insert-todo-heading nil)
+                                 (org-metaright))))
+              ))
+          '(normal insert)))
 
 (provide 'my-evil)

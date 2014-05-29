@@ -12,7 +12,9 @@
 (require 'my-haskell)
 (require 'my-python)
 (require 'my-unbound-keys)
+(require 'my-eyecandy)
 (require 'my-shell)
+(require 'my-filetypes)
 
 (use-package expand-region
   :ensure expand-region)
@@ -40,7 +42,7 @@
     (setq guide-key/guide-key-sequence '("C-x" "C-c"))
     (setq guide-key/recursive-key-sequence-flag t)
     (guide-key-mode 1)
-    (setq guide-key/idle-delay 0.1)
+    (setq guide-key/idle-delay 2.5)
     )
   )
 
@@ -53,12 +55,17 @@
       (after 'ace-jump-mode-autoloads
         (define-key evil-normal-state-map (kbd "SPC j") 'ace-jump-char-mode)
         (define-key evil-motion-state-map (kbd "SPC") 'evil-ace-jump-char-mode)
-        (define-key evil-motion-state-map (kbd "S-SPC") 'evil-ace-jump-line-mode))
+        (define-key evil-motion-state-map (kbd "S-SPC") 'evil-ace-jump-line-mode)
+        )
       ;; These will definitely work:
-      (key-chord-define evil-normal-state-map ";w" 'ace-jump-word-mode)
-      (key-chord-define evil-normal-state-map ";c" 'ace-jump-char-mode)
-      (key-chord-define evil-normal-state-map ";l" 'ace-jump-line-mode))
-    ))
+      (after 'key-chord-mode
+        (key-chord-define evil-normal-state-map ";w" 'ace-jump-word-mode)
+        (key-chord-define evil-normal-state-map ";c" 'ace-jump-char-mode)
+        (key-chord-define evil-normal-state-map ";l" 'ace-jump-line-mode)
+        )
+      )
+    )
+  )
 
 (require 'my-evil)
 (provide 'my-startup)

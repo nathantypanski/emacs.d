@@ -8,6 +8,13 @@
 (global-hl-line-mode t)
 (set-face-background 'hl-line "#3e4446")
 
+;; Show parentheses
+(show-paren-mode 1)
+
+;; highlight entire expression when matching paren is not visible;
+;; otherwise just highlight matching paren
+(setq show-paren-style 'mixed) ;;
+
 (use-package smart-mode-line
   :ensure smart-mode-line
   :config
@@ -30,11 +37,6 @@
 (setq whitespace-style '(trailing))
 (global-whitespace-mode 1)
 
-(use-package nlinum
-  :commands nlinum-mode
-  :init (nlinum-mode)
-  )
-
 (use-package windsize
   :ensure windsize
   :init
@@ -54,18 +56,7 @@
 ;; restore my blood pressure to normal: stop having fill-column=3 in help mode
 
 (add-hook 'help-mode-hook
-          (lambda ()
+        (lambda ()
             (set-fill-column 80)))
-
-(use-package powerline
-  :ensure powerline
-  :demand powerline
-  :init
-  (progn
-    ;; Something's b0rken here; just require it also.
-    (require 'powerline)
-    (powerline-default-theme)
-    )
-  )
 
 (provide 'my-eyecandy)

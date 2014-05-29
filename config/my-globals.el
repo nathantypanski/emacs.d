@@ -1,6 +1,12 @@
 ;; Don't show those horrible buttons
 (tool-bar-mode -1)
 
+;; break long lines at word boundaries
+(visual-line-mode 1)
+
+;; lockfiles are evil.
+(setq create-lockfiles nil)
+
 ;; for `dotimes', `push' (Emacs 21)
 (eval-when-compile (require 'cl))
 
@@ -34,8 +40,6 @@
       inhibit-startup-message t)
 
 ;; Line numbers!
-(nlinum-mode 1)
-
 ;; Disable vertical scrollbars in all frames.
 (when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 
@@ -45,17 +49,8 @@
 ;; Ediff with horizontal splits.
 (setq ediff-split-window-function 'split-window-horizontally)
 
-;; disable backup
-(setq
-   backup-by-copying t      ; don't clobber symlinks
-   backup-directory-alist
-    '(("." . "~/.saves"))    ; don't litter my fs tree
-   delete-old-versions t
-   kept-new-versions 6
-   kept-old-versions 2
-   vc-follow-symlinks t
-   vc-make-backup-files nil ; don't make backups for vc projects
-   version-control t)       ; use versioned backups
+;; I know what I'm doing; don't litter my fscking tree!
+(setq make-backup-files nil)
 
 ;; Only scroll one line when near the bottom of the screen, instead
 ;; of jumping the screen around.
@@ -68,6 +63,9 @@
 
 ;; Enable the mouse in terminal mode.
 (xterm-mouse-mode 1)
+
+;; indent by default
+(electric-indent-mode 1)
 
 ;; UTF-8 everything!
 (set-terminal-coding-system 'utf-8)
@@ -88,7 +86,7 @@
 (setq global-mark-ring-max 128)
 
 ;; Display the current function name in the modeline.
-(which-function-mode 1)
+(which-function-mode 0)
 
 ;; Show me the new saved file if the contents change on disk when editing.
 (global-auto-revert-mode 1)
@@ -111,20 +109,15 @@
 (global-set-key [remap eval-expression] 'pp-eval-expression)
 (global-set-key [remap eval-last-sexp] 'pp-eval-last-sexp)
 
-(linum-mode)
-
 (add-to-list 'load-path user-emacs-directory)
 (add-to-list 'load-path (concat user-emacs-directory "config"))
 (add-to-list 'load-path (concat user-emacs-directory "elisp"))
 
-; Show parentheses
-(show-paren-mode 1)
-; highlight entire expression
-(setq show-paren-style 'expression)
-
-
 ;; Set the default font (only matters in graphical mode).
-(set-face-attribute 'default nil :font "Terminus-10" )
-(set-frame-font "Terminus-10" nil t)
+(when window-system
+  (progn
+    (set-face-attribute 'default nil :font "Terminus-10" )
+    (set-frame-font "Terminus-10" nil t)
+))
 
 (provide 'my-globals)

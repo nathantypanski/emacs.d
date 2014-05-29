@@ -23,31 +23,27 @@
           recentf-max-saved-items 1000
           recentf-max-menu-items 500)
     (recentf-mode +1)
-    ))
+    )
+)
 
 (require 'dired-x)
 (use-package dired-x
   :init
   (progn
-     (add-hook 'dired-load-hook
-               (lambda ()
-                 (load "dired-x")
-                 ;; Set dired-x global variables here.  For example:
-                 ;; (setq dired-guess-shell-gnutar "gtar")
-                 ;; (setq dired-x-hands-off-my-keys nil)
-                 ))
-     (add-hook 'dired-mode-hook
-               (lambda ()
-                 ;; Set dired-x buffer-local variables here.  For example:
-                 ;; (dired-omit-mode 1)
-                 ))
+    (add-hook 'dired-load-hook
+              (lambda ()
+                (load "dired-x")
+                ;; Set dired-x global variables here.  For example:
+                ;; (setq dired-guess-shell-gnutar "gtar")
+                ;; (setq dired-x-hands-off-my-keys nil)
+                ))
+    (add-hook 'dired-mode-hook
+              (lambda ()
+                ;; Set dired-x buffer-local variables here.  For example:
+                ;; (diredbomit-mode 1)
+                )
+              )
     )
   )
-
-;; TODO: make ffap stop jumping to completions when I want to create a file.
-;;
-;; (add-hook 'find-file-hook
-;; 	  (lambda () (
-;; )))
 
 (provide 'my-dirs)

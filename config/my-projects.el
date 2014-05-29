@@ -8,19 +8,7 @@
   (setq etags-select-go-if-unambiguous t)
   )
 
-(use-package projectile
-  :ensure projectile
-  :diminish projectile-mode
-  :config
-  (progn
-    (setq projectile-cache-file (concat user-emacs-directory ".cache/projectile.cache"))
-    (setq projectile-known-projects-file (concat user-emacs-directory ".cache/projectile-bookmarks.eld"))
-    (add-to-list 'projectile-globally-ignored-directories "elpa")
-    (add-to-list 'projectile-globally-ignored-directories ".cache")
-    (add-to-list 'projectile-globally-ignored-directories "node_modules")
-    (projectile-global-mode 1)
-    )
-  )
+
 
 (use-package project-explorer
   :ensure project-explorer
@@ -39,12 +27,13 @@
 
 (use-package flycheck
   :ensure flycheck
+  :init (progn
+          (add-hook 'after-init-hook #'global-flycheck-mode))
   :config
   (progn
     (setq flycheck-check-syntax-automatically '(save mode-enabled))
     (setq flycheck-checkers (delq 'emacs-lisp-checkdoc flycheck-checkers))
     (setq flycheck-checkers (delq 'html-tidy flycheck-checkers))
-    (global-flycheck-mode 1)
     (after 'evil (add-hook 'flycheck-error-list-mode-hook (lambda () (evil-mode 0))))
     )
   )

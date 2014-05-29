@@ -2,10 +2,42 @@
 ;;
 ;; ido, helm, smart emacs navigation, etc.
 
+(use-package projectile
+  :ensure projectile
+  :diminish projectile-mode
+  :config
+  (progn
+    (setq projectile-cache-file (concat user-emacs-directory ".cache/projectile.cache"))
+    (setq projectile-known-projects-file (concat user-emacs-directory ".cache/projectile-bookmarks.eld"))
+    (add-to-list 'projectile-globally-ignored-directories "elpa")
+    (add-to-list 'projectile-globally-ignored-directories ".cache")
+    (add-to-list 'projectile-globally-ignored-directories "node_modules")
+    (projectile-global-mode 1)
+    )
+  )
+
 (use-package helm
   :ensure helm
   :config
   (progn
+    (require 'helm-files)
+    (after 'projectile
+      (use-package helm-projectile
+        :ensure helm-projectile))
+    (defun helm-jump ()
+      "Find files with helm, but be smart about buffers and recent files."
+      (interactive)
+      (let ((helm-ff-transformer-show-only-basename nil))
+        (helm-other-buffer '(helm-projectile-sources-list
+                             helm-source-buffers-list
+                             helm-source-recentf
+                             helm-source-bookmarks
+                             helm-source-file-cache
+                             helm-source-files-in-current-dir
+                             helm-source-locate
+                             helm-source-buffer-not-found)
+                           "*helm jump*")))
+
     (setq helm-command-prefix-key "C-c h")
     (setq helm-quick-update t)
     (use-package helm-swoop
@@ -13,24 +45,23 @@
     (after 'helm-autoloads
       (global-set-key (kbd "C-x C-m") 'helm-M-x)
       (global-set-key (kbd "C-c C-m") 'helm-M-x)
+
       (after 'evil
-        (define-key evil-visual-state-map (kbd "SPC SPC") 'smex)
-        (define-key evil-normal-state-map (kbd "SPC SPC") 'smex)
+        (define-key evil-normal-state-map (kbd "SPC f")   'helm-jump)
+        (define-key evil-visual-state-map (kbd "SPC f")   'helm-jump)
+        (define-key evil-visual-state-map (kbd "SPC SPC") 'helm-M-x)
+        (define-key evil-normal-state-map (kbd "SPC SPC") 'helm-M-x)
         (define-key evil-normal-state-map (kbd "SPC o")   'helm-imenu)
         (define-key evil-normal-state-map (kbd "SPC e")   'helm-recentf)
         (define-key evil-normal-state-map (kbd "SPC t")   'helm-etags-select)
         (define-key evil-normal-state-map (kbd "SPC l")   'helm-swoop)
         (define-key evil-normal-state-map (kbd "SPC y")   'helm-show-kill-ring)
         (define-key evil-normal-state-map [f5] 'helm-mini)))
-    (after 'projectile
-      (use-package helm-projectile
-        :ensure helm-projectile))
     (after 'flycheck
       (use-package helm-flycheck
         :ensure helm-flycheck))
     )
   )
-
 (use-package ido
   :config
   (progn
@@ -46,8 +77,31 @@
     (setq ido-use-filename-at-point 'guess)
     (setq ido-save-directory-list-file
           (concat user-emacs-directory ".cache/ido.last"))
-    (use-package ido-ubiquitous
-      :ensure ido-ubiquitous)
+    (use-package smex
+      :ensure smex
+      :config
+      (progn
+        (global-set-key (kbd "M-x") 'smex)
+        (setq smex-save-file (concat user-emacs-directory ".cache/smex-items"))
+        (smex-initialize)
+        ;; the following is from
+        ;; http://www.emacswiki.org/emacs/Smex
+
+        ;; typing SPC inserts a hyphen
+        (defadvice smex (around space-inserts-hyphen activate compile)
+          (let ((ido-cannot-complete-command
+                 `(lambda ()
+                    (interactive)
+                    (if (string= " " (this-command-keys))
+                        (insert ?-)
+                      (funcall ,ido-cannot-complete-command)))))
+            ad-do-it))
+        ;; update less often
+        (defun smex-update-after-load (unused)
+          (when (boundp 'smex-cache)
+            (smex-update)))
+        (add-hook 'after-load-functions 'smex-update-after-load)
+        ))
     (add-hook
      'ido-setup-hook
      (lambda()
@@ -57,12 +111,12 @@
            (ido-set-current-directory "~/")
            (setq ido-exit 'refresh)
            (exit-minibuffer)))))
-    (use-package ido-ubiquitous
-      :config
-      (progn
-        (ido-ubiquitous-mode 1)
-        )
-      )
+    ;;(use-package ido-ubiquitous
+    ;;  :config
+    ;;  (progn
+    ;;    (ido-ubiquitous-mode 1)
+    ;;    )
+    ;;  )
     (use-package flx-ido
       :ensure flx-ido
       :defines (ido-cur-item ido-default-item ido-cur-list)
@@ -71,17 +125,10 @@
         (flx-ido-mode 1)
         )
       )
-    (use-package ido-vertical-mode
-      :ensure ido-vertical-mode
-      :config
-      (progn
-        (ido-vertical-mode)
-        )
-      )
     (after 'evil
-      (define-key evil-normal-state-map (kbd "SPC b") 'ibuffer)
+      (define-key evil-normal-state-map (kbd "SPC b") 'helm-buffers-list)
+      (define-key evil-normal-state-map (kbd "SPC B") 'ibuffer)
       (define-key evil-normal-state-map (kbd "SPC k") 'ido-kill-buffer)
-      (define-key evil-normal-state-map (kbd "SPC f") 'ido-find-file)
       )
     )
   )
@@ -109,32 +156,6 @@
     )
     )))
 
-(use-package smex
-  :ensure smex
-  :config
-  (progn
-    (global-set-key (kbd "M-x") 'smex)
-    (setq smex-save-file (concat user-emacs-directory ".cache/smex-items"))
-    (smex-initialize)
-    ;; the following is from
-    ;; http://www.emacswiki.org/emacs/Smex
-
-    ;; typing SPC inserts a hyphen
-    (defadvice smex (around space-inserts-hyphen activate compile)
-      (let ((ido-cannot-complete-command
-             `(lambda ()
-                (interactive)
-                (if (string= " " (this-command-keys))
-                    (insert ?-)
-                  (funcall ,ido-cannot-complete-command)))))
-        ad-do-it))
-    ;; update less often
-    (defun smex-update-after-load (unused)
-      (when (boundp 'smex-cache)
-        (smex-update)))
-    (add-hook 'after-load-functions 'smex-update-after-load)
-    ))
-
 (use-package ag
   :ensure ag
   :commands (ag ag-mode ag-files ag-regexp-at-point)
@@ -143,6 +164,11 @@
     (setq ag-highlight-search t)
     (add-hook 'ag-mode-hook (lambda () (toggle-truncate-lines t)))
     (add-hook 'ag-mode-hook (lambda () (linum-mode 0)))
+    (add-hook 'ag-mode-hook (lambda () (switch-to-buffer-other-window "*ag search*")))
+    )
+  :config
+  (progn
+    (setq ag-reuse-buffers t)
     )
   )
 

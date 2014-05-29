@@ -2,9 +2,9 @@
   "Convience macro which creates a lambda interactive command."
   `(lambda ()
      (interactive)
-;; ',@' splices an evaluated value into the resulting list
-;; That is, this will take a list and put it where this
-;; Strange-looking construct is:
+     ;; ',@' splices an evaluated value into the resulting list
+     ;; That is, this will take a list and put it where this
+     ;; Strange-looking construct is:
      ,@commands))
 
 (defun my-minibuffer-keyboard-quit ()
@@ -94,6 +94,46 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
   "Prompts the user for input and unmounts the given device."
   (interactive "sunmount: ")
   (shell-command
-    (concat "/usr/bin/gksu /usr/bin/umount " (shell-quote-argument drive))))
+   (concat "/usr/bin/gksu /usr/bin/umount " (shell-quote-argument drive))))
+
+;;"Redefine the Home/End keys to (nearly) the same as visual studio
+;;behavior... special home and end by Shan-leung Maverick WOO
+;;<sw77@cornell.edu>"
+;;This is complex. In short, the 1st invocation of Home/End moves
+;;to the beginning of the *text* line (ignoring prefixed whitespace); 2nd invocation moves
+;;cursor to the beginning of the *absolute* line. Most of the time
+;;this won't matter or even be noticeable, but when it does (in
+;;comments, for example) it will be quite convenient.
+
+(defun my-smart-home ()
+  "Odd home to beginning of line, even home to beginning of
+text/code."
+  (interactive)
+  (if (and (eq last-command 'my-smart-home)
+           (/= (line-beginning-position) (point)))
+      (beginning-of-line)
+    (beginning-of-line-text)))
+
+(defun my-smart-end ()
+  "Odd end to end of line, even end to begin of text/code."
+  (interactive)
+  (if (and (eq last-command 'my-smart-end)
+           (= (line-end-position) (point)))
+      (end-of-line-text)
+    (end-of-line)))
+
+(defun end-of-line-text ()
+  "Move to end of current line and skip comments and trailing space.
+Require `font-lock'."
+  (interactive)
+  (end-of-line)
+  (let ((bol (line-beginning-position)))
+    (unless (eq font-lock-comment-face (get-text-property bol 'face))
+      (while (and (/= bol (point))
+                  (eq font-lock-comment-face
+                      (get-text-property (point) 'face)))
+        (backward-char 1))
+      (unless (= (point) bol)
+        (forward-char 1) (skip-chars-backward " \t\n"))))) ;;Done with home and end keys.
 
 (provide 'my-functions)

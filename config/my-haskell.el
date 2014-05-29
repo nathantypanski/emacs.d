@@ -8,7 +8,6 @@
   :config
   (progn
     (define-key haskell-mode-map (kbd "C-x C-d") nil)
-
     (define-key haskell-mode-map (kbd "C-c C-z") 'haskell-interactive-switch)
     (define-key haskell-mode-map (kbd "C-c C-l") 'haskell-process-load-file)
     (define-key haskell-mode-map (kbd "C-c C-b") 'haskell-interactive-switch)
@@ -27,13 +26,13 @@
                 (purty-mode)
                 )
               )
-    (use-package haskell-mode-autoloads)
-    (use-package inf-haskell)
-    (use-package haskell-cabal
-      :init
-      (define-key haskell-cabal-mode-map (kbd "C-c C-c") 'haskell-compile)
-      )
-    (use-package hs-lint)
+    (require 'haskell-mode-autoloads)
+    ;;(use-package inf-haskell)
+    ;;(use-package haskell-cabal
+    ;;  :init
+    ;;  (define-key haskell-cabal-mode-map (kbd "C-c C-c") 'haskell-compile)
+    ;;  )
     )
   )
+
 (provide 'my-haskell)

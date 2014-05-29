@@ -7,10 +7,6 @@
   (progn
     (require 'auto-complete-config)
     ;; Needed for pretty completion menus
-    (use-package pos-tip
-      :ensure pos-tip
-      :init (require 'pos-tip)
-      )
     (setq
         ac-auto-show-menu 1.0
         ac-auto-start 4
