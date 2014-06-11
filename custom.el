@@ -46,13 +46,18 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(flycheck-error ((t (:underline nil))))
  '(flycheck-info ((t (:underline nil))))
  '(flycheck-warning ((t (:underline nil))))
  '(helm-source-header ((t (:background "#2B2B2B" :foreground "#F0DFAF" :box (:line-width -1 :style released-button) :underline nil :weight bold :height 1.0 :family "Terminus"))))
+ '(highlight-indentation-face ((t (:background "#3E3E3E"))))
  '(info-title-1 ((t (:inherit info-title-2 :height 1.1))))
  '(info-title-2 ((t (:inherit info-title-3 :height 0.9))))
  '(linum ((t (:background "#4f4f4f" :foreground "#656555"))) t)
+ '(mode-line-highlight ((t (:box nil))))
+ '(mode-line-inactive ((t (:inherit mode-line :background "#404045" :foreground "gray60" :inverse-video nil :box nil :weight light))))
  '(show-paren-match ((t (:background "#4f4f4f" :weight normal))))
  '(show-paren-mismatch ((t (:background "#dca3a3" :foreground "#6f6f6f" :weight bold))))
+ '(tooltip ((t (:inherit default :background "lightyellow" :foreground "black"))))
+ '(trailing-whitespace ((t nil)))
+ '(variable-pitch ((t (:height 1.0 :family "Courier"))))
  '(whitespace-line ((t nil))))

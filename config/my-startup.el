@@ -1,23 +1,12 @@
-(require 'my-globals)
-(require 'my-functions)
-(require 'my-dirs)
-(require 'my-buffers)
-(require 'my-imenu)
-(require 'my-c)
-(require 'my-autocomplete)
-(require 'my-org)
-(require 'my-projects)
-(require 'my-interaction)
-(require 'my-scss)
-(require 'my-haskell)
-(require 'my-python)
-(require 'my-unbound-keys)
-(require 'my-eyecandy)
-(require 'my-shell)
-(require 'my-filetypes)
-
 (use-package expand-region
-  :ensure expand-region)
+  :ensure expand-region
+  :init (progn
+          (after 'evil
+            (define-key evil-normal-state-map (kbd "C-e") 'er/expand-region)
+            (define-key evil-visual-state-map (kbd "C-e") 'er/expand-region)
+            )
+          )
+  )
 
 (after 'comint
   (define-key comint-mode-map [up] 'comint-previous-input)
@@ -48,7 +37,12 @@
 
 (use-package ace-jump-mode
   :ensure ace-jump-mode
-  :config
+  :commands (evil-ace-jump-char-mode
+             evil-ace-jump-line-mode
+             ace-jump-char-mode
+             ace-jump-word-mode
+             ace-jump-line-mode)
+  :init
   (progn
     (after 'evil
       ;; Not sure if the `after` here is necessary, but anyway:
@@ -67,5 +61,6 @@
     )
   )
 
-(require 'my-evil)
+(use-package org)
+
 (provide 'my-startup)

@@ -7,17 +7,17 @@
 ;; lockfiles are evil.
 (setq create-lockfiles nil)
 
+;; also tabs are evil
+(setq-default indent-tabs-mode nil)
+
+;'Woman' > 'man'.
+(defalias 'man 'woman)
+
+;; Disable toolbars and splash screens.
+(when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
+
 ;; for `dotimes', `push' (Emacs 21)
 (eval-when-compile (require 'cl))
-
-(defun require-package (package)
-  "Install given PACKAGE."
-  (unless (package-installed-p package)
-    (unless (assoc package package-archive-contents)
-      (package-refresh-contents))
-    (package-install package)))
-(require-package 'use-package)
-(require 'use-package)
 
 (defmacro after (feature &rest body)
   "After FEATURE is loaded, evaluate BODY."
@@ -26,13 +26,11 @@
      '(progn ,@body)))
 
 ;; make sure $PATH is set correctly
-(require-package 'exec-path-from-shell)
+(use-package exec-path-from-shell
+  :ensure exec-path-from-shell)
+
 (ignore-errors ;; windows
   (exec-path-from-shell-initialize))
-
-
-;; Disable toolbars and splash screens.
-(when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 
 ;; Hide startup messages
 (setq inhibit-splash-screen t
@@ -43,6 +41,9 @@
 ;; Disable vertical scrollbars in all frames.
 (when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 
+;; Disable menu bar for all (trying this out)
+(menu-bar-mode -1)
+
 ;; Disable the menu bar in console emacs.
 (unless (display-graphic-p) (menu-bar-mode -1))
 
@@ -50,6 +51,7 @@
 (setq ediff-split-window-function 'split-window-horizontally)
 
 ;; I know what I'm doing; don't litter my fscking tree!
+(setq backup-directory-alist `(("." . "~/.emacs.d/.saves")))
 (setq make-backup-files nil)
 
 ;; Only scroll one line when near the bottom of the screen, instead
@@ -63,9 +65,6 @@
 
 ;; Enable the mouse in terminal mode.
 (xterm-mouse-mode 1)
-
-;; indent by default
-(electric-indent-mode 1)
 
 ;; UTF-8 everything!
 (set-terminal-coding-system 'utf-8)
@@ -97,21 +96,22 @@
 ;; Also, show trailing whitespace.
 (add-hook 'find-file-hook (lambda ()
                             (visual-line-mode)
-                            (setq show-trailing-whitespace t)))
+                            (setq show-trailing-whitespace t)
+                            (electric-indent-mode 1)
+                            )
+          )
 
 (random t) ;; seed
 
 (plist-put minibuffer-prompt-properties
            'point-entered 'minibuffer-avoid-prompt)
 
-(setq-default indent-tabs-mode nil)
 
 (global-set-key [remap eval-expression] 'pp-eval-expression)
 (global-set-key [remap eval-last-sexp] 'pp-eval-last-sexp)
 
-(add-to-list 'load-path user-emacs-directory)
-(add-to-list 'load-path (concat user-emacs-directory "config"))
-(add-to-list 'load-path (concat user-emacs-directory "elisp"))
+;;(add-to-list 'load-path (concat user-emacs-directory "config"))
+;;(add-to-list 'load-path (concat user-emacs-directory "elisp"))
 
 ;; Set the default font (only matters in graphical mode).
 (when window-system

@@ -7,12 +7,13 @@
   )
 
 (use-package savehist
+  :idle
   :config
     (progn
         (setq savehist-file (concat user-emacs-directory ".cache/savehist")
             savehist-additional-variables '(search ring regexp-search-ring)
             savehist-autosave-interval 60)
-        (savehist-mode +1)
+        (savehist-mode t)
     )
 )
 
@@ -28,6 +29,7 @@
 
 (require 'dired-x)
 (use-package dired-x
+  :commands dired
   :init
   (progn
     (add-hook 'dired-load-hook

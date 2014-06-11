@@ -24,6 +24,7 @@
     (after 'evil
       (define-key evil-insert-state-map (kbd "C-<tab>") 'yas-expand)
       )
+    (
     )
   )
 

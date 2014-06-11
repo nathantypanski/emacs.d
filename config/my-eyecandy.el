@@ -13,13 +13,18 @@
 
 ;; highlight entire expression when matching paren is not visible;
 ;; otherwise just highlight matching paren
-(setq show-paren-style 'mixed) ;;
+(setq show-paren-style 'mixed)
+
+(setq whitespace-style '(trailing))
+(global-whitespace-mode 1)
 
 (use-package smart-mode-line
   :ensure smart-mode-line
+  :idle
   :config
   (progn
     (setq sml/theme 'dark)
+    (setq sml/mode-width 30)
     (sml/setup)
     ))
 
@@ -28,14 +33,12 @@
 
 (use-package rainbow-delimiters
   :ensure rainbow-delimiters
+  :idle
   :init
   (progn
     (global-rainbow-delimiters-mode)
     )
   )
-
-(setq whitespace-style '(trailing))
-(global-whitespace-mode 1)
 
 (use-package windsize
   :ensure windsize

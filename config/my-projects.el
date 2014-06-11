@@ -34,7 +34,7 @@
     (setq flycheck-check-syntax-automatically '(save mode-enabled))
     (setq flycheck-checkers (delq 'emacs-lisp-checkdoc flycheck-checkers))
     (setq flycheck-checkers (delq 'html-tidy flycheck-checkers))
-    (after 'evil (add-hook 'flycheck-error-list-mode-hook (lambda () (evil-mode 0))))
+    (after 'evil (add-hook 'flycheck-error-list-mode-hook (lambda () (evil-local-mode 0))))
     )
   )
 
