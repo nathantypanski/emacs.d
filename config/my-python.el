@@ -40,10 +40,23 @@
       (electric-indent-local-mode -1)
       )
 
+    (defun my-use-pylint3 ()
+      "Change pylint to use python3."
+      (setq flycheck-python-pylint-executable "pylint3")
+      )
+
+    (defun my-use-pylint2 ()
+      "Change pylint to use python3."
+      (setq flycheck-python-pylint-executable "pylint2")
+      )
+
     (setq py-empty-line-closes-p nil)
 
     (add-hook 'python-mode-hook 'my-python-no-evil-indent)
     (add-hook 'python-mode-hook 'my-disable-electric-indent)
+
+    (add-hook 'python3-mode-hook 'my-use-pylint3)
+    (add-hook 'python2-mode-hook 'my-use-pylint2)
 
     (use-package python-pylint
       :ensure python-pylint
