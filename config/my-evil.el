@@ -72,6 +72,7 @@
                     esup
                     Magit
 		    terminal-mode
+                    flycheck-error-list-mode
 		    comint-mode
 		    skewer-repl-mode
 		    profiler-report-mode
@@ -79,6 +80,7 @@
 		    direx:direx-mode
 		    project-explorer-mode))
       (evil-set-initial-state mode 'emacs))
+    (evil-set-initial-state 'flycheck-error-list-mode 'emacs)
 
     (use-package key-chord
       :ensure key-chord
@@ -141,7 +143,7 @@
     (add-hook 'evil-insert-state-exit-hook 'my-delete-trailing-whitespace-at-point)
 
     ;; entering insert mode -> indent according to mode
-    (add-hook 'evil-insert-state-entry-hook 'indent-according-to-mode)
+    ;; (add-hook 'evil-insert-state-entry-hook 'indent-according-to-mode)
 
 
     ;; paragraph bindings

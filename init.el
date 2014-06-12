@@ -19,6 +19,7 @@
 (require 'my-dirs)
 (require 'my-buffers)
 (require 'my-imenu)
+(require 'my-elisp)
 (require 'my-c)
 (require 'my-autocomplete)
 (require 'my-org)
