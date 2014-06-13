@@ -6,20 +6,36 @@
 (require 'python-mode)
 
 (use-package python-mode
-  :mode ("\\.py\\'" . python3-mode)
+  :mode ("\\.py\\'" . python-mode)
   :init
   (progn
     (when (featurep 'python) (unload-feature 'python t))
-    (autoload 'python-mode "python3-mode" "Python editing mode." t)
+    (autoload 'python-mode "python-mode" "Python editing mode." t)
+    (add-to-list 'auto-mode-alist '("/PYDOCS\\'" . help-mode))
     )
   :config
   (progn
     (setq py-electric-comment-p 1)
     (setq py-electric-comment-add-space-p 1)
     (setq py-tab-indent nil)
-    (setq py-return-key 'newline)
+    (setq py-return-key 'py-newline-and-indent)
+
     (setq py-complete-function 'ipython-complete)
     (define-key python-mode-map (kbd "RET") 'py-newline-and-indent)
+
+    (defun my-jump-to-python-docs (w)
+      "Jump to a pane and do py-documentation"
+      (interactive (list (let*
+                             ((word (thing-at-point 'word)))
+                           word)))
+      (shell-command
+       (concat py-shell-name " -c \"from pydoc import help;help(\'" w "\')\"")
+       "*PYDOCS*")
+      (switch-to-buffer-other-window "*PYDOCS*" t))
+
+    (evil-define-key 'normal python-mode-map (kbd "K")
+      'my-jump-to-python-docs)
+
     (defun my-python-maybe-indent ()
       "Indent to python-mode's computed indentation for empty lines,
        but do nothing for lines with content."
@@ -30,7 +46,8 @@
       (after 'evil
         (progn
           (setq-local indent-line-function 'my-python-maybe-indent)
-          (bind-key (kbd "RET") 'evil-newline-indent)
+          ;; (bind-key (kbd "RET") 'evil-newline-indent)
+          (evil-define-key 'insert python-mode-map (kbd "RET") 'py-newline-and-indent)
           )
         )
       )
@@ -40,23 +57,23 @@
       (electric-indent-local-mode -1)
       )
 
-    (defun my-use-pylint3 ()
-      "Change pylint to use python3."
-      (setq flycheck-python-pylint-executable "pylint3")
-      )
+    (defun my-set-pylint-from-venv ()
+      "Change flycheck pylint executable to virtualenv executable"
+      (if (and (boundp 'virtualenv-name)
+               virtualenv-name
+               (virtualenv-p (py--normalize-directory virtualenv-name)))
+          (let ((pylintpath
+                 (concat (py--normalize-directory virtualenv-name) "bin/pylint")
 
-    (defun my-use-pylint2 ()
-      "Change pylint to use python3."
-      (setq flycheck-python-pylint-executable "pylint2")
-      )
+                 ))
+            (setq flycheck-python-pylint-executable pylintpath)
+            )))
 
     (setq py-empty-line-closes-p nil)
 
     (add-hook 'python-mode-hook 'my-python-no-evil-indent)
     (add-hook 'python-mode-hook 'my-disable-electric-indent)
-
-    (add-hook 'python3-mode-hook 'my-use-pylint3)
-    (add-hook 'python2-mode-hook 'my-use-pylint2)
+    (add-hook 'python-mode-hook 'my-set-pylint-from-venv)
 
     (use-package python-pylint
       :ensure python-pylint
@@ -64,7 +81,6 @@
       (progn
         (add-to-list 'flycheck-disabled-checkers 'python-flake8)
         (add-to-list 'flycheck-disabled-checkers 'python-pyflake)
-        (setq flycheck-python-pylint-executable "pylint3")
         (add-hook 'python-mode-hook 'flycheck-mode)
         )
       :config
@@ -82,7 +98,7 @@
       :config
       (progn
         (setq jedi:complete-on-dot t)
-        (setq jedi:environment-root "jedi")  ; or any other name you like
+        (setq jedi:environment-root "jedi") ; or any other name you like
         (setq jedi:environment-virtualenv
               (append python-environment-virtualenv
                       '("--python" "/usr/bin/python3")))
