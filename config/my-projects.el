@@ -8,8 +8,6 @@
   (setq etags-select-go-if-unambiguous t)
   )
 
-
-
 (use-package project-explorer
   :ensure project-explorer
   :commands (progn project-explorer project-explorer-open pe/show-file)
@@ -35,6 +33,20 @@
     (setq flycheck-checkers (delq 'emacs-lisp-checkdoc flycheck-checkers))
     (setq flycheck-checkers (delq 'html-tidy flycheck-checkers))
     (after 'evil (add-hook 'flycheck-error-list-mode-hook (lambda () (evil-local-mode 0))))
+    )
+  )
+
+(use-package magit
+  :ensure magit
+  :config
+  (after 'magit
+    (after 'evil
+      (define-key magit-status-mode-map (kbd "C-n") 'magit-goto-next-sibling-section)
+      (define-key magit-status-mode-map (kbd "C-p") 'magit-goto-previous-sibling-section)
+      (evil-add-hjkl-bindings magit-status-mode-map 'emacs
+        "K" 'magit-discard-item
+        "l" 'magit-key-mode-popup-logging
+        "h" 'magit-toggle-diff-refine-hunk))
     )
   )
 
