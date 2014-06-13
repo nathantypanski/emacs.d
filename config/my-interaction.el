@@ -133,6 +133,9 @@
       :config
       (progn
         (flx-ido-mode 1)
+        ;; disable ido faces to see flx highlights.
+        (setq ido-use-faces nil)
+        (setq flx-ido-use-faces t)
         )
       )
     (use-package ido-vertical-mode
@@ -162,21 +165,20 @@
     (use-package ibuffer-vc
       :ensure ibuffer-vc
       :config (progn
-    (setq ibuffer-saved-filter-groups
-	   (quote (("default"
-                   ("dired" (mode . dired-mode))
-                   ("haskell" (mode . haskell-mode))
-                   ("python" (mode . python-mode))
-                   ("notes" (or
-                               (name . "^\\*Calendar\\*$")
-                               (name . "^diary$")
-                               (mode . org-mode)))
-		   ("*buffer*" (name . "\\*.*\\*"))
-
-		   ))))
-
-    )
-    )))
+                (setq ibuffer-saved-filter-groups
+                      (quote (("default"
+                               ("dired" (mode . dired-mode))
+                               ("haskell" (mode . haskell-mode))
+                               ("python" (mode . python-mode))
+                               ("notes" (or
+                                         (name . "^\\*Calendar\\*$")
+                                         (name . "^diary$")
+                                         (mode . org-mode)))
+                               ("*buffer*" (name . "\\*.*\\*"))
+                               )))
+                      ))
+      ))
+  )
 
 (use-package ag
   :ensure ag
@@ -194,38 +196,6 @@
     )
   )
 
-(use-package elisp-slime-nav
-  :ensure elisp-slime-nav
-  :mode ("\\.el\\'" . emacs-lisp-mode)
-  :commands my-jump-to-elisp-docs
-  :diminish elisp-slime-nav-mode
-  :init (progn
-          (defun my-lisp-hook ()
-            (progn
-              (elisp-slime-nav-mode)
-              (turn-on-eldoc-mode)
-              )
-            )
-          (add-hook 'emacs-lisp-mode-hook 'my-lisp-hook)
-          (add-hook 'lisp-interaction-mode-hook 'my-lisp-hook)
-          (add-hook 'ielm-mode-hook 'my-lisp-hook)
-          (defun my-jump-to-elisp-docs (sym-name)
-            "Jump to a pane and do elisp-slime-nav-describe-elisp-thing-at-point"
-            (interactive (list (elisp-slime-nav--read-symbol-at-point)))
-            (help-xref-interned (intern sym-name))
-            (switch-to-buffer-other-window "*Help*" t))
-          )
-  :config
-  (progn
-    (after 'evil
-      (evil-define-key 'normal emacs-lisp-mode-map (kbd "g d")
-        'elisp-slime-nav-find-elisp-thing-at-point)
-      ;; TODO: find a way to make this automatically switch to the buffer it opens
 
-      (evil-define-key 'normal emacs-lisp-mode-map (kbd "K")
-        'my-jump-to-elisp-docs)
-      )
-    )
-  )
 
 (provide 'my-interaction)
