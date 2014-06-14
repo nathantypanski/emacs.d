@@ -32,9 +32,10 @@
        (concat py-shell-name " -c \"from pydoc import help;help(\'" w "\')\"")
        "*PYDOCS*")
       (switch-to-buffer-other-window "*PYDOCS*" t))
-
-    (evil-define-key 'normal python-mode-map (kbd "K")
-      'my-jump-to-python-docs)
+    (after 'evil
+      (evil-define-key 'normal python-mode-map (kbd "K")
+        'my-jump-to-python-docs)
+      )
 
     (defun my-python-maybe-indent ()
       "Indent to python-mode's computed indentation for empty lines,
@@ -57,23 +58,54 @@
       (electric-indent-local-mode -1)
       )
 
+    ;; Set pylint from venv. See my question at:
+    ;;
+    ;; https://answers.launchpad.net/python-mode/+question/250108
+
+    (defvar py-pylint-default (executable-find "pylint"))
+
     (defun my-set-pylint-from-venv ()
       "Change flycheck pylint executable to virtualenv executable"
-      (if (and (boundp 'virtualenv-name)
-               virtualenv-name
-               (virtualenv-p (py--normalize-directory virtualenv-name)))
-          (let ((pylintpath
-                 (concat (py--normalize-directory virtualenv-name) "bin/pylint")
+      ;; virtualenv-name might be nil
+      (when (and (boundp 'virtualenv-name)(stringp virtualenv-name)
+                 (virtualenv-p (py--normalize-directory
+                                virtualenv-name)))
+        (let ((pylintpath
+               (concat (py--normalize-directory virtualenv-name)
+                       "bin/pylint")))
+          (setq flycheck-python-pylint-executable pylintpath))))
 
-                 ))
-            (setq flycheck-python-pylint-executable pylintpath)
-            )))
+    ;; My old way of doing this
+    ;;
+    ;;(defun my-set-pylint-from-venv ()
+    ;;  "Change flycheck pylint executable to virtualenv executable"
+    ;;  (if (and (boundp 'virtualenv-name)
+    ;;           virtualenv-name
+    ;;           (virtualenv-p (py--normalize-directory virtualenv-name)))
+    ;;      (let ((pylintpath
+    ;;             (concat (py--normalize-directory virtualenv-name) "bin/pylint")
 
-    (setq py-empty-line-closes-p nil)
+    ;;             ))
+    ;;        (setq flycheck-python-pylint-executable pylintpath)
+    ;;        )))
+
+    (defun my-reset-pylint ()
+      "Set flycheck `pylint' executable to default value. "
+      (interactive)
+      (setq flycheck-python-pylint-executable py-pylint-default))
+
+    (defadvice virtualenv-activate (after my-set-pylint-from-venv activate)
+      (my-set-pylint-from-venv))
+    (ad-activate 'virtualenv-activate)
+
+    (defadvice virtualenv-deactivate (after my-reset-pylint activate)
+      (my-reset-pylint))
+    (ad-activate 'virtualenv-deactivate)
+
+    setq py-empty-line-closes-p nil)
 
     (add-hook 'python-mode-hook 'my-python-no-evil-indent)
     (add-hook 'python-mode-hook 'my-disable-electric-indent)
-    (add-hook 'python-mode-hook 'my-set-pylint-from-venv)
 
     (use-package python-pylint
       :ensure python-pylint
