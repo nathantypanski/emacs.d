@@ -17,6 +17,7 @@
         )
       (turn-on-haskell-indentation))
     (add-hook 'haskell-mode-hook 'my-haskell-autoloads)
+(after 'evil
     (evil-define-key 'normal haskell-mode-map (kbd "C-x C-d") nil)
     (evil-define-key 'normal haskell-mode-map (kbd "C-c C-z") 'haskell-interactive-switch)
     (evil-define-key 'normal haskell-mode-map (kbd "C-c C-l") 'haskell-process-load-file)
@@ -26,5 +27,6 @@
     (evil-define-key 'normal haskell-mode-map (kbd "C-c M-.") nil)
     (evil-define-key 'normal haskell-mode-map (kbd "C-c C-d") nil))
   )
+)
 
 (provide 'my-haskell)
