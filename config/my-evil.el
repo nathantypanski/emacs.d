@@ -130,6 +130,8 @@
 
     (define-key evil-normal-state-map (kbd ", k") 'kill-buffer)
     (define-key evil-normal-state-map (kbd "SPC a") 'ag)
+    (define-key evil-normal-state-map (kbd "SPC A") 'apropos)
+
     (define-key evil-normal-state-map (kbd "SPC F") 'ffap)
     (define-key evil-visual-state-map (kbd "SPC F") 'ffap)
 
