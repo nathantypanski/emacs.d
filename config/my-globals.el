@@ -10,6 +10,9 @@
 ;; also tabs are evil
 (setq-default indent-tabs-mode nil)
 
+;; number columns
+(column-number-mode)
+
 ;'Woman' > 'man'.
 (defalias 'man 'woman)
 
