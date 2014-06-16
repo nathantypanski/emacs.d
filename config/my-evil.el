@@ -129,7 +129,8 @@
     ;; entering insert mode -> indent according to mode
     ;; (add-hook 'evil-insert-state-entry-hook 'indent-according-to-mode)
     ;; Normal Evil bindings
-    (define-key evil-insert-state-map (kbd "<S-backspace>") 'backward-kill-word)
+    (define-key evil-insert-state-map (kbd "<S-backspace>")
+      'my-backward-delete-word)
 
     (define-key evil-normal-state-map (kbd ", k") 'kill-buffer)
     (define-key evil-normal-state-map (kbd "SPC a") 'ag)

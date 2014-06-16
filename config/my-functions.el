@@ -136,4 +136,16 @@ Require `font-lock'."
       (unless (= (point) bol)
         (forward-char 1) (skip-chars-backward " \t\n"))))) ;;Done with home and end keys.
 
+(defun my-delete-word (arg)
+  "Kill characters forward until encountering the end of a word.
+With argument ARG, do this that many times."
+  (interactive "p")
+  (delete-region (point) (progn (forward-word arg) (point))))
+
+(defun my-backward-delete-word (arg)
+  "Delete characters backward until encountering the beginning of a word.
+With argument ARG, do this that many times."
+  (interactive "p")
+  (my-delete-word (- arg)))
+
 (provide 'my-functions)
