@@ -102,7 +102,7 @@
       (my-reset-pylint))
     (ad-activate 'virtualenv-deactivate)
 
-    setq py-empty-line-closes-p nil)
+    (setq py-empty-line-closes-p nil)
 
     (add-hook 'python-mode-hook 'my-python-no-evil-indent)
     (add-hook 'python-mode-hook 'my-disable-electric-indent)
