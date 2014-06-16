@@ -76,6 +76,8 @@
     (evil-set-initial-state 'esup-mode 'emacs)
     (evil-set-initial-state 'diff-mode 'emacs)
     (evil-set-initial-state 'haskell-interactive-mode 'emacs)
+    (evil-set-initial-state 'term-mode 'emacs)
+    (evil-set-initial-state 'multi-term-mode 'emacs)
 
     (use-package key-chord
       :ensure key-chord
@@ -127,6 +129,7 @@
     ;; entering insert mode -> indent according to mode
     ;; (add-hook 'evil-insert-state-entry-hook 'indent-according-to-mode)
     ;; Normal Evil bindings
+    (define-key evil-insert-state-map (kbd "<S-backspace>") 'backward-kill-word)
 
     (define-key evil-normal-state-map (kbd ", k") 'kill-buffer)
     (define-key evil-normal-state-map (kbd "SPC a") 'ag)
@@ -168,8 +171,7 @@
       "l" 'evil-forward-word-begin
       "/" 'evil-search-forward
       "?" 'evil-search-backward
-    )
-  )
+    ))
 )
 
 (provide 'my-evil)
