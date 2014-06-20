@@ -15,7 +15,8 @@
     )
   :config
   (progn
-    (setq py-electric-comment-p 1)
+    (setq py-electric-comment-p 0)
+
     (setq py-electric-comment-add-space-p 1)
     (setq py-tab-indent nil)
     (setq py-return-key 'py-newline-and-indent)

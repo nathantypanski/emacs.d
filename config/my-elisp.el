@@ -1,3 +1,8 @@
+;; Always eldoc in lispy modes.
+(add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode
+(add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
+(add-hook 'ielm-mode-hook 'turn-on-eldoc-mode))
+
 (use-package elisp-slime-nav
   :ensure elisp-slime-nav
   :mode ("\\.el\\'" . emacs-lisp-mode)
@@ -32,10 +37,15 @@
     )
   )
 
+(defun my-electric-lisp-comment ()
+    "Autocomment things for lisp."
+  (interactive)
+  (insert ";; "))
+
 (after 'evil
-  (evil-define-key 'normal emacs-lisp-mode-map
-    "\C-c\C-c" 'eval-defun
-    )
+  (evil-define-key 'insert emacs-lisp-mode-map ";" 'my-electric-lisp-comment)
+
+  (evil-define-key 'normal emacs-lisp-mode-map "\C-c\C-c" 'eval-defun)
   (use-package evil-paredit
     :ensure evil-paredit
     :commands enable-paredit-mode

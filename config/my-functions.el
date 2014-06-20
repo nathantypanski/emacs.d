@@ -137,7 +137,7 @@ Require `font-lock'."
         (forward-char 1) (skip-chars-backward " \t\n"))))) ;;Done with home and end keys.
 
 (defun my-delete-word (arg)
-  "Kill characters forward until encountering the end of a word.
+  "Delete characters forward until encountering the end of a word.
 With argument ARG, do this that many times."
   (interactive "p")
   (delete-region (point) (progn (forward-word arg) (point))))

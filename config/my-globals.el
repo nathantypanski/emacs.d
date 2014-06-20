@@ -54,8 +54,13 @@
 (setq ediff-split-window-function 'split-window-horizontally)
 
 ;; I know what I'm doing; don't litter my fscking tree!
+
+(defvar my-auto-save-folder "~/.emacs.d/.saves/")
 (setq backup-directory-alist `(("." . "~/.emacs.d/.saves")))
-(setq make-backup-files nil)
+(setq auto-save-file-name-transforms
+      `((".*" ,my-auto-save-folder t)))
+
+;; (setq make-backup-files nil)
 
 ;; Only scroll one line when near the bottom of the screen, instead
 ;; of jumping the screen around.
