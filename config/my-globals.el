@@ -128,9 +128,6 @@
     (set-frame-font "Terminus-10" nil t)
 ))
 
-(after 'expand-region-autoloads
-  (global-set-key (kbd "C-=") 'er/expand-region))
-
 (global-set-key (kbd "C-x C-b") 'ibuffer)
 (global-set-key (kbd "C-x C-k") 'kill-this-buffer)
 (global-set-key (kbd "C-x g") 'my-google)
@@ -138,9 +135,5 @@
 
 ;; have no use for these default bindings
 (global-unset-key (kbd "C-x m"))
-
-
-
-
 
 (provide 'my-globals)
