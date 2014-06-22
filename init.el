@@ -32,6 +32,5 @@
 (require 'my-eyecandy)
 (require 'my-shell)
 (require 'my-filetypes)
-(require 'my-startup)
 (require 'my-term)
 (require 'my-evil)

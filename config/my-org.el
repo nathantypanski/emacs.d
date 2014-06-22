@@ -1,3 +1,4 @@
+
 (use-package org
   :commands org-mode
   :init (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
