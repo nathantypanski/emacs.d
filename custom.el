@@ -38,6 +38,46 @@
  '(fci-rule-color "#282a2e")
  '(fill-column 0)
  '(helm-split-window-in-side-p t)
+ '(ibuffer-saved-filter-groups
+   (quote
+    (("groups"
+      ("nasa-filer"
+       (filename . "/home/nathan/devel/nasa/filer/")))
+     ("default"
+      ("dired"
+       (mode . dired-mode))
+      ("haskell"
+       (mode . haskell-mode))
+      ("python"
+       (mode . python-mode))
+      ("notes"
+       (or
+        (name . "^\\*Calendar\\*$")
+        (name . "^diary$")
+        (mode . org-mode)))
+      ("*buffer*"
+       (name . "\\*.*\\*"))))))
+ '(ibuffer-saved-filters
+   (quote
+    (("builtin-buffers"
+      ((name . "^\\*.*\\*$")))
+     ("nasa-filer"
+      ((filename . "/home/nathan/devel/nasa/filer/")))
+     ("gnus"
+      ((or
+        (mode . message-mode)
+        (mode . mail-mode)
+        (mode . gnus-group-mode)
+        (mode . gnus-summary-mode)
+        (mode . gnus-article-mode))))
+     ("programming"
+      ((or
+        (mode . emacs-lisp-mode)
+        (mode . cperl-mode)
+        (mode . c-mode)
+        (mode . java-mode)
+        (mode . idl-mode)
+        (mode . lisp-mode)))))))
  '(org-columns-ellipses "…")
  '(org-ellipsis "…")
  '(org-footnote-auto-adjust t)
@@ -95,7 +135,7 @@
  '(highlight-indentation-face ((t (:background "#3E3E3E"))))
  '(info-title-1 ((t (:inherit info-title-2 :height 1.1))))
  '(info-title-2 ((t (:inherit info-title-3 :height 0.9))))
- '(linum ((t (:background "#4f4f4f" :foreground "#656555"))) t)
+ '(linum ((t (:background "#4f4f4f" :foreground "#656555"))))
  '(mode-line-highlight ((t (:box nil))))
  '(mode-line-inactive ((t (:inherit mode-line :background "#404045" :foreground "gray60" :inverse-video nil :box nil :weight light))))
  '(org-block-background ((t (:background "gray23"))))
