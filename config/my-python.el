@@ -24,20 +24,6 @@
     (setq py-complete-function 'ipython-complete)
     (define-key python-mode-map (kbd "RET") 'py-newline-and-indent)
 
-    (defun my-jump-to-python-docs (w)
-      "Jump to a pane and do py-documentation"
-      (interactive (list (let*
-                             ((word (thing-at-point 'word)))
-                           word)))
-      (shell-command
-       (concat py-shell-name " -c \"from pydoc import help;help(\'" w "\')\"")
-       "*PYDOCS*")
-      (switch-to-buffer-other-window "*PYDOCS*" t))
-    (after 'evil
-      (evil-define-key 'normal python-mode-map (kbd "K")
-        'my-jump-to-python-docs)
-      )
-
     (defun my-python-maybe-indent ()
       "Indent to python-mode's computed indentation for empty lines,
        but do nothing for lines with content."
@@ -135,8 +121,25 @@
         (setq jedi:environment-virtualenv
               (append python-environment-virtualenv
                       '("--python" "/usr/bin/python3")))
+
+        (defun my-jump-to-python-docs (w)
+          "Jump to a pane and do py-documentation"
+          (interactive (list (let*
+                                 ((word (thing-at-point 'word)))
+                               word)))
+          (jedi:show-doc)
+          (switch-to-buffer-other-window "*jedi:doc" t))
+
+        ;; Pydocs buffers should start in help-mode.
+        (add-to-list 'auto-mode-alist '("\\*jedi:doc*\\'" . help-mode))
+
+        (switch-to-buffer-other-window "*PYDOCS*" t)
+        (after 'evil
+          (evil-define-key 'normal python-mode-map (kbd "K")
+            'my-jump-to-python-docs)
+          )
+
         )
       )
-    )
-  )
+    ))
 (provide 'my-python)

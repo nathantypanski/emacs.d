@@ -124,7 +124,7 @@
 ;; Set the default font (only matters in graphical mode).
 (when window-system
   (progn
-    (set-face-attribute 'default nil :font "Terminus-10" )
+    (set-face-attribute 'default nil :font "Terminus-10")
     (set-frame-font "Terminus-10" nil t)
 ))
 
