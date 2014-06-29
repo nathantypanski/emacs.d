@@ -26,6 +26,7 @@
 (require 'my-projects)
 (require 'my-interaction)
 (require 'my-scss)
+(require 'my-markdown)
 (require 'my-haskell)
 (require 'my-python)
 (require 'my-unbound-keys)
