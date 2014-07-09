@@ -1,11 +1,14 @@
 
 (use-package org
-  :commands org-mode
-  :init (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
-  :config
+  :commands (org-mode org-capture org-agenda)
+  :init
   (progn
+    (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
     (global-set-key (kbd "C-c c") 'org-capture)
     (global-set-key (kbd "C-c a") 'org-agenda)
+    )
+  :config
+  (progn
     (setq org-default-notes-file "~/.notes.org" org-log-done t)
     (defface org-block-begin-line '((t ( org-meta-line :background "gray27" :overline "gray20" :underline "gray20" :height 0.8)))
       "Face used for the line delimiting the begin of source blocks.")

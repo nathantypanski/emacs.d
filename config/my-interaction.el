@@ -87,6 +87,12 @@
     (setq ido-use-filename-at-point 'guess)
     (setq ido-save-directory-list-file
           (concat user-emacs-directory ".cache/ido.last"))
+
+    (add-hook 'ido-setup-hook
+          (lambda ()
+            (define-key ido-completion-map [tab] 'ido-complete)
+            ))
+
     (use-package smex
       :ensure smex
       :config
