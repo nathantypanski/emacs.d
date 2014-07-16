@@ -55,27 +55,14 @@
       "Change flycheck pylint executable to virtualenv executable"
       ;; virtualenv-name might be nil
       (when (and (boundp 'virtualenv-name)(stringp virtualenv-name)
-                 (virtualenv-p (py--normalize-directory
-                                virtualenv-name)))
+          (virtualenv-p (py--normalize-directory
+           virtualenv-name)))
         (let ((pylintpath
-               (concat (py--normalize-directory virtualenv-name)
-                       "bin/pylint")))
+        (concat (py--normalize-directory virtualenv-name)
+         "bin/pylint")))
           (setq flycheck-python-pylint-executable pylintpath))))
 
-    ;; My old way of doing this
-    ;;
-    ;;(defun my-set-pylint-from-venv ()
-    ;;  "Change flycheck pylint executable to virtualenv executable"
-    ;;  (if (and (boundp 'virtualenv-name)
-    ;;           virtualenv-name
-    ;;           (virtualenv-p (py--normalize-directory virtualenv-name)))
-    ;;      (let ((pylintpath
-    ;;             (concat (py--normalize-directory virtualenv-name) "bin/pylint")
-
-    ;;             ))
-    ;;        (setq flycheck-python-pylint-executable pylintpath)
-    ;;        )))
-
+    ;; IMO the inverse is needed also
     (defun my-reset-pylint ()
       "Set flycheck `pylint' executable to default value. "
       (interactive)
@@ -124,16 +111,11 @@
 
         (defun my-jump-to-python-docs (w)
           "Jump to a pane and do py-documentation"
-          (interactive (list (let*
-                                 ((word (thing-at-point 'word)))
+          (interactive (list (let* ((word (thing-at-point 'word)))
                                word)))
           (jedi:show-doc)
-          (switch-to-buffer-other-window "*jedi:doc" t))
+          (switch-to-buffer-other-window "*jedi:doc*" t))
 
-        ;; Pydocs buffers should start in help-mode.
-        (add-to-list 'auto-mode-alist '("\\*jedi:doc*\\'" . help-mode))
-
-        (switch-to-buffer-other-window "*PYDOCS*" t)
         (after 'evil
           (evil-define-key 'normal python-mode-map (kbd "K")
             'my-jump-to-python-docs)
