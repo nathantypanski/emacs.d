@@ -137,7 +137,7 @@
     (define-key evil-normal-state-map (kbd "SPC A") 'apropos)
 
     (define-key evil-normal-state-map (kbd "SPC F") 'ffap)
-    (define-key evil-visual-state-map (kbd "SPC F") 'ffap)
+    (define-key evil-normal-state-map (kbd "SPC X") 'helm-M-x)
 
     (define-key evil-normal-state-map (kbd "C-p") 'projectile-find-file)
     (define-key evil-normal-state-map (kbd "C-q") 'universal-argument)
