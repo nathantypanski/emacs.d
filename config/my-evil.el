@@ -28,6 +28,7 @@
 	(evil-leader/set-leader ",")
 	(evil-leader/set-key
 	  "w"     'save-buffer
+	  "q"     'kill-buffer-and-window
 	  "e"     (kbd "C-x C-e")
 	  "E"     (kbd "C-M-x")
 	  "C"     'customize-group
@@ -51,6 +52,7 @@
       (progn (setq evilnc-hotkey-comment-operator "gc")
              )
       )
+
     (use-package evil-matchit
       :ensure evil-matchit
       :commands evilmi-jump-items
