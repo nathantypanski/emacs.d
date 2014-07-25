@@ -1,6 +1,6 @@
 
 (use-package org
-  :commands (org-mode org-capture org-agenda)
+  :commands (org-mode org-capture org-agenda orgtbl-mode)
   :init
   (progn
     (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
