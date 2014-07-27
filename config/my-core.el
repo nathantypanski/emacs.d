@@ -10,7 +10,7 @@
 ;; also tabs are evil
 (setq-default indent-tabs-mode nil)
 
-;; number columns
+;; number columns in the status bar
 (column-number-mode)
 
 ;'Woman' > 'man'.
@@ -98,16 +98,23 @@
 ;; Show me the new saved file if the contents change on disk when editing.
 (global-auto-revert-mode 1)
 
-;; Turn word-wrap on and redefine certain (simple) commands to work on visual
-;; lines, not logical lines.
-;;
-;; Also, show trailing whitespace.
-(add-hook 'find-file-hook (lambda ()
-                            (visual-line-mode)
-                            (setq show-trailing-whitespace t)
-                            (electric-indent-mode 1)
-                            )
-          )
+;; Repurposed from
+;; <https://github.com/bling/dotemacs/blob/master/config/init-core.el>
+(defun my-find-file-check-large-file ()
+  "Check the size of files when loading, and don't let me break them."
+  (when (> (buffer-size) (* 1024 1024))
+    (setq buffer-read-only t)
+    (buffer-disable-undo)
+    (fundamental-mode)))
+
+(defun my-setup-file-defaults ()
+  "Set the defaults for a new file opening."
+  (my-find-file-check-large-file)
+  (setq show-trailing-whitespace t)
+  (electric-indent-mode 1)
+)
+
+(add-hook 'find-file-hook 'my-setup-file-defaults)
 
 (random t) ;; seed
 
@@ -117,9 +124,6 @@
 
 (global-set-key [remap eval-expression] 'pp-eval-expression)
 (global-set-key [remap eval-last-sexp] 'pp-eval-last-sexp)
-
-;;(add-to-list 'load-path (concat user-emacs-directory "config"))
-;;(add-to-list 'load-path (concat user-emacs-directory "elisp"))
 
 ;; Set the default font (only matters in graphical mode).
 (when window-system
@@ -136,4 +140,4 @@
 ;; have no use for these default bindings
 (global-unset-key (kbd "C-x m"))
 
-(provide 'my-globals)
+(provide 'my-core)

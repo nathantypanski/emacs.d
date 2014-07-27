@@ -14,7 +14,7 @@
     (package-install 'use-package))
 (require 'use-package)
 
-(require 'my-globals)
+(require 'my-core)
 (require 'my-functions)
 (require 'my-dirs)
 (require 'my-buffers)
