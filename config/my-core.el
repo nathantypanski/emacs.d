@@ -114,6 +114,18 @@
   (electric-indent-mode 1)
 )
 
+;; Adapted from
+;; <https://github.com/bling/dotemacs/blob/master/config/init-core.el>
+(defun my-do-not-kill-scratch-buffer ()
+  "Don't let the scratch buffer die."
+  (if (member (buffer-name (current-buffer)) '("*scratch*" "*Messages*"))
+      (progn
+        (bury-buffer)
+        nil)
+    t))
+
+(add-hook 'kill-buffer-query-functions 'my-do-not-kill-scratch-buffer)
+
 (add-hook 'find-file-hook 'my-setup-file-defaults)
 
 (random t) ;; seed
