@@ -6,7 +6,8 @@
 (require 'python-mode)
 
 (use-package python-mode
-  :mode ("\\.py\\'" . python-mode)
+  :commands python-mode
+  :mode "\\.py\\'"
   :init
   (progn
     (when (featurep 'python) (unload-feature 'python t))
