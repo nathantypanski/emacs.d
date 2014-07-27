@@ -50,12 +50,21 @@
                              helm-source-files-in-current-dir
                              helm-source-locate
                              helm-source-buffer-not-found)
-                             "*helm jump*")))
+                           "*helm jump*")))
 
     (setq helm-command-prefix-key "C-c h")
     (setq helm-quick-update t)
     (use-package helm-swoop
-      :ensure helm-swoop)
+      :ensure helm-swoop
+      :config
+      (progn
+        ;; Don't start searching for the thing at point by default.
+        ;; Let me type it.
+        (setq helm-swoop-pre-input-function (lambda () ()))
+        (after 'evil
+          (define-key evil-normal-state-map (kbd "SPC l")   'helm-swoop)
+          )
+        ))
     (after 'helm-autoloads
       (after 'evil
         (define-key evil-normal-state-map (kbd "SPC f") 'helm-find-files)
@@ -67,7 +76,6 @@
         (define-key evil-normal-state-map (kbd "SPC o")   'helm-imenu)
         (define-key evil-normal-state-map (kbd "SPC e")   'helm-recentf)
         (define-key evil-normal-state-map (kbd "SPC t")   'helm-etags-select)
-        (define-key evil-normal-state-map (kbd "SPC l")   'helm-swoop)
         (define-key evil-normal-state-map (kbd "SPC y")   'helm-show-kill-ring)
         (define-key evil-normal-state-map [f5] 'helm-mini)))
     (after 'flycheck
