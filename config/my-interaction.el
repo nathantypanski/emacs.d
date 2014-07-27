@@ -29,6 +29,9 @@
 
 (use-package helm
   :ensure helm
+  :init (progn
+          (setq helm-buffers-fuzzy-matching t)
+          )
   :config
   (progn
     (require 'helm-files)
@@ -47,17 +50,18 @@
                              helm-source-files-in-current-dir
                              helm-source-locate
                              helm-source-buffer-not-found)
-                           "*helm jump*")))
+                             "*helm jump*")))
 
     (setq helm-command-prefix-key "C-c h")
     (setq helm-quick-update t)
     (use-package helm-swoop
       :ensure helm-swoop)
     (after 'helm-autoloads
-      (global-set-key (kbd "C-x C-m") 'helm-M-x)
-      (global-set-key (kbd "C-c C-m") 'helm-M-x)
-
       (after 'evil
+        (define-key evil-normal-state-map (kbd "SPC f") 'helm-find-files)
+        (define-key evil-visual-state-map (kbd "SPC f") 'helm-find-files)
+        (define-key evil-normal-state-map (kbd "SPC b") 'helm-buffers-list)
+        (define-key evil-visual-state-map (kbd "SPC b") 'helm-buffers-list)
         (define-key evil-visual-state-map (kbd "SPC SPC") 'helm-M-x)
         (define-key evil-normal-state-map (kbd "SPC SPC") 'helm-M-x)
         (define-key evil-normal-state-map (kbd "SPC o")   'helm-imenu)
@@ -151,10 +155,6 @@
               )
       )
     (after 'evil
-      (define-key evil-normal-state-map (kbd "SPC f") 'ido-find-file)
-      (define-key evil-visual-state-map (kbd "SPC f") 'ido-find-file)
-      (define-key evil-normal-state-map (kbd "SPC b") 'ido-switch-buffer)
-      (define-key evil-visual-state-map (kbd "SPC b") 'ido-switch-buffer)
       (define-key evil-normal-state-map (kbd "SPC B") 'ibuffer)
       (define-key evil-visual-state-map (kbd "SPC B") 'ibuffer)
       (define-key evil-normal-state-map (kbd "SPC k") 'ido-kill-buffer)

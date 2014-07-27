@@ -49,8 +49,9 @@
 	)
       (evil-leader/set-key "TAB" 'my-hop-around-buffers)
       (evil-leader/set-key "," 'other-window)
-      (evil-leader/set-key "f" 'find-file)
-      (evil-leader/set-key "b" 'ibuffer)
+      (evil-leader/set-key "f" 'helm-find-files)
+      (evil-leader/set-key "b" 'helm-buffers-list)
+      (evil-leader/set-key "x" 'helm-M-x)
       )
 
     (use-package evil-nerd-commenter
@@ -133,7 +134,7 @@
         ))
 
     ;; exiting insert mode -> delete trailing whitespace
-    (add-hook 'evil-insert-state-exit-hook 'my-delete-trailing-whitespace-at-point)
+    (remove-hook 'evil-insert-state-exit-hook 'my-delete-trailing-whitespace-at-point)
 
     ;; entering insert mode -> indent according to mode
     ;; (add-hook 'evil-insert-state-entry-hook 'indent-according-to-mode)
@@ -141,7 +142,6 @@
     (define-key evil-insert-state-map (kbd "<S-backspace>")
       'my-backward-delete-word)
 
-    (define-key evil-normal-state-map (kbd ", k") 'kill-buffer)
     (define-key evil-normal-state-map (kbd "SPC a") 'ag)
     (define-key evil-normal-state-map (kbd "SPC A") 'apropos)
 
@@ -168,9 +168,12 @@
     (define-key evil-motion-state-map "$" 'evil-end-of-line)
     (define-key evil-motion-state-map "0" 'evil-beginning-of-line)
 
+    (define-key evil-normal-state-map "/" 'helm-swoop)
+
+    (define-key evil-motion-state-map "/" 'evil-search-forward)
+
     (define-key evil-normal-state-map (kbd "Y") (kbd "y$"))
 
-    (define-key evil-visual-state-map (kbd ", e") 'eval-region)
 
     ;; butter fingers
     (evil-ex-define-cmd "Q"  'evil-quit)
