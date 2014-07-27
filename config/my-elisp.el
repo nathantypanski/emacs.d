@@ -29,7 +29,6 @@
     (after 'evil
       (evil-define-key 'normal emacs-lisp-mode-map (kbd "g d")
         'elisp-slime-nav-find-elisp-thing-at-point)
-      ;; TODO: find a way to make this automatically switch to the buffer it opens
 
       (evil-define-key 'normal emacs-lisp-mode-map (kbd "K")
         'my-jump-to-elisp-docs)
