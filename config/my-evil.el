@@ -17,6 +17,11 @@
     (setq evil-replace-state-cursor '("#cc9393" box))
     (setq evil-want-fine-undo t)
 
+    (defun my-hop-around-buffers ()
+      "Swap the current buffer with the previous one."
+      (interactive)
+        (switch-to-buffer (other-buffer)))
+
     (use-package evil-leader
       :commands (evil-leader-mode)
       :ensure evil-leader
@@ -36,21 +41,23 @@
 	  "v"     (kbd "C-w v C-w l")
 	  "s"     (kbd "C-w s C-w j")
 	  "g s"   'magit-status
-	  "g b"   'magit-status
 	  "g l"   'magit-log
 	  "g d"   'vc-diff
 	  "P"     'package-list-packages
 	  "h"     help-map
 	  "h h"   'help-for-help-internal)
 	)
+      (evil-leader/set-key "TAB" 'my-hop-around-buffers)
+      (evil-leader/set-key "," 'other-window)
+      (evil-leader/set-key "f" 'find-file)
+      (evil-leader/set-key "b" 'ibuffer)
       )
 
     (use-package evil-nerd-commenter
       :ensure evil-nerd-commenter
       :config
-      ;; Type 'gcc' to comment the current line.
-      (progn (setq evilnc-hotkey-comment-operator "gc")
-             )
+      (progn
+        (define-key evil-normal-state-map (kbd "gc") 'evilnc-comment-or-uncomment-lines)
       )
 
     (use-package evil-matchit
@@ -115,7 +122,7 @@
       )
 
     (define-key evil-insert-state-map (kbd "RET") 'evil-ret-and-indent)
-    (define-key evil-normal-state-map (kbd "RET") 'my-insert-and-indent)
+    (define-key evil-normal-state-map (kbd "RET") 'my-append-and-indent)
     (define-key evil-normal-state-map (kbd "<S-return>") 'my-append-and-indent)
 
     (defun my-delete-trailing-whitespace-at-point ()
@@ -175,6 +182,6 @@
       "/" 'evil-search-forward
       "?" 'evil-search-backward
     ))
-)
+))
 
 (provide 'my-evil)
