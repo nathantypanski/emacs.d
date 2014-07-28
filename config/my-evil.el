@@ -168,7 +168,9 @@
     (define-key evil-motion-state-map "$" 'evil-end-of-line)
     (define-key evil-motion-state-map "0" 'evil-beginning-of-line)
 
-    (define-key evil-normal-state-map "/" 'helm-swoop)
+    (define-key evil-normal-state-map "/" 'evil-search-forward)
+
+    (define-key evil-normal-state-map (kbd "SPC /") 'helm-swoop)
 
     (define-key evil-motion-state-map "/" 'evil-search-forward)
 

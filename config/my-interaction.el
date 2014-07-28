@@ -67,10 +67,10 @@
         ))
     (after 'helm-autoloads
       (after 'evil
-        (define-key evil-normal-state-map (kbd "SPC f") 'helm-find-files)
-        (define-key evil-visual-state-map (kbd "SPC f") 'helm-find-files)
-        (define-key evil-normal-state-map (kbd "SPC b") 'helm-buffers-list)
-        (define-key evil-visual-state-map (kbd "SPC b") 'helm-buffers-list)
+        (define-key evil-normal-state-map (kbd "SPC f")   'helm-find-files)
+        (define-key evil-visual-state-map (kbd "SPC f")   'helm-find-files)
+        (define-key evil-normal-state-map (kbd "SPC b")   'helm-buffers-list)
+        (define-key evil-visual-state-map (kbd "SPC b")   'helm-buffers-list)
         (define-key evil-visual-state-map (kbd "SPC SPC") 'helm-M-x)
         (define-key evil-normal-state-map (kbd "SPC SPC") 'helm-M-x)
         (define-key evil-normal-state-map (kbd "SPC o")   'helm-imenu)
