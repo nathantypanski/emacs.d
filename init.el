@@ -21,6 +21,7 @@
 (require 'my-imenu)
 (require 'my-elisp)
 (require 'my-c)
+(require 'my-go)
 (require 'my-autocomplete)
 (require 'my-org)
 (require 'my-projects)
