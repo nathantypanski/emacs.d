@@ -35,5 +35,7 @@
 (require 'my-eyecandy)
 (require 'my-shell)
 (require 'my-filetypes)
+(require 'my-firefox)
 (require 'my-term)
+(require 'my-magit)
 (require 'my-evil)
