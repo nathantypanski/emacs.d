@@ -36,20 +36,6 @@
     )
   )
 
-(use-package magit
-  :ensure magit
-  :config
-  (after 'magit
-    (after 'evil
-      (define-key magit-status-mode-map (kbd "C-n") 'magit-goto-next-sibling-section)
-      (define-key magit-status-mode-map (kbd "C-p") 'magit-goto-previous-sibling-section)
-      (evil-add-hjkl-bindings magit-status-mode-map 'emacs
-        "K" 'magit-discard-item
-        "l" 'magit-key-mode-popup-logging
-        "h" 'magit-toggle-diff-refine-hunk))
-    )
-  )
-
 (use-package ctags-update
   :ensure ctags-update
   :init
@@ -59,5 +45,14 @@
     (autoload 'turn-on-ctags-auto-update-mode "ctags-update" "turn on `ctags-auto-update-mode'." t)
     ))
 
+(use-package nav)
+(use-package fiplr
+  :ensure fiplr
+  :config
+  (progn
+    (setq fiplr-ignored-globs '((directories (".git" ".svn"))
+                                (files ("*.jpg" "*.png" "*.zip" "*~"))))
+    )
+  )
 
 (provide 'my-projects)
