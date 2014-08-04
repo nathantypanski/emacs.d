@@ -9,10 +9,10 @@
     ;; Needed for pretty completion menus
     (setq
         ac-auto-show-menu 1.0
-        ac-auto-start 4
+        ac-auto-start 2
         ac-use-quick-help nil
         ac-comphist-file (concat user-emacs-directory ".cache/ac-comphist.dat")
-        ac-quick-help-delay 0.3
+        ac-quick-help-delay 0.1
         ac-quick-help-height 30
 
         ;; Ignore case when the input contains uppercase characters
