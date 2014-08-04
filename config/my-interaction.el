@@ -16,17 +16,6 @@
     )
   )
 
-(use-package yasnippet
-  :init
-  (yas-global-mode 1)
-  :config
-  (progn
-    (after 'evil
-      (define-key evil-insert-state-map (kbd "C-<tab>") 'yas-expand)
-      )
-    )
-  )
-
 (use-package helm
   :ensure helm
   :init (progn
