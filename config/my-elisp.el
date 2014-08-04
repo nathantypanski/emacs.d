@@ -27,9 +27,6 @@
   :config
   (progn
     (after 'evil
-      (evil-define-key 'normal emacs-lisp-mode-map (kbd "g d")
-        'elisp-slime-nav-find-elisp-thing-at-point)
-
       (evil-define-key 'normal emacs-lisp-mode-map (kbd "K")
         'my-jump-to-elisp-docs)
       )
@@ -43,8 +40,8 @@
 
 (after 'evil
   (evil-define-key 'insert emacs-lisp-mode-map ";" 'my-electric-lisp-comment)
-
   (evil-define-key 'normal emacs-lisp-mode-map "\C-c\C-c" 'eval-defun)
+  (paredit-mode)
   (use-package evil-paredit
     :ensure evil-paredit
     :commands enable-paredit-mode
@@ -61,9 +58,7 @@
       )
     :config
     (progn
-      (evil-define-key 'normal emacs-lisp-mode-map
-        "\M-q" 'paredit-reindent-defun
-        )
+      (evil-define-key 'normal emacs-lisp-mode-map "\M-q" 'paredit-reindent-defun)
       )
     )
   )
