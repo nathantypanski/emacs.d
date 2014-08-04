@@ -1,13 +1,16 @@
-(after 'comint
-  (define-key comint-mode-map [up] 'comint-previous-input)
-  (define-key comint-mode-map [down] 'comint-next-input))
-(use-package multi-term
-  :commands multi-term
-  :init (progn
-  (setq multi-term-buffer-name "term"
-        multi-term-program "/bin/zsh")
-          )
-  :commands
-  (progn)
+(defun visit-term-buffer ()
+  "Create or visit a terminal buffer."
+  (interactive)
+  (if (not (get-buffer "*ansi-term*"))
+      (progn
+        (split-window-sensibly (selected-window))
+        (other-window 1)
+        (ansi-term (getenv "SHELL")))
+    (switch-to-buffer-other-window "*ansi-term*")))
+
+(after 'evil-leader
+    (evil-leader/set-key "`" 'visit-term-buffer)
 )
+
+
 (provide 'my-term)
