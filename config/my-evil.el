@@ -37,17 +37,18 @@
         (evil-leader/set-key "g s" 'magit-status)
         (evil-leader/set-key "g l" 'magit-log)
         (evil-leader/set-key "g d" 'magit-diff)
-        (evil-leader/set-key "h" help-map)
-        (evil-leader/set-key "h h" 'help-for-help-internal)
+        (evil-leader/set-key "h" 'dired-jump)
         (evil-leader/set-key "v" 'split-window-right)
         (evil-leader/set-key "e" 'pp-eval-last-sexp)
         (evil-leader/set-key "TAB" 'my-hop-around-buffers)
         (evil-leader/set-key "," 'other-window)
-        (evil-leader/set-key "f" 'helm-find-files)
-        (evil-leader/set-key "F" 'dired-at-point)
+        (evil-leader/set-key "f" 'dired-jump)
+        (evil-leader/set-key "F" 'helm-find-files)
         (evil-leader/set-key "b" 'helm-buffers-list)
         (evil-leader/set-key "x" 'helm-M-x)
-        (evil-leader/set-key "B" 'ibuffer) ) )
+        (evil-leader/set-key "B" 'ibuffer)
+        )
+      )
     (use-package evil-nerd-commenter
       :ensure evil-nerd-commenter
       :config
@@ -138,10 +139,9 @@
       (define-key evil-normal-state-map (kbd "SPC a") 'ag)
       (define-key evil-normal-state-map (kbd "SPC A") 'apropos)
 
-      (define-key evil-normal-state-map (kbd "SPC F") 'ffap)
       (define-key evil-normal-state-map (kbd "SPC X") 'helm-M-x)
 
-      (define-key evil-normal-state-map (kbd "C-p") 'projectile-find-file)
+      (define-key evil-normal-state-map (kbd "C-p") 'fiplr-find-file)
       (define-key evil-normal-state-map (kbd "C-q") 'universal-argument)
 
       (define-key evil-normal-state-map (kbd "C-h") 'evil-window-left)
