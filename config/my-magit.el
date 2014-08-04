@@ -12,6 +12,9 @@
       (evil-set-initial-state 'magit-mode 'normal)
       (evil-set-initial-state 'magit-status-mode 'normal)
       (evil-set-initial-state 'magit-diff-mode 'normal)
+      (evil-define-key 'normal magit-status-mode-map
+        "l" 'magit-key-mode-popup-logging
+        )
       (evil-define-key 'normal magit-mode-map
         (kbd "TAB") 'magit-toggle-section
         (kbd "RET") 'magit-visit-item
@@ -37,13 +40,14 @@
         "A" 'magit-cherry-pick-item
         "B" 'magit-key-mode-popup-bisecting
         "C" 'magit-commit-add-log
-        "D" 'magit-diff
+        "D" 'magit-diff-working-tree
         "E" 'magit-interactive-rebase
         "F" 'magit-key-mode-popup-pulling
         "G" 'magit-refresh-all
         "H" 'magit-diff-toggle-refine-hunk
         "I" 'magit-ignore-item-locally
         ;; "J" 'magit-key-mode-popup-apply-mailbox
+        "K" 'magit-discard-item
         "L" 'magit-add-change-log-entry
         "M" 'magit-key-mode-popup-remoting
         "P" 'magit-key-mode-popup-pushing
@@ -55,7 +59,7 @@
         "a" 'magit-apply-item
         "b" 'magit-key-mode-popup-branching
         "c" 'magit-key-mode-popup-committing
-        "d" 'magit-diff-working-tree
+        "d" 'magit-discard-diff
         "e" 'magit-ediff
         "f" 'magit-key-mode-popup-fetching
         "g" 'magit-refresh
@@ -64,7 +68,6 @@
         ";" 'magit-section-jump-map
         "j" 'magit-goto-next-section
         "k" 'magit-goto-previous-section
-        "K" 'magit-discard-item
         "m" 'magit-key-mode-popup-merging
         "n" 'magit-goto-next-section
         "o" 'magit-key-mode-popup-submodule
