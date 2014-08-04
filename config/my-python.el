@@ -56,11 +56,11 @@
       "Change flycheck pylint executable to virtualenv executable"
       ;; virtualenv-name might be nil
       (when (and (boundp 'virtualenv-name)(stringp virtualenv-name)
-          (virtualenv-p (py--normalize-directory
-           virtualenv-name)))
+                 (virtualenv-p (py--normalize-directory
+                                virtualenv-name)))
         (let ((pylintpath
-        (concat (py--normalize-directory virtualenv-name)
-         "bin/pylint")))
+               (concat (py--normalize-directory virtualenv-name)
+                       "bin/pylint")))
           (setq flycheck-python-pylint-executable pylintpath))))
 
     ;; IMO the inverse is needed also
@@ -115,12 +115,11 @@
           (interactive (list (let* ((word (thing-at-point 'word)))
                                word)))
           (jedi:show-doc)
-          (switch-to-buffer-other-window "*jedi:doc*" t))
+          (switch-to-buffer-other-window "*jedi:doc*" t)
+          )
 
         (after 'evil
-          (evil-define-key 'normal python-mode-map (kbd "K")
-            'my-jump-to-python-docs)
-          )
+          (evil-define-key 'normal python-mode-map (kbd "K") 'my-jump-to-python-docs))
 
         )
       )
