@@ -9,7 +9,7 @@
     ;; Needed for pretty completion menus
     (setq
         ac-auto-show-menu 1.0
-        ac-auto-start 2
+        ac-auto-start 1
         ac-use-quick-help nil
         ac-comphist-file (concat user-emacs-directory ".cache/ac-comphist.dat")
         ac-quick-help-delay 0.1
@@ -20,12 +20,9 @@
         ac-show-menu-immediately-on-auto-complete t
         ac-use-fuzzy t
         )
-
     ;; Bind TAB for auto complete, but only when actually performing autocompletion
     (ac-set-trigger-key "TAB")
-
     (ac-config-default)
-
     (dolist (mode '(vimrc-mode))
       (add-to-list 'ac-modes mode))
     (after 'linum
@@ -40,13 +37,6 @@
     (setq ac-use-menu-map t)
     (define-key ac-menu-map "\C-n" 'ac-next)
     (define-key ac-menu-map "\C-p" 'ac-previous)
-
-    (use-package auto-complete-config
-      :config
-      (progn
-        (ac-config-default)
-        )
-      )
     )
   )
 (provide 'my-autocomplete)

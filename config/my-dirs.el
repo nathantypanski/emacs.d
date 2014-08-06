@@ -1,3 +1,5 @@
+(put 'dired-find-alternate-file 'disabled nil)
+
 (use-package saveplace
   :config
   (progn
@@ -56,7 +58,7 @@
   (evil-define-key 'normal dired-mode-map "o" 'dired-sort-toggle-or-edit)
   (evil-define-key 'normal dired-mode-map "v" 'dired-toggle-marks)
   (evil-define-key 'normal dired-mode-map "m" 'dired-mark)
-  (evil-define-key 'normal dired-mode-map "u" 'dired-undo)
+  (evil-define-key 'normal dired-mode-map "u" 'dired-unmark)
   (evil-define-key 'normal dired-mode-map "U" 'dired-unmark-all-marks)
   (evil-define-key 'normal dired-mode-map "c" 'dired-create-directory)
   (evil-define-key 'normal dired-mode-map "n" 'evil-search-next)

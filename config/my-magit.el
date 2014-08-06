@@ -15,6 +15,9 @@
       (evil-define-key 'normal magit-status-mode-map
         "l" 'magit-key-mode-popup-logging
         )
+      (evil-define-key 'normal magit-log-mode-map
+        "j" 'magit-goto-next-section
+        "k" 'magit-goto-previous-section)
       (evil-define-key 'normal magit-mode-map
         (kbd "TAB") 'magit-toggle-section
         (kbd "RET") 'magit-visit-item

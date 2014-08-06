@@ -4,13 +4,13 @@
                          ("org" . "http://orgmode.org/elpa/")
                          ;; ("marmalade" . "http://marmalade-repo.org/packages/")
                          ("gnu" . "http://elpa.gnu.org/packages/")))
+
 ;;(byte-recompile-directory "~/.emacs.d")
 (require 'package)
 (package-initialize)
 (setq package-enable-at-startup nil)
 (unless (package-installed-p 'use-package)
-    (unless (assoc package package-archive-contents)
-      (package-refresh-contents))
+    (package-refresh-contents)
     (package-install 'use-package))
 (require 'use-package)
 
@@ -35,7 +35,6 @@
 (require 'my-eyecandy)
 (require 'my-shell)
 (require 'my-filetypes)
-(require 'my-firefox)
 (require 'my-term)
 (require 'my-magit)
 (require 'my-evil)

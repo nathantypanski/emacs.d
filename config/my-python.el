@@ -22,13 +22,15 @@
     (setq py-tab-indent nil)
     (setq py-return-key 'py-newline-and-indent)
 
-    (setq py-complete-function 'ipython-complete)
-    (define-key python-mode-map (kbd "RET") 'py-newline-and-indent)
-
     (defun my-python-maybe-indent ()
       "Indent to python-mode's computed indentation for empty lines,
        but do nothing for lines with content."
       (indent-to (if (empty-line-p) (py-compute-indentation) 0)))
+
+    (setq py-complete-function 'ipython-complete)
+
+    (after 'evil
+        (evil-define-key 'insert python-mode-map (kbd "RET") 'py-newline-and-indent)
 
     (defun my-python-no-evil-indent ()
       "Remove indent hook from Evil insert"
@@ -40,6 +42,7 @@
           )
         )
       )
+    (add-hook 'python-mode-hook 'my-python-no-evil-indent))
 
     (defun my-disable-electric-indent ()
       "Disable electric indent. Buffer-local."
@@ -79,11 +82,10 @@
 
     (setq py-empty-line-closes-p nil)
 
-    (add-hook 'python-mode-hook 'my-python-no-evil-indent)
     (add-hook 'python-mode-hook 'my-disable-electric-indent)
 
     (use-package python-pylint
-      :ensure python-pylint
+      :ensure pylint
       :init
       (progn
         (add-to-list 'flycheck-disabled-checkers 'python-flake8)
@@ -105,11 +107,6 @@
       :config
       (progn
         (setq jedi:complete-on-dot t)
-        (setq jedi:environment-root "jedi") ; or any other name you like
-        (setq jedi:environment-virtualenv
-              (append python-environment-virtualenv
-                      '("--python" "/usr/bin/python3")))
-
         (defun my-jump-to-python-docs (w)
           "Jump to a pane and do py-documentation"
           (interactive (list (let* ((word (thing-at-point 'word)))

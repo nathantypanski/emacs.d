@@ -2,6 +2,34 @@
 ;;
 ;; Configuration for ostracizing me from both the Emacs and Vim communities.
 
+(use-package evil-leader
+      :commands (evil-leader-mode)
+      :ensure evil-leader
+      :demand evil-leader
+      :init
+      (global-evil-leader-mode)
+      :config
+      (progn
+	(evil-leader/set-leader ",")
+        (evil-leader/set-key "w" 'save-buffer)
+        (evil-leader/set-key "q" 'kill-buffer-and-window)
+        (evil-leader/set-key "e" 'pp-eval-last-sexp)
+        (evil-leader/set-key "g s" 'magit-status)
+        (evil-leader/set-key "g l" 'magit-log)
+        (evil-leader/set-key "g d" 'magit-diff)
+        (evil-leader/set-key "h" 'dired-jump)
+        (evil-leader/set-key "v" 'split-window-right)
+        (evil-leader/set-key "e" 'pp-eval-last-sexp)
+        (evil-leader/set-key "TAB" 'my-hop-around-buffers)
+        (evil-leader/set-key "," 'other-window)
+        (evil-leader/set-key "a" 'ag-regexp)
+        (evil-leader/set-key "f" 'dired-jump)
+        (evil-leader/set-key "F" 'helm-find-files)
+        (evil-leader/set-key "B" 'helm-buffers-list)
+        (evil-leader/set-key "x" 'helm-M-x)
+        (evil-leader/set-key "b" 'ibuffer)
+        )
+      )
 (use-package evil
   :ensure evil
   :config
@@ -22,33 +50,7 @@
       (interactive)
       (switch-to-buffer (other-buffer)))
 
-    (use-package evil-leader
-      :commands (evil-leader-mode)
-      :ensure evil-leader
-      :demand evil-leader
-      :init
-      (global-evil-leader-mode)
-      :config
-      (progn
-	(evil-leader/set-leader ",")
-        (evil-leader/set-key "w" 'save-buffer)
-        (evil-leader/set-key "q" 'kill-buffer-and-window)
-        (evil-leader/set-key "e" 'pp-eval-last-sexp)
-        (evil-leader/set-key "g s" 'magit-status)
-        (evil-leader/set-key "g l" 'magit-log)
-        (evil-leader/set-key "g d" 'magit-diff)
-        (evil-leader/set-key "h" 'dired-jump)
-        (evil-leader/set-key "v" 'split-window-right)
-        (evil-leader/set-key "e" 'pp-eval-last-sexp)
-        (evil-leader/set-key "TAB" 'my-hop-around-buffers)
-        (evil-leader/set-key "," 'other-window)
-        (evil-leader/set-key "f" 'dired-jump)
-        (evil-leader/set-key "F" 'helm-find-files)
-        (evil-leader/set-key "b" 'helm-buffers-list)
-        (evil-leader/set-key "x" 'helm-M-x)
-        (evil-leader/set-key "B" 'ibuffer)
-        )
-      )
+    
     (use-package evil-nerd-commenter
       :ensure evil-nerd-commenter
       :config
@@ -64,7 +66,7 @@
           (define-key evil-normal-state-map "%" 'evilmi-jump-items))
         )
       (use-package surround
-        :ensure surround
+        :ensure evil-surround
         :config
         (progn
           (global-surround-mode 1)
@@ -138,7 +140,6 @@
 
       (define-key evil-normal-state-map (kbd "SPC a") 'ag)
       (define-key evil-normal-state-map (kbd "SPC A") 'apropos)
-
       (define-key evil-normal-state-map (kbd "SPC X") 'helm-M-x)
 
       (define-key evil-normal-state-map (kbd "C-p") 'fiplr-find-file)

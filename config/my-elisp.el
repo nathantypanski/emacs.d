@@ -5,7 +5,6 @@
 
 (use-package elisp-slime-nav
   :ensure elisp-slime-nav
-  :mode ("\\.el\\'" . emacs-lisp-mode)
   :commands my-jump-to-elisp-docs
   :diminish elisp-slime-nav-mode
   :init (progn
@@ -41,9 +40,14 @@
 (after 'evil
   (evil-define-key 'insert emacs-lisp-mode-map ";" 'my-electric-lisp-comment)
   (evil-define-key 'normal emacs-lisp-mode-map "\C-c\C-c" 'eval-defun)
+  (use-package paredit
+               :ensure paredit
+               :config
+               (progn
   (paredit-mode)
   (use-package evil-paredit
     :ensure evil-paredit
+    :disabled t
     :commands enable-paredit-mode
     :init
     (progn
@@ -60,6 +64,6 @@
     (progn
       (evil-define-key 'normal emacs-lisp-mode-map "\M-q" 'paredit-reindent-defun)
       )
-    )
+    )))
   )
 (provide 'my-elisp)

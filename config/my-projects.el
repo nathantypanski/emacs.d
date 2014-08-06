@@ -2,11 +2,11 @@
 ;;
 ;; Stuff related to maintaining and navigating around projects.
 
-(use-package etags-select
-  :ensure etags-select
-  :init
-  (setq etags-select-go-if-unambiguous t)
-  )
+;;(use-package etags-select
+;;  :ensure etags-select
+;;  :init
+;;  (setq etags-select-go-if-unambiguous t)
+;;  )
 
 (use-package project-explorer
   :ensure project-explorer
@@ -25,8 +25,9 @@
 
 (use-package flycheck
   :ensure flycheck
-  :init (progn
-          (add-hook 'after-init-hook #'global-flycheck-mode))
+  :init
+  (progn
+        (add-hook 'after-init-hook #'global-flycheck-mode))
   :config
   (progn
     (setq flycheck-check-syntax-automatically '(save mode-enabled))
