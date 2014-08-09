@@ -12,6 +12,12 @@
   :commands scss-mode
   :ensure scss-mode
   :mode "\\.scss\\'"
+  :config
+  (progn
+    (setq scss-compile-at-save nil)
+    )
 )
+
+
 
 (provide 'my-scss)
