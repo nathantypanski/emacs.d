@@ -78,6 +78,7 @@
       (evil-set-initial-state 'eshell-mode 'emacs)
       (evil-set-initial-state 'shell-mode 'emacs)
       (evil-set-initial-state 'esup-mode 'emacs)
+      (evil-set-initial-state 'git-commit-mode 'insert)
       (evil-set-initial-state 'diff-mode 'emacs)
       (evil-set-initial-state 'haskell-interactive-mode 'emacs)
       (evil-set-initial-state 'term-mode 'emacs)
