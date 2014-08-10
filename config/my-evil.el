@@ -50,7 +50,6 @@
       (interactive)
       (switch-to-buffer (other-buffer)))
 
-    
     (use-package evil-nerd-commenter
       :ensure evil-nerd-commenter
       :config
@@ -78,7 +77,6 @@
       (evil-set-initial-state 'help-mode 'emacs)
       (evil-set-initial-state 'eshell-mode 'emacs)
       (evil-set-initial-state 'shell-mode 'emacs)
-      (evil-set-initial-state 'comint-mode 'emacs)
       (evil-set-initial-state 'esup-mode 'emacs)
       (evil-set-initial-state 'diff-mode 'emacs)
       (evil-set-initial-state 'haskell-interactive-mode 'emacs)
@@ -163,11 +161,8 @@
       (define-key evil-motion-state-map "0" 'evil-beginning-of-line)
 
       (define-key evil-normal-state-map "/" 'evil-search-forward)
-
       (define-key evil-normal-state-map (kbd "SPC /") 'helm-swoop)
-
       (define-key evil-motion-state-map "/" 'evil-search-forward)
-
       (define-key evil-normal-state-map (kbd "Y") (kbd "y$"))
 
 
@@ -181,6 +176,15 @@
         "/" 'evil-search-forward
         "?" 'evil-search-backward
         ))
-    ))
+
+    (defun my-evil-modeline-change (default-color)
+      "changes the modeline color when the evil mode changes"
+      (let ((color (cond ((evil-insert-state-p) '("#002233" . "#ffffff"))
+                         ((evil-visual-state-p) '("#330022" . "#ffffff"))
+                         ((evil-normal-state-p) default-color)
+                         (t '("#440000" . "#ffffff")))))
+        (set-face-background 'mode-line (car color))
+        (set-face-foreground 'mode-line (cdr color))))
+))
 
 (provide 'my-evil)

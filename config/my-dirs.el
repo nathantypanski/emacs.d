@@ -51,8 +51,16 @@
   )
 (setq dired-listing-switches "-aBhl  --group-directories-first")
 
+(defun my-dired-up-directory ()
+  "Take dired up one directory, but behave like dired-find-alternate-file"
+  (interactive)
+  (let ((old (current-buffer)))
+    (dired-up-directory)
+    (kill-buffer 'old)
+    ))
+
 (after 'evil
-  (evil-define-key 'normal dired-mode-map "h" 'dired-up-directory)
+  (evil-define-key 'normal dired-mode-map "h" 'my-dired-up-directory)
   (evil-define-key 'normal dired-mode-map "l" 'dired-find-alternate-file)
   (evil-define-key 'normal dired-mode-map "a" 'ag-dired)
   (evil-define-key 'normal dired-mode-map "o" 'dired-sort-toggle-or-edit)

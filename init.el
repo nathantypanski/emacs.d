@@ -37,4 +37,6 @@
 (require 'my-filetypes)
 (require 'my-term)
 (require 'my-magit)
+(require 'my-r)
 (require 'my-evil)
+(require 'my-god)

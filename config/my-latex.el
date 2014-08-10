@@ -1,4 +1,3 @@
-(setq TeX-PDF-mode t)
 ;; (eval-after-load "tex"
 ;;   '(remove-from-list 'TeX-command-list
 ;; 		'("Latex Make" "latexmk %(-pdf) %t" TeX-run-TeX) t)
@@ -10,7 +9,6 @@
 (setq TeX-view-program-list '(("zathura" "zathura -s -x \"emacsclient -n +%%{line} %%{input}\" %o")))
 
 (setq TeX-view-program-selection '((output-pdf "zathura")))
-
 
 (setq TeX-source-correlate-mode t)
 
