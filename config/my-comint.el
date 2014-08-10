@@ -30,6 +30,33 @@
           (evil-insert-state))
         (evil-append count vcount skip-empty-lines)))
 
+  (evil-define-motion my-comint-beginning-of-line ()
+    "Move the cursor to the beginning of the current line, but before the prompt."
+    :type exclusive
+    (comint-bol)
+    ;; (if (< (comint-line-beginning-position) (point))
+    ;;     (comint-bol)
+    ;;     (evil-beginning-of-line))
+    )
+
+  (defun my-comint-next-input (n)
+    "Get the next matching input and move to the end of line"
+    (interactive "*p")
+    (comint-bol)
+    (comint-previous-input (- n))
+    (evil-end-of-line)
+    (forward-char 1)
+    )
+
+  (defun my-comint-previous-input (n)
+    "Get the previous matching input and move to the end of line"
+    (interactive "*p")
+    (comint-bol)
+    (comint-previous-input n)
+    (evil-end-of-line)
+    (evil-forward-char 1)
+    )
+
   (add-hook 'R-mode-hook 'ansi-color-for-comint-mode-on)
   (setq comint-prompt-read-only t)
   (evil-set-initial-state 'comint-mode 'normal)
@@ -37,10 +64,11 @@
   (evil-define-key 'visual comint-mode-map "i" 'my-comint-evil-insert)
   (evil-define-key 'normal comint-mode-map "a" 'my-comint-evil-append)
   (evil-define-key 'visual comint-mode-map "a" 'my-comint-evil-append)
-  (evil-define-key 'normal comint-mode-map (kbd "<up>") 'comint-previous-matching-input-from-input)
-  (evil-define-key 'normal comint-mode-map (kbd "<down>") 'comint-next-matching-input-from-input)
-  (evil-define-key 'insert comint-mode-map (kbd "<up>") 'comint-previous-matching-input-from-input)
-  (evil-define-key 'insert comint-mode-map (kbd "<down>") 'comint-next-matching-input-from-input)
+  (evil-define-key 'motion comint-mode-map "0" 'my-comint-beginning-of-line)
+  (evil-define-key 'normal comint-mode-map (kbd "<up>") 'my-comint-next-input)
+  (evil-define-key 'normal comint-mode-map (kbd "<down>") 'my-comint-previous-input)
+  (evil-define-key 'insert comint-mode-map (kbd "<up>") 'my-comint-next-input)
+  (evil-define-key 'insert comint-mode-map (kbd "<down>") 'my-comint-previous-input)
   (evil-define-key 'normal comint-mode-map "\e\C-l" 'comint-show-output)
   (evil-define-key 'normal comint-mode-map "\C-m" 'comint-send-input)
   (evil-define-key 'normal comint-mode-map "\C-d" 'comint-delchar-or-maybe-eof)
@@ -66,3 +94,5 @@
   ;; Mouse Buttons:
   (evil-define-key 'normal comint-mode-map [mouse-2]     'comint-insert-input)
   )
+
+(provide 'my-comint)
