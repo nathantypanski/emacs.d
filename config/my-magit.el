@@ -148,11 +148,8 @@
         (kbd "DEL") 'scroll-down
         (kbd "S-SPC") 'scroll-down-command
         )
+      (evil-define-key 'normal git-commit-mode-map (kbd "SPC c") 'git-commit-commit)
       )
-
-
-      
     )
   )
-  
 (provide 'my-magit)
