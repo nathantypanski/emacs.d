@@ -39,6 +39,7 @@
 (require 'my-term)
 (require 'my-magit)
 (require 'my-r)
+(require 'my-android)
 (require 'my-eshell)
 (require 'my-evil)
 (require 'my-god)
