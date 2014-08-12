@@ -28,6 +28,7 @@
 (require 'my-interaction)
 (require 'my-scss)
 (require 'my-latex)
+(require 'my-rust)
 (require 'my-markdown)
 (require 'my-comint)
 (require 'my-haskell)
