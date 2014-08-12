@@ -21,9 +21,10 @@
     )
     (defun my-rust-setup ()
       "Make rust do things the way I like it."
+      (interactive)
       (setq tab-width 4)
-      (use-local-map rust-mode-map)
-      )
+      (use-local-map rust-mode-map))
+
     (add-hook 'rust-mode-hook 'my-rust-setup)
     )
   )
