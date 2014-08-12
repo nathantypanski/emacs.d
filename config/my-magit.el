@@ -2,16 +2,24 @@
   :ensure magit
   :config
   (progn
+    (after 'evil-leader
+        (evil-leader/set-key "g s" 'magit-status)
+        (evil-leader/set-key "g l" 'magit-log)
+        (evil-leader/set-key "g d" 'magit-diff)
+    )
     (after 'evil
+      (evil-set-initial-state 'magit-mode 'normal)
+      (evil-set-initial-state 'magit-commit-mode 'normal)
+      (evil-set-initial-state 'magit-status-mode 'normal)
+      (evil-set-initial-state 'magit-diff-mode 'normal)
+      (evil-set-initial-state 'magit-log-mode 'normal)
+
       (define-key magit-status-mode-map (kbd "C-n") 'magit-goto-next-sibling-section)
       (define-key magit-status-mode-map (kbd "C-p") 'magit-goto-previous-sibling-section)
       (evil-add-hjkl-bindings magit-status-mode-map 'emacs
         "K" 'magit-discard-item
         "l" 'magit-key-mode-popup-logging
         "h" 'magit-toggle-diff-refine-hunk)
-      (evil-set-initial-state 'magit-mode 'normal)
-      (evil-set-initial-state 'magit-status-mode 'normal)
-      (evil-set-initial-state 'magit-diff-mode 'normal)
       (evil-define-key 'normal magit-status-mode-map
         "l" 'magit-key-mode-popup-logging
         )
@@ -148,7 +156,20 @@
         (kbd "DEL") 'scroll-down
         (kbd "S-SPC") 'scroll-down-command
         )
+      ;; Commit mode - affects diff view
+      (evil-define-key 'normal magit-commit-mode-map (kbd "j") 'magit-goto-next-section)
+      (evil-define-key 'normal magit-commit-mode-map (kbd "k") 'magit-goto-previous-section)
+
+      ;; git commit mode - affects actual commit message
       (evil-define-key 'normal git-commit-mode-map (kbd "SPC c") 'git-commit-commit)
+
+      ;; log mode - for magit logs
+      (evil-define-key 'normal magit-log-mode-map (kbd "j") 'magit-goto-next-section)
+      (evil-define-key 'normal magit-log-mode-map (kbd "k") 'magit-goto-previous-section)
+      (evil-define-key 'normal magit-log-mode-map (kbd "m") 'magit-mark-item)
+      (evil-define-key 'normal magit-log-mode-map (kbd "=") 'magit-diff-with-mark)
+      (evil-define-key 'normal magit-log-mode-map (kbd "+") 'magit-log-show-more-entries)
+      (evil-define-key 'normal magit-log-mode-map (kbd "h") 'magit-log-toggle-margin)
       )
     )
   )
