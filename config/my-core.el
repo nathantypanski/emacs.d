@@ -140,6 +140,13 @@
 (global-set-key [remap eval-expression] 'pp-eval-expression)
 (global-set-key [remap eval-last-sexp] 'pp-eval-last-sexp)
 
+(defun my-spawn-terminal-here ()
+  "Open a terminal in the current buffer's directory"
+  (interactive)
+  (shell-command "urxvt"))
+
+(global-set-key (kbd "M-`") 'my-spawn-terminal-here)
+
 ;; Set the default font (only matters in graphical mode).
 (when window-system
   (progn
