@@ -232,7 +232,8 @@
     (setq guide-key/guide-key-sequence '("C-x" "C-c"))
     (setq guide-key/recursive-key-sequence-flag t)
     (guide-key-mode 1)
-    (setq guide-key/idle-delay 2.5)
+    (setq guide-key/idle-delay 0.5)
+    (setq guide-key/popup-window-position 'top)
     )
   )
 (use-package expand-region
