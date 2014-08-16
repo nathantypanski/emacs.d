@@ -65,11 +65,11 @@
         (progn
           (define-key evil-normal-state-map "%" 'evilmi-jump-items))
         )
-      (use-package surround
+      (use-package evil-surround
         :ensure evil-surround
         :config
         (progn
-          (global-surround-mode 1)
+          (global-evil-surround-mode 1)
           )
         )
 
