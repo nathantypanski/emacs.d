@@ -12,10 +12,14 @@
       (progn
 	(evil-leader/set-leader ",")
         (evil-leader/set-key "w" 'save-buffer)
-        (evil-leader/set-key "q" 'kill-buffer-and-window)
+        (after 'evil
+            (evil-leader/set-key "q" 'evil-window-delete)
+        )
+        (evil-leader/set-key "Q" 'kill-buffer-and-window)
         (evil-leader/set-key "e" 'pp-eval-last-sexp)
         (evil-leader/set-key "h" 'dired-jump)
-        (evil-leader/set-key "v" 'split-window-right)
+        (evil-leader/set-key "\\" 'split-window-horizontally)
+        (evil-leader/set-key "-" 'split-window-vertically)
         (evil-leader/set-key "e" 'pp-eval-last-sexp)
         (evil-leader/set-key "TAB" 'my-hop-around-buffers)
         (evil-leader/set-key "," 'other-window)
