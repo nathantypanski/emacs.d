@@ -16,6 +16,36 @@
     )
   )
 
+(use-package flycheck
+  :ensure flycheck
+  :init
+  (progn
+        (add-hook 'after-init-hook #'global-flycheck-mode))
+  :config
+  (progn
+    (setq flycheck-check-syntax-automatically '(save mode-enabled))
+    (setq flycheck-checkers (delq 'emacs-lisp-checkdoc flycheck-checkers))
+    (setq flycheck-checkers (delq 'html-tidy flycheck-checkers))
+
+    (defun my-flycheck-list-errors ()
+      "Jump to flycheck errors and switch to the errorlist buffer"
+      (interactive)
+      (flycheck-list-errors)
+      (switch-to-buffer-other-window "*Flycheck errors*" t)
+      )
+
+    (after 'evil
+      (evil-define-key 'normal flycheck-error-list-mode-map "k" #'flycheck-error-list-previous-error)
+      (evil-define-key 'normal flycheck-error-list-mode-map "j" #'flycheck-error-list-next-error)
+      (evil-define-key 'normal flycheck-error-list-mode-map "K" #'evil-previous-line)
+      (evil-define-key 'normal flycheck-error-list-mode-map "J" #'evil-next-line)
+      (evil-define-key 'normal flycheck-error-list-mode-map (kbd "RET") #'flycheck-error-list-goto-error)
+      (evil-define-key 'normal flycheck-error-list-mode-map "q" 'quit-window)
+
+      )
+    )
+  )
+
 (use-package helm
   :ensure helm
   :init (progn
