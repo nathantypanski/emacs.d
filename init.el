@@ -15,6 +15,7 @@
 (require 'use-package)
 
 (require 'my-core)
+(require 'my-keychain)
 (require 'my-functions)
 (require 'my-dirs)
 (require 'my-buffers)
