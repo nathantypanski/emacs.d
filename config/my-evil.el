@@ -24,7 +24,7 @@
         (evil-leader/set-key "TAB" 'my-hop-around-buffers)
         (evil-leader/set-key "," 'other-window)
         (evil-leader/set-key "a" 'ag-regexp)
-        (evil-leader/set-key "f" 'dired-jump)
+        (evil-leader/set-key "f" 'my-flycheck-list-errors)
         (evil-leader/set-key "F" 'helm-find-files)
         (evil-leader/set-key "B" 'helm-buffers-list)
         (evil-leader/set-key "x" 'helm-M-x)
@@ -73,7 +73,7 @@
           )
         )
 
-      (evil-set-initial-state 'flycheck-error-list-mode 'emacs)
+      (evil-set-initial-state 'flycheck-error-list-mode 'normal)
       (evil-set-initial-state 'package-men-mode 'emacs)
       (evil-set-initial-state 'help-mode 'emacs)
       (evil-set-initial-state 'eshell-mode 'emacs)
