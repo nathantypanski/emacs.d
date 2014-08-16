@@ -142,7 +142,6 @@
       (define-key evil-normal-state-map (kbd "SPC A") 'apropos)
       (define-key evil-normal-state-map (kbd "SPC X") 'helm-M-x)
 
-      (define-key evil-normal-state-map (kbd "C-p") 'fiplr-find-file)
       (define-key evil-normal-state-map (kbd "C-q") 'universal-argument)
 
       (define-key evil-normal-state-map (kbd "C-h") 'evil-window-left)

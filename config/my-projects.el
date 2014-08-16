@@ -69,6 +69,9 @@
   (progn
     (setq fiplr-ignored-globs '((directories (".git" ".svn"))
                                 (files ("*.jpg" "*.png" "*.zip" "*~"))))
+    (after 'evil
+      (define-key evil-normal-state-map (kbd "C-p") 'fiplr-find-file)
+      )
     )
   )
 
