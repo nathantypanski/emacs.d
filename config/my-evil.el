@@ -24,6 +24,7 @@
         (evil-leader/set-key "TAB" 'my-hop-around-buffers)
         (evil-leader/set-key "," 'other-window)
         (evil-leader/set-key "a" 'ag-regexp)
+        (evil-leader/set-key "p" 'project-explorer-open)
         (evil-leader/set-key "f" 'my-flycheck-list-errors)
         (evil-leader/set-key "F" 'helm-find-files)
         (evil-leader/set-key "B" 'helm-buffers-list)
@@ -74,14 +75,10 @@
         )
 
       (evil-set-initial-state 'flycheck-error-list-mode 'normal)
-      (evil-set-initial-state 'package-men-mode 'emacs)
-      (evil-set-initial-state 'help-mode 'emacs)
-      (evil-set-initial-state 'eshell-mode 'emacs)
+      (evil-set-initial-state 'git-commit-mode 'insert)
       (evil-set-initial-state 'shell-mode 'emacs)
       (evil-set-initial-state 'esup-mode 'emacs)
-      (evil-set-initial-state 'git-commit-mode 'insert)
       (evil-set-initial-state 'diff-mode 'emacs)
-      (evil-set-initial-state 'haskell-interactive-mode 'emacs)
       (evil-set-initial-state 'term-mode 'emacs)
       (evil-set-initial-state 'multi-term-mode 'emacs)
 
