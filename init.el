@@ -44,4 +44,5 @@
 (require 'my-android)
 (require 'my-eshell)
 (require 'my-evil)
+(require 'my-help)
 (require 'my-god)
