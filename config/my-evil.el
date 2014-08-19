@@ -11,25 +11,25 @@
       :config
       (progn
 	(evil-leader/set-leader ",")
-        (evil-leader/set-key "w" 'save-buffer)
+        (evil-leader/set-key "w"     'save-buffer)
         (after 'evil
             (evil-leader/set-key "q" 'evil-window-delete)
         )
-        (evil-leader/set-key "Q" 'kill-buffer-and-window)
-        (evil-leader/set-key "e" 'pp-eval-last-sexp)
-        (evil-leader/set-key "h" 'dired-jump)
-        (evil-leader/set-key "\\" 'split-window-horizontally)
-        (evil-leader/set-key "-" 'split-window-vertically)
-        (evil-leader/set-key "e" 'pp-eval-last-sexp)
-        (evil-leader/set-key "TAB" 'my-hop-around-buffers)
-        (evil-leader/set-key "," 'other-window)
-        (evil-leader/set-key "a" 'ag-regexp)
-        (evil-leader/set-key "p" 'project-explorer-open)
-        (evil-leader/set-key "f" 'my-flycheck-list-errors)
-        (evil-leader/set-key "F" 'helm-find-files)
-        (evil-leader/set-key "B" 'helm-buffers-list)
-        (evil-leader/set-key "x" 'helm-M-x)
-        (evil-leader/set-key "b" 'ibuffer)
+        (evil-leader/set-key "Q"     'kill-buffer-and-window)
+        (evil-leader/set-key "e"     'pp-eval-last-sexp)
+        (evil-leader/set-key "h"     'dired-jump)
+        (evil-leader/set-key "\\"    'split-window-horizontally)
+        (evil-leader/set-key "-"     'split-window-vertically)
+        (evil-leader/set-key "e"     'pp-eval-last-sexp)
+        (evil-leader/set-key "TAB"   'my-hop-around-buffers)
+        (evil-leader/set-key ","     'other-window)
+        (evil-leader/set-key "a"     'ag-regexp)
+        (evil-leader/set-key "p"     'project-explorer-open)
+        (evil-leader/set-key "f"     'my-flycheck-list-errors)
+        (evil-leader/set-key "F"     'helm-find-files)
+        (evil-leader/set-key "B"     'helm-buffers-list)
+        (evil-leader/set-key "x"     'helm-M-x)
+        (evil-leader/set-key "b"     'ibuffer)
         )
       )
 (use-package evil
@@ -39,11 +39,11 @@
     (evil-mode 1)
     (setq evil-want-C-u-scroll t)
     (setq evil-want-C-w-in-emacs-state t)
-    (setq evil-search-module 'isearch)
-    (setq evil-magic 'very-magic)
-    (setq evil-emacs-state-cursor '("#dfaf8f" box))
-    (setq evil-normal-state-cursor '("#f8f893" box))
-    (setq evil-insert-state-cursor '("#f8f893" bar))
+    (setq evil-search-module        'isearch)
+    (setq evil-magic                'very-magic)
+    (setq evil-emacs-state-cursor   '("#dfaf8f" box))
+    (setq evil-normal-state-cursor  '("#f8f893" box))
+    (setq evil-insert-state-cursor  '("#f8f893" bar))
     (setq evil-replace-state-cursor '("#cc9393" box))
     (setq evil-want-fine-undo t)
 
@@ -106,7 +106,7 @@
       (define-key minibuffer-local-map [escape] 'my-minibuffer-keyboard-quit)
       (define-key minibuffer-local-ns-map [escape] 'my-minibuffer-keyboard-quit)
       (define-key minibuffer-local-completion-map [escape] 'my-minibuffer-keyboard-quit)
-      (define-key minibuffer-local-must-match-map [escape] 'my-min )
+      (define-key minibuffer-local-must-match-map [escape] 'my-minibuffer-keyboard-quit)
 
       (defun my-append-and-indent ()
         "Moves to end of line, enters insert mode, and also indents the line."
@@ -115,8 +115,8 @@
         (indent-according-to-mode)
         )
 
-      (define-key evil-insert-state-map (kbd "RET") 'evil-ret-and-indent)
-      (define-key evil-normal-state-map (kbd "RET") 'my-append-and-indent)
+      (define-key evil-insert-state-map (kbd "RET")        'evil-ret-and-indent)
+      (define-key evil-normal-state-map (kbd "RET")        'my-append-and-indent)
       (define-key evil-normal-state-map (kbd "<S-return>") 'my-append-and-indent)
 
       (defun my-delete-trailing-whitespace-at-point ()
@@ -126,8 +126,41 @@
           (delete-trailing-whitespace begin end)
           ))
 
+      (defun my-memorize-last-line-postiion ()
+        "Location of point on the last line, memorized when exiting insert mode")
+
+      (defun my-next-line-with-smart-delete ()
+        "Delete trailing whitespace on the previous line before moving
+but only if we just exited insert state from an indented blank line
+and are moving down."
+        (interactive)
+        (let ((old-spot (- (point) (line-beginning-position))))
+          (my-delete-trailing-whitespace-at-point)
+          (evil-next-visual-line)
+          (evil-forward-char old-spot nil t)
+          ))
+
+      (defun my-previous-line-with-smart-delete ()
+        "Delete trailing whitespace on the previous line before moving
+but only if we just exited insert state from an indented blank line
+and are moving down."
+        (interactive)
+        (let ((old-spot (- (point) (line-beginning-position))))
+          (my-delete-trailing-whitespace-at-point)
+          (evil-previous-visual-line)
+          (evil-forward-char old-spot nil t)
+          ))
+
+      (defun my-electric-append-with-indent (count &optional vcount)
+        "Indent the current line if it is empty. Otherwise, just do a normal append-line."
+        (interactive "p")
+        (if (= 0 (- (point) (line-beginning-position)))
+            (indent-according-to-mode))
+        (evil-append-line count vcount)
+        )
+
       ;; exiting insert mode -> delete trailing whitespace
-      (remove-hook 'evil-insert-state-exit-hook 'my-delete-trailing-whitespace-at-point)
+      ;; (remove-hook 'evil-insert-state-exit-hook 'my-delete-trailing-whitespace-at-point)
 
       ;; entering insert mode -> indent according to mode
       ;; (add-hook 'evil-insert-state-entry-hook 'indent-according-to-mode)
@@ -139,28 +172,29 @@
       (define-key evil-normal-state-map (kbd "SPC A") 'apropos)
       (define-key evil-normal-state-map (kbd "SPC X") 'helm-M-x)
 
-      (define-key evil-normal-state-map (kbd "C-q") 'universal-argument)
+      (define-key evil-normal-state-map (kbd "C-q")   'universal-argument)
 
-      (define-key evil-normal-state-map (kbd "C-h") 'evil-window-left)
-      (define-key evil-normal-state-map (kbd "C-j") 'evil-window-down)
-      (define-key evil-normal-state-map (kbd "C-k") 'evil-window-up)
-      (define-key evil-normal-state-map (kbd "C-l") 'evil-window-right)
-
+      (define-key evil-normal-state-map (kbd "C-h")   'evil-window-left)
+      (define-key evil-normal-state-map (kbd "C-j")   'evil-window-down)
+      (define-key evil-normal-state-map (kbd "C-k")   'evil-window-up)
+      (define-key evil-normal-state-map (kbd "C-l")   'evil-window-right)
       (define-key evil-normal-state-map (kbd "-") (kbd "dd"))
 
-      (define-key evil-normal-state-map "j" 'evil-next-visual-line)
-      (define-key evil-normal-state-map "k" 'evil-previous-visual-line)
-      (define-key evil-normal-state-map "$" 'my-smart-end)
-      (define-key evil-normal-state-map "0" 'my-smart-home)
+      (define-key evil-normal-state-map "a"           'evil-append)
+      (define-key evil-normal-state-map "A"           'my-electric-append-with-indent)
+      (define-key evil-normal-state-map "j"           'my-next-line-with-smart-delete)
+      (define-key evil-normal-state-map "k"           'my-previous-line-with-smart-delete)
+      (define-key evil-normal-state-map "$"           'my-smart-end)
+      (define-key evil-normal-state-map "0"           'my-smart-home)
 
-      (define-key evil-motion-state-map "j" 'evil-next-visual-line)
-      (define-key evil-motion-state-map "k" 'evil-previous-visual-line)
-      (define-key evil-motion-state-map "$" 'evil-end-of-line)
-      (define-key evil-motion-state-map "0" 'evil-beginning-of-line)
+      (define-key evil-motion-state-map "j"           'evil-next-visual-line)
+      (define-key evil-motion-state-map "k"           'evil-previous-visual-line)
+      (define-key evil-motion-state-map "$"           'evil-end-of-line)
+      (define-key evil-motion-state-map "0"           'evil-beginning-of-line)
 
-      (define-key evil-normal-state-map "/" 'evil-search-forward)
+      (define-key evil-normal-state-map "/"           'evil-search-forward)
       (define-key evil-normal-state-map (kbd "SPC /") 'helm-swoop)
-      (define-key evil-motion-state-map "/" 'evil-search-forward)
+      (define-key evil-motion-state-map "/"           'evil-search-forward)
       (define-key evil-normal-state-map (kbd "Y") (kbd "y$"))
 
 
@@ -184,5 +218,6 @@
         (set-face-background 'mode-line (car color))
         (set-face-foreground 'mode-line (cdr color))))
 ))
+
 
 (provide 'my-evil)
