@@ -41,63 +41,6 @@
     )
   )
 
-(use-package helm
-  :ensure helm
-  :init (progn
-          (setq helm-buffers-fuzzy-matching t)
-          )
-  :config
-  (progn
-    (require 'helm-files)
-    (after 'projectile
-      (use-package helm-projectile
-        :ensure helm-projectile))
-    (defun helm-jump ()
-      "Find files with helm, but be smart about buffers and recent files."
-      (interactive)
-      (let ((helm-ff-transformer-show-only-basename nil))
-        (helm-other-buffer '(helm-projectile-sources-list
-                             helm-source-buffers-list
-                             helm-source-recentf
-                             helm-source-bookmarks
-                             helm-source-file-cache
-                             helm-source-files-in-current-dir
-                             helm-source-locate
-                             helm-source-buffer-not-found)
-                           "*helm jump*")))
-
-    (setq helm-command-prefix-key "C-c h")
-    (setq helm-quick-update t)
-    (use-package helm-swoop
-      :ensure helm-swoop
-      :config
-      (progn
-        ;; Don't start searching for the thing at point by default.
-        ;; Let me type it.
-        (setq helm-swoop-pre-input-function (lambda () ()))
-        (after 'evil
-          (define-key evil-normal-state-map (kbd "SPC l")   'helm-swoop)
-          )
-        ))
-    (after 'helm-autoloads
-      (after 'evil
-        (define-key evil-normal-state-map (kbd "SPC f")   'helm-find-files)
-        (define-key evil-visual-state-map (kbd "SPC f")   'helm-find-files)
-        (define-key evil-normal-state-map (kbd "SPC b")   'helm-buffers-list)
-        (define-key evil-visual-state-map (kbd "SPC b")   'helm-buffers-list)
-        (define-key evil-visual-state-map (kbd "SPC SPC") 'helm-M-x)
-        (define-key evil-normal-state-map (kbd "SPC SPC") 'helm-M-x)
-        (define-key evil-normal-state-map (kbd "SPC o")   'helm-imenu)
-        (define-key evil-normal-state-map (kbd "SPC e")   'helm-recentf)
-        (define-key evil-normal-state-map (kbd "SPC t")   'helm-etags-select)
-        (define-key evil-normal-state-map (kbd "SPC y")   'helm-show-kill-ring)
-        (define-key evil-normal-state-map [f5] 'helm-mini)))
-    (after 'flycheck
-      (use-package helm-flycheck
-        :ensure helm-flycheck))
-    )
-  )
-
 (use-package ido
   :config
   (progn

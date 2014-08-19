@@ -27,6 +27,7 @@
 (require 'my-org)
 (require 'my-projects)
 (require 'my-interaction)
+(require 'my-helm)
 (require 'my-scss)
 (require 'my-latex)
 (require 'my-rust)
