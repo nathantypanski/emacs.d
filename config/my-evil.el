@@ -129,26 +129,41 @@
       (defun my-memorize-last-line-postiion ()
         "Location of point on the last line, memorized when exiting insert mode")
 
-      (defun my-next-line-with-smart-delete ()
+      (defun my-next-line-with-smart-delete (count)
         "Delete trailing whitespace on the previous line before moving
 but only if we just exited insert state from an indented blank line
 and are moving down."
-        (interactive)
-        (let ((old-spot (- (point) (line-beginning-position))))
+        (interactive "p")
+        (let ((line-move-visual t)
+              (old-spot (- (point) (line-beginning-position)))
+              (old-line (my-what-line)))
           (my-delete-trailing-whitespace-at-point)
-          (evil-next-visual-line)
-          (evil-forward-char old-spot nil t)
+          (evil-next-visual-line count)
+          (if (and
+               (= (- (point) (line-beginning-position)) 0)
+               (not (= (my-what-line) old-line)))
+              (evil-forward-char old-spot nil t))
           ))
 
-      (defun my-previous-line-with-smart-delete ()
+      (defun my-what-line ()
+        "Get the line, without printing the word 'line' before it."
+        (1+ (count-lines 1 (point)))
+        )
+
+      (defun my-previous-line-with-smart-delete (count)
         "Delete trailing whitespace on the previous line before moving
 but only if we just exited insert state from an indented blank line
 and are moving down."
-        (interactive)
-        (let ((old-spot (- (point) (line-beginning-position))))
+        (interactive "p")
+        (let ((line-move-visual t)
+              (old-spot (- (point) (line-beginning-position)))
+              (old-line (my-what-line)))
           (my-delete-trailing-whitespace-at-point)
-          (evil-previous-visual-line)
-          (evil-forward-char old-spot nil t)
+          (evil-previous-visual-line count)
+          (if (and
+               (= (- (point) (line-beginning-position)) 0)
+               (not (= (my-what-line) old-line)))
+              (evil-forward-char old-spot nil t))
           ))
 
       (defun my-electric-append-with-indent (count &optional vcount)
@@ -197,8 +212,6 @@ and are moving down."
       (define-key evil-motion-state-map "/"           'evil-search-forward)
       (define-key evil-normal-state-map (kbd "Y") (kbd "y$"))
 
-
-      ;; butter fingers
       (evil-ex-define-cmd "Q"  'evil-quit)
       (evil-ex-define-cmd "Qa" 'evil-quit-all)
       (evil-ex-define-cmd "QA" 'evil-quit-all)
