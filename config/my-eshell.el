@@ -5,7 +5,7 @@
           (eol   (line-end-position)))
       (goto-char (line-beginning-position))
       (if (and (looking-at eshell-prompt-regexp)
-               (< = (match-end 0) eol)
+               (<= (match-end 0) eol)
                (>  (match-end 0) oldpt))
           1
         (progn
