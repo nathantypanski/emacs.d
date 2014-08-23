@@ -115,16 +115,9 @@
       )
     (use-package ido-vertical-mode
       :ensure ido-vertical-mode
-      :init (progn
-              (ido-vertical-mode 1)
-              )
-      )
-    (after 'evil
-      (define-key evil-normal-state-map (kbd "SPC B") 'ibuffer)
-      (define-key evil-visual-state-map (kbd "SPC B") 'ibuffer)
-      (define-key evil-normal-state-map (kbd "SPC k") 'ido-kill-buffer)
-      (define-key evil-visual-state-map (kbd "SPC k") 'ido-kill-buffer)
-      )
+      :init
+      (progn
+       (ido-vertical-mode 1)))
     )
   )
 
@@ -133,21 +126,33 @@
   :ensure ibuffer
   :config
   (progn
+    (setq ibuffer-expert t)
+    (setq ibuffer-saved-filter-groups
+          (quote (("default"
+                   ("dired" (mode . dired-mode))
+                   ("haskell" (mode . haskell-mode))
+                   ("python" (mode . python-mode))
+                   ("nasa" (or
+                            (name . ".nasa.")
+                            (filename . ".nasa.")))
+                   ("notes" (or
+                             (name . "^\\*Calendar\\*$")
+                             (name . "^diary$")
+                             (mode . org-mode)))
+                   ("*buffer*" (name . "\\*.*\\*"))
+                   )))
+          )
+    (defun my-ibuffer-setup ()
+      "Configure ibuffer the way I want it."
+      (ibuffer-auto-mode 1)
+      (ibuffer-switch-to-saved-filter-groups "default")
+    )
+    (add-hook 'ibuffer-mode-hook 'my-ibuffer-setup)
+    (setq ibuffer-show-empty-filter-groups nil)
+    (after 'evil-leader (evil-leader/set-key "B" 'ibuffer))
     (use-package ibuffer-vc
       :ensure ibuffer-vc
-      :config (progn
-                (setq ibuffer-saved-filter-groups
-                      (quote (("default"
-                               ("dired" (mode . dired-mode))
-                               ("haskell" (mode . haskell-mode))
-                               ("python" (mode . python-mode))
-                               ("notes" (or
-                                         (name . "^\\*Calendar\\*$")
-                                         (name . "^diary$")
-                                         (mode . org-mode)))
-                               ("*buffer*" (name . "\\*.*\\*"))
-                               )))
-                      ))
+      :config
       ))
   )
 
@@ -200,7 +205,7 @@
     (setq guide-key/guide-key-sequence '("C-x" "C-c"))
     (setq guide-key/recursive-key-sequence-flag t)
     (guide-key-mode 1)
-    (setq guide-key/idle-delay 0.5)
+    (setq guide-key/idle-delay 1.5)
     (setq guide-key/popup-window-position 'top)
     )
   )

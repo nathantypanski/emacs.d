@@ -27,7 +27,7 @@
     (eshell-bol))
 
   (defun my-eshell-evil-append (count &optional vcount skip-empty-lines)
-    "Switch to Insert state just after point                . 
+    "Switch to Insert state just after point                .
     The insertion will be repeated COUNT times and repeated once for
     the next VCOUNT - 1 lines starting at the same column . If
     SKIP-EMPTY-LINES is non-nil, the insertion will not be performed

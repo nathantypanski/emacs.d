@@ -1,3 +1,6 @@
+;; for `dotimes', `push' (Emacs 21)
+(eval-when-compile (require 'cl))
+
 (defmacro bind (&rest commands)
   "Convience macro which creates a lambda interactive command."
   `(lambda ()
@@ -155,5 +158,15 @@ With argument ARG, do this that many times."
       (error "No number at point"))
   (replace-match (number-to-string (1+ (string-to-number (match-string 0))))))
 
-(global-set-key (kbd "C-c +") 'increment-number-at-point)
+;; jacked from cider-repl.el
+(defun my-same-line (pos1 pos2)
+  "Return t if buffer positions POS1 and POS2 are on the same line."
+  (save-excursion (goto-char (min pos1 pos2))
+                  (<= (max pos1 pos2) (line-end-position))))
+
+(defun my-hop-around-buffers ()
+  "Swap the current buffer with the previous one."
+  (interactive)
+  (switch-to-buffer (other-buffer "*Ibuffer*")))
+
 (provide 'my-functions)

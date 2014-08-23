@@ -37,6 +37,7 @@
           )
         ))
     (after 'evil-leader
+        (evil-leader/set-key "b" 'helm-buffers-list)
         (evil-leader/set-key "m" 'helm-mini)
         (evil-leader/set-key "i" 'helm-imenu)
       )

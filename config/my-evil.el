@@ -27,9 +27,7 @@
         (evil-leader/set-key "p"     'project-explorer-open)
         (evil-leader/set-key "f"     'my-flycheck-list-errors)
         (evil-leader/set-key "F"     'helm-find-files)
-        (evil-leader/set-key "B"     'helm-buffers-list)
         (evil-leader/set-key "x"     'helm-M-x)
-        (evil-leader/set-key "b"     'ibuffer)
         )
       )
 (use-package evil
@@ -46,11 +44,6 @@
     (setq evil-insert-state-cursor  '("#f8f893" bar))
     (setq evil-replace-state-cursor '("#cc9393" box))
     (setq evil-want-fine-undo t)
-
-    (defun my-hop-around-buffers ()
-      "Swap the current buffer with the previous one."
-      (interactive)
-      (switch-to-buffer (other-buffer)))
 
     (use-package evil-nerd-commenter
       :ensure evil-nerd-commenter
@@ -119,52 +112,74 @@
       (define-key evil-normal-state-map (kbd "RET")        'my-append-and-indent)
       (define-key evil-normal-state-map (kbd "<S-return>") 'my-append-and-indent)
 
-      (defun my-delete-trailing-whitespace-at-point ()
-        "Delete trailing whitespace on the current line only."
-        (let ((begin (line-beginning-position))
-              (end   (line-end-position)))
-          (delete-trailing-whitespace begin end)
-          ))
-
-      (defun my-memorize-last-line-postiion ()
-        "Location of point on the last line, memorized when exiting insert mode")
-
-      (defun my-next-line-with-smart-delete (count)
-        "Delete trailing whitespace on the previous line before moving
-but only if we just exited insert state from an indented blank line
-and are moving down."
-        (interactive "p")
-        (let ((line-move-visual t)
-              (old-spot (- (point) (line-beginning-position)))
-              (old-line (my-what-line)))
-          (my-delete-trailing-whitespace-at-point)
-          (evil-next-visual-line count)
-          (if (and
-               (= (- (point) (line-beginning-position)) 0)
-               (not (= (my-what-line) old-line)))
-              (evil-forward-char old-spot nil t))
-          ))
-
       (defun my-what-line ()
         "Get the line, without printing the word 'line' before it."
         (1+ (count-lines 1 (point)))
         )
 
+      (defun my-where-beginning-of-visual-line ()
+        "Calculate the difference between the beginning
+of the current visual line and point."
+        (interactive)
+        (let ((old-point (point))
+              (bovl (save-excursion (beginning-of-visual-line)
+                                    (point))))
+          (- old-point bovl)))
+
+      (defun my-current-line-is-empty ()
+        (save-excursion (beginning-of-line) (looking-at "\\s-+$")))
+
+      (defun my-delete-trailing-whitespace-at-line (line)
+        "Delete trailing whitespace on the current line only."
+        (save-excursion
+        (let ((begin (line-beginning-position))
+              (end   (line-end-position)))
+          (delete-trailing-whitespace begin end)
+          )))
+
+    (defun my-next-line-with-smart-delete (count)
+        "Delete trailing whitespace on the previous line before moving
+but only if we just exited insert state from an indented blank line
+and are moving down.
+TODO: make this work properly with visual lines, then start using it!"
+        (interactive "p")
+        (let ((line-move-visual t)
+              (old-spot (my-where-beginning-of-visual-line))
+              (old-line (my-what-line)))
+          (if (my-current-line-is-empty)
+            (progn (my-delete-trailing-whitespace-at-point)
+                   (evil-next-visual-line count)
+                   (if (< (my-where-beginning-of-visual-line) old-spot)
+                       (progn
+                         (evil-beginning-of-visual-line)
+                          (evil-forward-char old-spot nil t)
+                          (print old-spot)
+                         )))
+            (evil-next-visual-line count))
+          ))
+
       (defun my-previous-line-with-smart-delete (count)
         "Delete trailing whitespace on the previous line before moving
 but only if we just exited insert state from an indented blank line
-and are moving down."
+and are moving down.
+TODO: make this work properly with visual lines, then start using it!"
         (interactive "p")
         (let ((line-move-visual t)
-              (old-spot (- (point) (line-beginning-position)))
+              (old-spot (my-where-beginning-of-visual-line))
               (old-line (my-what-line)))
-          (my-delete-trailing-whitespace-at-point)
-          (evil-previous-visual-line count)
-          (if (and
-               (= (- (point) (line-beginning-position)) 0)
-               (not (= (my-what-line) old-line)))
-              (evil-forward-char old-spot nil t))
-          ))
+          (if (my-current-line-is-empty)
+            (progn (my-delete-trailing-whitespace-at-point)
+                   (evil-previous-visual-line count)
+                   (if (< (my-where-beginning-of-visual-line) old-spot)
+                       (progn
+                         (evil-beginning-of-visual-line)
+                         (evil-forward-char old-spot nil t)
+                          (print old-spot)
+                         )))
+            (progn (evil-previous-visual-line count)
+                   nil
+             )
+          )))
 
       (defun my-electric-append-with-indent (count &optional vcount)
         "Indent the current line if it is empty. Otherwise, just do a normal append-line."
@@ -174,11 +189,14 @@ and are moving down."
         (evil-append-line count vcount)
         )
 
+      ;; (defun my-evil-forward-char ()
+      ;;   (evil-forward-char)
+      ;;  )
+
       ;; exiting insert mode -> delete trailing whitespace
       ;; (remove-hook 'evil-insert-state-exit-hook 'my-delete-trailing-whitespace-at-point)
 
       ;; entering insert mode -> indent according to mode
-      ;; (add-hook 'evil-insert-state-entry-hook 'indent-according-to-mode)
       ;; Normal Evil bindings
       (define-key evil-insert-state-map (kbd "<S-backspace>")
         'my-backward-delete-word)
@@ -197,8 +215,8 @@ and are moving down."
 
       (define-key evil-normal-state-map "a"           'evil-append)
       (define-key evil-normal-state-map "A"           'my-electric-append-with-indent)
-      (define-key evil-normal-state-map "j"           'my-next-line-with-smart-delete)
-      (define-key evil-normal-state-map "k"           'my-previous-line-with-smart-delete)
+      (define-key evil-normal-state-map "j"           'evil-next-visual-line)
+      (define-key evil-normal-state-map "k"           'evil-previous-visual-line)
       (define-key evil-normal-state-map "$"           'my-smart-end)
       (define-key evil-normal-state-map "0"           'my-smart-home)
 
@@ -230,6 +248,15 @@ and are moving down."
                          (t '("#440000" . "#ffffff")))))
         (set-face-background 'mode-line (car color))
         (set-face-foreground 'mode-line (cdr color))))
+
+    (defun my-evil-insert-modeline ()
+      "Changes the modeline to insert color."
+      (set-face-background 'mode-line "#440000")
+      )
+    (defun my-evil-normal-modeline ()
+      "Changes the modeline to normal color."
+      (set-face-background 'mode-line "#330022")
+      )
 ))
 
 

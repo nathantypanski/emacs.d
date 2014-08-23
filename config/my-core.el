@@ -22,9 +22,6 @@
 ;; Disable toolbars and splash screens.
 (when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 
-;; for `dotimes', `push' (Emacs 21)
-(eval-when-compile (require 'cl))
-
 (defmacro after (feature &rest body)
   "After FEATURE is loaded, evaluate BODY."
   (declare (indent defun))
@@ -174,5 +171,8 @@
 
 ;; have no use for these default bindings
 (global-unset-key (kbd "C-x m"))
+
+;; easy increment? Good enough ...
+(global-set-key (kbd "C-c +") 'increment-number-at-point)
 
 (provide 'my-core)

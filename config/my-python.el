@@ -84,7 +84,7 @@
 
     (add-hook 'python-mode-hook 'my-disable-electric-indent)
 
-    (use-package python-pylint
+    (use-package pylint
       :ensure pylint
       :init
       (progn

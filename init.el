@@ -14,9 +14,9 @@
     (package-install 'use-package))
 (require 'use-package)
 
+(require 'my-functions)
 (require 'my-core)
 (require 'my-keychain)
-(require 'my-functions)
 (require 'my-dirs)
 (require 'my-buffers)
 (require 'my-imenu)
@@ -34,6 +34,7 @@
 (require 'my-markdown)
 (require 'my-comint)
 (require 'my-haskell)
+(require 'my-clojure)
 (require 'my-python)
 (require 'my-unbound-keys)
 (require 'my-eyecandy)
