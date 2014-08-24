@@ -16,6 +16,9 @@
 ;; require a trailing newline
 (setq require-final-newline t)
 
+;; I never look at right-side fringes. Do you?
+(set-fringe-style '(8 . 0))
+
 ;'Woman' > 'man'.
 (defalias 'man 'woman)
 
@@ -174,5 +177,6 @@
 
 ;; easy increment? Good enough ...
 (global-set-key (kbd "C-c +") 'increment-number-at-point)
+
 
 (provide 'my-core)

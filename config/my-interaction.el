@@ -121,41 +121,6 @@
     )
   )
 
-(use-package ibuffer
-  :commands ibuffer
-  :ensure ibuffer
-  :config
-  (progn
-    (setq ibuffer-expert t)
-    (setq ibuffer-saved-filter-groups
-          (quote (("default"
-                   ("dired" (mode . dired-mode))
-                   ("haskell" (mode . haskell-mode))
-                   ("python" (mode . python-mode))
-                   ("nasa" (or
-                            (name . ".nasa.")
-                            (filename . ".nasa.")))
-                   ("notes" (or
-                             (name . "^\\*Calendar\\*$")
-                             (name . "^diary$")
-                             (mode . org-mode)))
-                   ("*buffer*" (name . "\\*.*\\*"))
-                   )))
-          )
-    (defun my-ibuffer-setup ()
-      "Configure ibuffer the way I want it."
-      (ibuffer-auto-mode 1)
-      (ibuffer-switch-to-saved-filter-groups "default")
-    )
-    (add-hook 'ibuffer-mode-hook 'my-ibuffer-setup)
-    (setq ibuffer-show-empty-filter-groups nil)
-    (after 'evil-leader (evil-leader/set-key "B" 'ibuffer))
-    (use-package ibuffer-vc
-      :ensure ibuffer-vc
-      :config
-      ))
-  )
-
 (use-package ag
   :ensure ag
   :commands (ag ag-mode ag-files ag-regexp-at-point)

@@ -1,6 +1,7 @@
 (setq c-default-style '((java-mode . "java")
                         (awk-mode . "awk")
                         (other . "linux")))
+
 (defun my-set-evil-shift-width ()
   "Set Evil's shift width for C editing."
   (after 'evil
@@ -12,13 +13,6 @@
 
 (c-set-offset 'case-label '+)
 
-(use-package semantic
-  :ensure semantic
-  :init
-  (progn
-    (global-semanticdb-minor-mode 1)
-    )
-)
 (use-package cedet
   :ensure cedet
   :config
@@ -27,8 +21,14 @@
       (evil-define-key 'insert c-mode-map (kbd "TAB") 'c-indent-line-or-region)
       )
     (semantic-mode)
-))
+    ))
 
-
+(after 'ac-etags
+  ;; ac-etags setup for C code.
+  ;; See ~/.emacs.d/config/my-autocomplete.el
+  (defun my-c-mode-common-hook ()
+    (add-to-list 'ac-sources 'ac-source-etags))
+  (add-hook 'c-mode-common-hook 'my-c-mode-common-hook)
+  )
 
 (provide 'my-c)

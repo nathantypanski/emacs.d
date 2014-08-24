@@ -28,7 +28,7 @@
         (evil-leader/set-key "f"     'my-flycheck-list-errors)
         (evil-leader/set-key "F"     'helm-find-files)
         (evil-leader/set-key "x"     'helm-M-x)
-        )
+        
       )
 (use-package evil
   :ensure evil
