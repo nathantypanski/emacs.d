@@ -25,11 +25,14 @@
         (evil-leader/set-key ","     'other-window)
         (evil-leader/set-key "a"     'ag-regexp)
         (evil-leader/set-key "p"     'project-explorer-open)
+        (after 'helm
+          (evil-leader/set-key "t"   'helm-semantic)
+          (evil-leader/set-key "."   'semantic-ia-fast-jump)
+          )
         (evil-leader/set-key "f"     'my-flycheck-list-errors)
         (evil-leader/set-key "F"     'helm-find-files)
         (evil-leader/set-key "x"     'helm-M-x)
-        
-      )
+      ))
 (use-package evil
   :ensure evil
   :config
