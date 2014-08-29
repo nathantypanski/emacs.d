@@ -41,12 +41,6 @@
       (evil-insert-state))
 
     (defun my-haskell-interactive-evil-append (count &optional vcount skip-empty-lines)
-      "Switch to Insert state just after point.
-    The insertion will be repeated COUNT times and repeated once for
-    the next VCOUNT - 1 lines starting at the same column.  If
-    SKIP-EMPTY-LINES is non-nil, the insertion will not be performed
-    on lines on which the insertion point would be after the end of
-    the lines."
       "If the comint prompt is before point, just do evil-append. Otherwise, insert after the prompt"
       (interactive
        (list (prefix-numeric-value current-prefix-arg)
@@ -87,16 +81,18 @@
     (after 'evil
       (evil-set-initial-state 'haskell-error-mode 'emacs)
       (evil-define-key 'insert haskell-interactive-mode-map
-        (kbd "<up>") 'my-haskell-interactive-history-previous
-        (kbd "<down>") 'my-haskell-interactive-history-next)
+        (kbd "<up>")          'my-haskell-interactive-history-previous
+        (kbd "<down>")        'my-haskell-interactive-history-next
+        (kbd "RET")           'haskell-interactive-mode-return
+        (kbd "TAB")           'company-complete)
       (evil-define-key 'normal haskell-interactive-mode-map
-        (kbd "<up>") 'my-haskell-interactive-history-previous
-        (kbd "<down>") 'my-haskell-interactive-history-next
-        (kbd "0")    'my-haskell-interactive-evil-bol
-        (kbd "A")    'my-haskell-interactive-evil-append-line
-        (kbd "a")    'my-haskell-interactive-evil-append
-        (kbd "i")    'my-haskell-interactive-evil-insert
-        (kbd "RET")  'haskell-interactive-mode-return)
+        (kbd "<up>")          'my-haskell-interactive-history-previous
+        (kbd "<down>")        'my-haskell-interactive-history-next
+        (kbd "0")             'my-haskell-interactive-evil-bol
+        (kbd "A")             'my-haskell-interactive-evil-append-line
+        (kbd "a")             'my-haskell-interactive-evil-append
+        (kbd "i")             'my-haskell-interactive-evil-insert
+        (kbd "RET")           'haskell-interactive-mode-return)
       (evil-define-key 'normal haskell-mode-map (kbd "C-x C-d") nil)
       (evil-define-key 'normal haskell-mode-map (kbd "C-c C-z") 'haskell-interactive-switch)
       (evil-define-key 'normal haskell-mode-map (kbd "C-c C-l") 'haskell-process-load-file)
