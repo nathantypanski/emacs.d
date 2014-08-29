@@ -84,18 +84,18 @@
 
     (add-hook 'python-mode-hook 'my-disable-electric-indent)
 
-    (use-package pylint
-      :ensure pylint
-      :init
-      (progn
-        (add-to-list 'flycheck-disabled-checkers 'python-flake8)
-        (add-to-list 'flycheck-disabled-checkers 'python-pyflake)
-        (add-hook 'python-mode-hook 'flycheck-mode)
-        )
-      :config
-      (progn
-        )
-      )
+    ;;(use-package pylint
+    ;;  :ensure pylint
+    ;;  :init
+    ;;  (progn
+    ;;    (add-to-list 'flycheck-disabled-checkers 'python-flake8)
+    ;;    (add-to-list 'flycheck-disabled-checkers 'python-pyflake)
+    ;;    (add-hook 'python-mode-hook 'flycheck-mode)
+    ;;    )
+    ;;  :config
+    ;;  (progn
+    ;;    )
+    ;;  )
     (use-package jedi
       :commands jedi:setup
       :ensure jedi
