@@ -2,7 +2,7 @@
   :ensure ggtags
   :init
   (progn
-    (defun my-setupg-ggtags ()
+    (defun my-setup-ggtags ()
       "Configure the modes I want to use ggtags."
         (when (derived-mode-p 'c-mode 'c++-mode 'java-mode 'asm-mode)
               (ggtags-mode 1)))
