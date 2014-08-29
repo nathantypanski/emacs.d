@@ -1,4 +1,11 @@
 (after 'evil
+
+  (defun my-eshell-hop-to-bottom ()
+    "Go to the end of the buffer and eshell prompt."
+    (interactive)
+    (evil-goto-line)
+    (eshell-bol))
+
   (defun my-is-eshell-before-prompt ()
     "Call THEN if point is before the end of the eshell prompt. Otherwise call ELSE if present."
     (let ((oldpt (point))
@@ -17,14 +24,11 @@
     "If the eshell prompt is before point, enter insert state. Otherwise, insert after the prompt"
     (interactive)
     (if (my-is-eshell-before-prompt)
-        (eshell-bol))
+        (progn
+          (eshell-bol)
+          (my-eshell-hop-to-bottom)
+        ))
     (evil-insert-state))
-
-  (defun my-eshell-hop-to-bottom ()
-    "Go to the end of the buffer and eshell prompt."
-    (interactive)
-    (evil-goto-line)
-    (eshell-bol))
 
   (defun my-eshell-evil-append (count &optional vcount skip-empty-lines)
     "Switch to Insert state just after point                .
