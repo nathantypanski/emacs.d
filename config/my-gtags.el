@@ -8,7 +8,7 @@
               (ggtags-mode 1)))
     (add-hook 'c-mode-common-hook 'my-setup-ggtags)
     (after 'evil-leader
-      (evil-leader/set-key (kbd ".") 'ggtags-find-tag-dwim)
+      ;; (evil-leader/set-key (kbd ".") 'ggtags-find-tag-dwim)
     )
    )
   )
