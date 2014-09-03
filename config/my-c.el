@@ -20,7 +20,14 @@
     (after 'evil
       (evil-define-key 'insert c-mode-map (kbd "TAB") 'c-indent-line-or-region)
       )
+    (after 'evil-leader
+      (evil-leader/set-key "."   'semantic-ia-fast-jump)
+      ;; toggle between a function declaration and its implementation
+      (evil-leader/set-key-for-mode 'c-mode "d" 'semantic-analyze-proto-impl-toggle)
+      )
     (semantic-mode)
+    ;; show semantic summary in minibuffer when I idle over a function
+    (global-semantic-idle-summary-mode)
     ))
 
 (after 'ac-etags
