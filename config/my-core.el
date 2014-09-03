@@ -19,6 +19,9 @@
 ;; I never look at right-side fringes. Do you?
 (set-fringe-style '(8 . 0))
 
+;; don't put intitial text in scratch buffer
+(setq initial-scratch-message nil)
+
 ;'Woman' > 'man'.
 (defalias 'man 'woman)
 
