@@ -20,6 +20,10 @@
           nil)
         )))
 
+  (defun my-is-eshell-above-last-prompt ()
+    "Non-nil when eshell is above the very last prompt."
+    )
+
   (defun my-eshell-evil-insert ()
     "If the eshell prompt is before point, enter insert state. Otherwise, insert after the prompt"
     (interactive)
