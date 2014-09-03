@@ -2,8 +2,7 @@
 
 (use-package rust-mode
   :commands rust-mode
-  :init
-  (add-to-list 'auto-mode-alist '("\\.rs$" . rust-mode))
+  :mode ("\\.rs\\'" . rust-mode)
   :config
   (progn
     (defun my-rust-electric-rbrace (arg)
