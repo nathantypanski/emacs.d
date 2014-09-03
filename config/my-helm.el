@@ -5,6 +5,10 @@
     (setq helm-buffers-fuzzy-matching t)
     (setq helm-split-window-default-side (quote other))
     (setq helm-split-window-in-side-p nil)
+    (define-key helm-map (kbd "C-p") 'helm-execute-persistent-action)
+    (define-key helm-map (kbd "C-n") 'helm-delete-minibuffer-contents)
+    (define-key helm-map (kbd "C-j") 'helm-next-line)
+    (define-key helm-map (kbd "C-k") 'helm-previous-line)
     (require 'helm-files)
     (after 'projectile
       (use-package helm-projectile
