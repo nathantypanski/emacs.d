@@ -7,7 +7,7 @@
     (eshell-bol))
 
   (defun my-is-eshell-before-prompt ()
-    "Call THEN if point is before the end of the eshell prompt. Otherwise call ELSE if present."
+    "Non-nil when point is before the eshell prompt."
     (let ((oldpt (point))
           (eol   (line-end-position)))
       (goto-char (line-beginning-position))
