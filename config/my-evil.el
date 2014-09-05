@@ -233,11 +233,7 @@ TODO: make this work properly with visual lines, then start using it!"
         ;;     (indent-according-to-mode))
         (evil-append-line count vcount)
         )
-
-      ;; (defun my-evil-forward-char ()
-      ;;   (evil-forward-char)
-      ;;  )
-
+      
       ;; exiting insert mode -> delete trailing whitespace
       ;; (remove-hook 'evil-insert-state-exit-hook 'my-delete-trailing-whitespace-at-point)
 
