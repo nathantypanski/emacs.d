@@ -3,35 +3,36 @@
 ;; Configuration for ostracizing me from both the Emacs and Vim communities.
 
 (use-package evil-leader
-      :commands (evil-leader-mode)
-      :ensure evil-leader
-      :demand evil-leader
-      :init
-      (global-evil-leader-mode)
-      :config
-      (progn
-	(evil-leader/set-leader ",")
-        (evil-leader/set-key "w"     'save-buffer)
-        (after 'evil
-            (evil-leader/set-key "q" 'evil-window-delete)
-        )
-        (evil-leader/set-key "Q"     'kill-buffer-and-window)
-        (evil-leader/set-key "e"     'pp-eval-last-sexp)
-        (evil-leader/set-key "h"     'dired-jump)
-        (evil-leader/set-key "\\"    'split-window-horizontally)
-        (evil-leader/set-key "-"     'split-window-vertically)
-        (evil-leader/set-key "e"     'pp-eval-last-sexp)
-        (evil-leader/set-key "TAB"   'my-hop-around-buffers)
-        (evil-leader/set-key ","     'other-window)
-        (evil-leader/set-key "a"     'ag-regexp)
-        (evil-leader/set-key "p"     'project-explorer-open)
-        (after 'helm
-          (evil-leader/set-key "t"   'helm-semantic)
-          )
-        (evil-leader/set-key "f"     'my-flycheck-list-errors)
-        (evil-leader/set-key "F"     'helm-find-files)
-        (evil-leader/set-key "x"     'helm-M-x)
-      ))
+  :commands (evil-leader-mode)
+  :ensure evil-leader
+  :demand evil-leader
+  :init
+  (global-evil-leader-mode)
+  :config
+  (progn
+    (evil-leader/set-leader ",")
+    (evil-leader/set-key "w"     'save-buffer)
+    (after 'evil
+      (evil-leader/set-key "q" 'evil-window-delete)
+      )
+    (evil-leader/set-key "Q"     'kill-buffer-and-window)
+    (evil-leader/set-key "e"     'pp-eval-last-sexp)
+    (evil-leader/set-key "h"     'dired-jump)
+    (evil-leader/set-key "\\"    'split-window-horizontally)
+    (evil-leader/set-key "-"     'split-window-vertically)
+    (evil-leader/set-key "e"     'pp-eval-last-sexp)
+    (evil-leader/set-key "TAB"   'my-hop-around-buffers)
+    (evil-leader/set-key ","     'other-window)
+    (evil-leader/set-key "a"     'ag-regexp)
+    (evil-leader/set-key "p"     'project-explorer-open)
+    (after 'helm
+      (evil-leader/set-key "t"   'helm-semantic)
+      )
+    (evil-leader/set-key "f"     'my-flycheck-list-errors)
+    (evil-leader/set-key "F"     'helm-find-files)
+    (evil-leader/set-key "x"     'helm-M-x)
+    )
+  )
 (use-package evil
   :ensure evil
   :config
@@ -186,8 +187,8 @@ TODO: make this work properly with visual lines, then start using it!"
       (defun my-electric-append-with-indent (count &optional vcount)
         "Indent the current line if it is empty. Otherwise, just do a normal append-line."
         (interactive "p")
-        (if (= 0 (- (point) (line-beginning-position)))
-            (indent-according-to-mode))
+        ;; (if (= (point) (line-beginning-position))
+        ;;     (indent-according-to-mode))
         (evil-append-line count vcount)
         )
 
@@ -261,5 +262,8 @@ TODO: make this work properly with visual lines, then start using it!"
       )
 ))
 
+(use-package evil-jumper
+  :ensure evil-jumper
+  )
 
 (provide 'my-evil)

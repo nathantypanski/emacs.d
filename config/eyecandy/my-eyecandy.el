@@ -13,12 +13,12 @@ to zenburn.")
         (require 'color-theme-jellybeans)
         (color-theme-jellybeans)
         ))
-  (use-package zenburn-theme
-    :ensure zenburn-theme
-    :config
-    (progn
-      (load-theme 'zenburn t)
-      ))
+;;  (use-package zenburn-theme
+;;    :ensure zenburn-theme
+;;    :config
+;;    (progn
+;;      (load-theme 'zenburn t)
+;;      ))
   )
 
 (global-hl-line-mode t)
