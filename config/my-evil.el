@@ -218,6 +218,14 @@ TODO: make this work properly with visual lines, then start using it!"
              )
           )))
 
+      (defun my-is-this-line-empty ()
+        "Returns t if the current line is empty. Otherwise nil."
+        (interactive)
+        (save-excursion
+          (beginning-of-line)
+          (looking-at "^[ \t]*$")
+        ))
+
       (defun my-electric-append-with-indent (count &optional vcount)
         "Indent the current line if it is empty. Otherwise, just do a normal append-line."
         (interactive "p")
