@@ -7,7 +7,7 @@
   :ensure evil-leader
   :demand evil-leader
   :init
-  (global-evil-leader-mode)
+  (global-evil-leader-mode t)
   :config
   (progn
     (evil-leader/set-leader ",")
