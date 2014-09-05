@@ -137,7 +137,7 @@ Require `font-lock'."
                       (get-text-property (point) 'face)))
         (backward-char 1))
       (unless (= (point) bol)
-        (forward-char 1) (skip-chars-backward " \t\n"))))) ;;Done with home and end keys.
+        (forward-char 1) (skip-chars-backward " \t\n")))))
 
 (defun my-delete-word (arg)
   "Delete characters forward until encountering the end of a word.
