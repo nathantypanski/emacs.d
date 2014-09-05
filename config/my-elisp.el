@@ -17,6 +17,10 @@
           (add-hook 'emacs-lisp-mode-hook 'my-lisp-hook)
           (add-hook 'lisp-interaction-mode-hook 'my-lisp-hook)
           (add-hook 'ielm-mode-hook 'my-lisp-hook)
+          (after 'company
+            ;; slime-company completions
+            (slime-setup '(slime-company))
+            )
           (defun my-jump-to-elisp-docs (sym-name)
             "Jump to a pane and do elisp-slime-nav-describe-elisp-thing-at-point"
             (interactive (list (elisp-slime-nav--read-symbol-at-point)))
