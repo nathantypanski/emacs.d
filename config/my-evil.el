@@ -276,28 +276,13 @@ TODO: make this work properly with visual lines, then start using it!"
         "/" 'evil-search-forward
         "?" 'evil-search-backward
         )
-
-    (defun my-evil-modeline-change (default-color)
-      "changes the modeline color when the evil mode changes"
-      (let ((color (cond ((evil-insert-state-p) '("#002233" . "#ffffff"))
-                         ((evil-visual-state-p) '("#330022" . "#ffffff"))
-                         ((evil-normal-state-p) default-color)
-                         (t '("#440000" . "#ffffff")))))
-        (set-face-background 'mode-line (car color))
-        (set-face-foreground 'mode-line (cdr color))))
-
-    (defun my-evil-insert-modeline ()
-      "Changes the modeline to insert color."
-      (set-face-background 'mode-line "#440000")
-      )
-    (defun my-evil-normal-modeline ()
-      "Changes the modeline to normal color."
-      (set-face-background 'mode-line "#330022")
-      )
 ))
 
 (use-package evil-jumper
   :ensure evil-jumper
+  :init
+  ;; C-i and C-o don't work unless we do this binding here.
+  (require 'evil-jumper)
   )
 
 (provide 'my-evil)
