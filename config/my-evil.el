@@ -229,8 +229,9 @@ TODO: make this work properly with visual lines, then start using it!"
       (defun my-electric-append-with-indent (count &optional vcount)
         "Indent the current line if it is empty. Otherwise, just do a normal append-line."
         (interactive "p")
-        ;; (if (= (point) (line-beginning-position))
-        ;;     (indent-according-to-mode))
+        (if (and (= (point) (line-beginning-position))
+                 (my-is-this-line-empty))
+            (indent-according-to-mode))
         (evil-append-line count vcount)
         )
       
