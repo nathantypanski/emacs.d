@@ -33,6 +33,7 @@
 (require 'my-code)
 (require 'my-comint)
 (require 'my-unbound-keys)
+(require 'my-languages)
 (require 'my-eyecandy)
 (require 'my-shell)
 (require 'my-filetypes)
