@@ -12,12 +12,23 @@
   (progn
     (evil-leader/set-leader ",")
     (evil-leader/set-key    "w"   'save-buffer)
-    (after                        'evil
-      (evil-leader/set-key  "q"   'evil-window-delete)
-      )
+    (evil-leader/set-key    "qq"  'kill-this-buffer)
+    (evil-leader/set-key    "qW"  'kill-buffer-and-window)
+    (after 'evil
+      (evil-leader/set-key  "qw"  'evil-window-delete)
+    )
+    (evil-leader/set-key    "q"   'nil)
     (evil-leader/set-key    "Q"   'kill-buffer-and-window)
     (evil-leader/set-key    "e"   'pp-eval-last-sexp)
     (evil-leader/set-key    "h"   'dired-jump)
+
+    ;; window splits
+    ;;
+    ;; mnemonic:
+    ;;
+    ;;    |       vertical split      (technically it's the `\` key)
+    ;;    -       horizontal split
+    ;;
     (evil-leader/set-key    "\\"  'split-window-horizontally)
     (evil-leader/set-key    "-"   'split-window-vertically)
     (evil-leader/set-key    "e"   'pp-eval-last-sexp)
@@ -25,28 +36,29 @@
     (evil-leader/set-key    ","   'other-window)
 
     ;; s -> "search"
-    (after 'ag
-      (evil-leader/set-key  "sr"  'ag-regexp)
-      (evil-leader/set-key  "sf"  'ag-dired-regexp)
-    )
+    (evil-leader/set-key  "sr"  'ag-regexp)
+    (evil-leader/set-key  "sf"  'ag-dired-regexp)
+    (evil-leader/set-key  "ss"  'helm-swoop)
+
+    (evil-leader/set-key-for-mode 'emacs-lisp-mode
+      "." 'elisp-slime-nav-find-elisp-thing-at-point)
+
+    (evil-leader/set-key-for-mode 'c-mode
+      "." 'semantic-ia-fast-jump)
+
+    ;; toggle between a function declaration and its implementation
+    (evil-leader/set-key-for-mode 'c-mode
+      "d" 'semantic-analyze-proto-impl-toggle)
 
     ;; g -> "git"
-    (after 'magit
-      (evil-leader/set-key "gs" 'magit-status)
-      (evil-leader/set-key "gl" 'magit-log)
-      (evil-leader/set-key "gd" 'magit-diff)
-    )
-
-    (after 'helm
-      (evil-leader/set-key  "ss"  'helm-swoop)
-    )
+    (evil-leader/set-key  "gs" 'magit-status)
+    (evil-leader/set-key  "gl" 'magit-log)
+    (evil-leader/set-key  "gd" 'magit-diff)
 
     ;; j -> "jump"
     (evil-leader/set-key    "jf"  'ffap)
     (evil-leader/set-key    "p"   'project-explorer-open)
-    (after 'helm
-      (evil-leader/set-key  "l"   'helm-semantic-or-imenu)
-      )
+    (evil-leader/set-key  "l"   'helm-semantic-or-imenu)
     (after 'evil-nerd-commenter
       (evil-leader/set-key  "/"   'evilnc-comment-or-uncomment-lines)
       )
