@@ -11,26 +11,51 @@
   :config
   (progn
     (evil-leader/set-leader ",")
-    (evil-leader/set-key "w"     'save-buffer)
-    (after 'evil
-      (evil-leader/set-key "q" 'evil-window-delete)
+    (evil-leader/set-key    "w"   'save-buffer)
+    (after                        'evil
+      (evil-leader/set-key  "q"   'evil-window-delete)
       )
-    (evil-leader/set-key "Q"     'kill-buffer-and-window)
-    (evil-leader/set-key "e"     'pp-eval-last-sexp)
-    (evil-leader/set-key "h"     'dired-jump)
-    (evil-leader/set-key "\\"    'split-window-horizontally)
-    (evil-leader/set-key "-"     'split-window-vertically)
-    (evil-leader/set-key "e"     'pp-eval-last-sexp)
-    (evil-leader/set-key "TAB"   'my-hop-around-buffers)
-    (evil-leader/set-key ","     'other-window)
-    (evil-leader/set-key "a"     'ag-regexp)
-    (evil-leader/set-key "p"     'project-explorer-open)
+    (evil-leader/set-key    "Q"   'kill-buffer-and-window)
+    (evil-leader/set-key    "e"   'pp-eval-last-sexp)
+    (evil-leader/set-key    "h"   'dired-jump)
+    (evil-leader/set-key    "\\"  'split-window-horizontally)
+    (evil-leader/set-key    "-"   'split-window-vertically)
+    (evil-leader/set-key    "e"   'pp-eval-last-sexp)
+    (evil-leader/set-key    "TAB" 'my-hop-around-buffers)
+    (evil-leader/set-key    ","   'other-window)
+
+    ;; s -> "search"
+    (after 'ag
+      (evil-leader/set-key  "sr"  'ag-regexp)
+      (evil-leader/set-key  "sf"  'ag-dired-regexp)
+    )
+
+    ;; g -> "git"
+    (after 'magit
+      (evil-leader/set-key "gs" 'magit-status)
+      (evil-leader/set-key "gl" 'magit-log)
+      (evil-leader/set-key "gd" 'magit-diff)
+    )
+
     (after 'helm
-      (evil-leader/set-key "t"   'helm-semantic)
+      (evil-leader/set-key  "ss"  'helm-swoop)
+    )
+
+    ;; j -> "jump"
+    (evil-leader/set-key    "jf"  'ffap)
+    (evil-leader/set-key    "p"   'project-explorer-open)
+    (after 'helm
+      (evil-leader/set-key  "l"   'helm-semantic-or-imenu)
       )
-    (evil-leader/set-key "f"     'my-flycheck-list-errors)
-    (evil-leader/set-key "F"     'helm-find-files)
-    (evil-leader/set-key "x"     'helm-M-x)
+    (after 'evil-nerd-commenter
+      (evil-leader/set-key  "/"   'evilnc-comment-or-uncomment-lines)
+      )
+    (evil-leader/set-key    "cl"  'my-flycheck-list-errors)
+    (after 'projectile
+      (evil-leader/set-key  "cc"  'projectile-compile-project)
+    )
+    (evil-leader/set-key    "f"   'helm-find-files)
+    (evil-leader/set-key    "x"   'helm-M-x)
     )
   )
 (use-package evil
@@ -50,10 +75,7 @@
 
     (use-package evil-nerd-commenter
       :ensure evil-nerd-commenter
-      :config
-      (progn
-        (define-key evil-normal-state-map (kbd "gc") 'evilnc-comment-or-uncomment-lines)
-        )
+      )
 
       (use-package evil-matchit
         :ensure evil-matchit
@@ -241,7 +263,7 @@ TODO: make this work properly with visual lines, then start using it!"
         "l" 'evil-forward-word-begin
         "/" 'evil-search-forward
         "?" 'evil-search-backward
-        ))
+        )
 
     (defun my-evil-modeline-change (default-color)
       "changes the modeline color when the evil mode changes"

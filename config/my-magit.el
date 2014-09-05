@@ -2,11 +2,6 @@
   :ensure magit
   :config
   (progn
-    (after 'evil-leader
-        (evil-leader/set-key "g s" 'magit-status)
-        (evil-leader/set-key "g l" 'magit-log)
-        (evil-leader/set-key "g d" 'magit-diff)
-    )
     (after 'evil
       (evil-set-initial-state 'magit-mode 'normal)
       (evil-set-initial-state 'magit-commit-mode 'normal)
