@@ -5,7 +5,7 @@
 (use-package haskell-mode
   :ensure haskell-mode
   :commands haskell-mode
-  :mode ("\\.hs\\'" . haskell-mode)
+  :mode '("\\.hs\\'" . haskell-mode)
   :config
   (progn
     (setq haskell-process-show-debug-tips nil)
