@@ -169,4 +169,13 @@ With argument ARG, do this that many times."
   (interactive)
   (switch-to-buffer (other-buffer "*Ibuffer*")))
 
+(defun my-is-this-line-empty ()
+  "Returns t if the current line is empty. Otherwise nil."
+  (interactive)
+  (save-excursion
+    (beginning-of-line)
+    (looking-at "^[ \t]*$")
+    ))
+
+
 (provide 'my-functions)
