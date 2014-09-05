@@ -84,6 +84,35 @@
 
     (add-hook 'python-mode-hook 'my-disable-electric-indent)
 
+    (defun my-python-nav-backward-end-of-block ()
+      "Move to the end of the previous block."
+        (interactive "^")
+        (let ((old-point (point)))
+        (python-nav-backward-block)
+        (python-nav-end-of-block)
+        ;; If we're at the same spot as before, call (python-nav-backward-block)
+        ;; twice to get back to the *previous* previous block, then move to the
+        ;; end of that.
+        ;;
+        ;; for some reason this reports point as incorrectly having moved one
+        ;; position over when no movement happens.
+        (if (= old-point (- (point) 1))
+            (progn
+                (python-nav-backward-block 2)
+                (python-nav-end-of-block)
+                )
+          )
+        )
+    )
+
+    (evil-define-key 'motion python-mode-map "]]" 'python-nav-forward-block)
+    (evil-define-key 'motion python-mode-map "][" 'python-nav-end-of-block)
+    (evil-define-key 'motion python-mode-map "[[" 'python-nav-backward-block)
+    (evil-define-key 'motion python-mode-map "[]" 'my-python-nav-backward-end-of-block)
+    (evil-define-key 'motion python-mode-map "[(" 'evil-previous-open-paren)
+    (evil-define-key 'motion python-mode-map "])" 'evil-next-close-paren)
+    (evil-define-key 'motion python-mode-map "[{" 'evil-previous-open-brace)
+    (evil-define-key 'motion python-mode-map "]}" 'evil-next-close-brace)
     ;;(use-package pylint
     ;;  :ensure pylint
     ;;  :init
