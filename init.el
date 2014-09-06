@@ -1,5 +1,4 @@
 (add-to-list 'load-path (concat user-emacs-directory "config"))
-(add-to-list 'load-path (concat user-emacs-directory "config"))
 (add-to-list 'load-path (concat user-emacs-directory "elisp"))
 (add-to-list 'load-path (concat user-emacs-directory "config" "/eyecandy"))
 (add-to-list 'load-path (concat user-emacs-directory "config" "/languages"))
