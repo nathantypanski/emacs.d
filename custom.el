@@ -94,6 +94,7 @@
  '(use-file-dialog nil)
  '(vc-annotate-background nil)
  '(vc-annotate-color-map
+ '(semantic-mode t)
    (quote
     ((20 . "#cc6666")
      (40 . "#de935f")
