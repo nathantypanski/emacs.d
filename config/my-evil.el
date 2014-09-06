@@ -271,7 +271,16 @@ TODO: make this work properly with visual lines, then start using it!"
         "/" 'evil-search-forward
         "?" 'evil-search-backward
         )
-))
+
+    (evil-define-key 'motion python-mode-map "]]" 'python-nav-forward-block)
+    (evil-define-key 'motion python-mode-map "][" 'python-nav-end-of-block)
+    (evil-define-key 'motion python-mode-map "[[" 'python-nav-backward-block)
+    (evil-define-key 'motion python-mode-map "[]" 'my-python-nav-backward-end-of-block)
+    (evil-define-key 'motion python-mode-map "[(" 'evil-previous-open-paren)
+    (evil-define-key 'motion python-mode-map "])" 'evil-next-close-paren)
+    (evil-define-key 'motion python-mode-map "[{" 'evil-previous-open-brace)
+    (evil-define-key 'motion python-mode-map "]}" 'evil-next-close-brace)
+ ))
 
 (use-package evil-jumper
   :ensure evil-jumper

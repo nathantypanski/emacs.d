@@ -105,14 +105,6 @@
         )
     )
 
-    (evil-define-key 'motion python-mode-map "]]" 'python-nav-forward-block)
-    (evil-define-key 'motion python-mode-map "][" 'python-nav-end-of-block)
-    (evil-define-key 'motion python-mode-map "[[" 'python-nav-backward-block)
-    (evil-define-key 'motion python-mode-map "[]" 'my-python-nav-backward-end-of-block)
-    (evil-define-key 'motion python-mode-map "[(" 'evil-previous-open-paren)
-    (evil-define-key 'motion python-mode-map "])" 'evil-next-close-paren)
-    (evil-define-key 'motion python-mode-map "[{" 'evil-previous-open-brace)
-    (evil-define-key 'motion python-mode-map "]}" 'evil-next-close-brace)
     ;;(use-package pylint
     ;;  :ensure pylint
     ;;  :init
@@ -150,4 +142,5 @@
         )
       )
     ))
+
 (provide 'my-python)
