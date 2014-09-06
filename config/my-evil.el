@@ -249,8 +249,6 @@ TODO: make this work properly with visual lines, then start using it!"
 
       (define-key evil-normal-state-map "a"           'evil-append)
       (define-key evil-normal-state-map "A"           'my-electric-append-with-indent)
-      (define-key evil-normal-state-map "j"           'evil-next-visual-line)
-      (define-key evil-normal-state-map "k"           'evil-previous-visual-line)
       (define-key evil-normal-state-map "$"           'my-smart-end)
       (define-key evil-normal-state-map "0"           'my-smart-home)
 
