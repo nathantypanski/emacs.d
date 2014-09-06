@@ -195,7 +195,7 @@ TODO: make this work properly with visual lines, then start using it!"
             (evil-next-visual-line count))
           ))
 
-      (defun my-previous-line-with-smart-delete (count)
+    (defun my-previous-line-with-smart-delete (count)
         "Delete trailing whitespace on the previous line before moving
 but only if we just exited insert state from an indented blank line
 and are moving down.
@@ -226,7 +226,7 @@ TODO: make this work properly with visual lines, then start using it!"
             (indent-according-to-mode))
         (evil-append-line count vcount)
         )
-      
+
       ;; exiting insert mode -> delete trailing whitespace
       ;; (remove-hook 'evil-insert-state-exit-hook 'my-delete-trailing-whitespace-at-point)
 
