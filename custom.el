@@ -37,6 +37,10 @@
  '(fci-rule-character-color "#192028")
  '(fci-rule-color "#282a2e")
  '(fill-column 80)
+ '(gdb-many-windows t)
+ '(global-semantic-decoration-mode t)
+ '(global-semantic-highlight-func-mode t)
+ '(global-semantic-idle-summary-mode t)
  '(ibuffer-saved-filter-groups
    (quote
     (("groups"
@@ -77,6 +81,7 @@
         (mode . java-mode)
         (mode . idl-mode)
         (mode . lisp-mode)))))))
+ '(ido-everywhere t)
  '(latex-run-command "pdflatex")
  '(org-agenda-files (quote ("~/org/agenda.org")))
  '(org-columns-ellipses "…")
@@ -86,15 +91,15 @@
  '(org-startup-folded (quote content))
  '(org-startup-truncated nil)
  '(org-use-sub-superscripts (quote {}))
- '(preview-TeX-style-dir "/home/nathan/.emacs.d/elpa/auctex-11.87.2/latex")
+ '(preview-TeX-style-dir "/home/nathan/.emacs.d/elpa/auctex-11.87.2/latex" t)
  '(python-indent-guess-indent-offset nil)
  '(python-indent-offset 0)
+ '(semantic-mode t)
  '(show-paren-mode t)
  '(show-paren-style (quote expression))
  '(use-file-dialog nil)
  '(vc-annotate-background nil)
  '(vc-annotate-color-map
- '(semantic-mode t)
    (quote
     ((20 . "#cc6666")
      (40 . "#de935f")
@@ -131,8 +136,10 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(dired-directory ((t (:inherit font-lock-function-name-face :weight bold))))
  '(flycheck-info ((t (:underline nil))))
  '(flycheck-warning ((t (:underline nil))))
+ '(font-lock-string-face ((t (:foreground "#CC9393"))))
  '(helm-source-header ((t (:background "#2B2B2B" :foreground "#F0DFAF" :box (:line-width -1 :style released-button) :underline nil :weight bold :height 1.0 :family "Terminus"))))
  '(highlight-indentation-face ((t (:background "#3E3E3E"))))
  '(info-title-1 ((t (:inherit info-title-2 :height 1.1))))
