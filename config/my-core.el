@@ -28,6 +28,7 @@
 ;; Disable toolbars and splash screens.
 (when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 
+;; from <https://github.com/bling/dotemacs/>
 (defmacro after (feature &rest body)
   "After FEATURE is loaded, evaluate BODY."
   (declare (indent defun))
