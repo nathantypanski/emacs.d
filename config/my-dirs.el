@@ -73,6 +73,8 @@
   (evil-define-key 'normal dired-mode-map "/" 'evil-search-forward)
   (evil-define-key 'normal dired-mode-map "n" 'evil-search-next)
   (evil-define-key 'normal dired-mode-map "N" 'evil-search-previous)
+  (evil-define-key 'motion dired-mode-map "j" 'dired-next-line)
+  (evil-define-key 'motion dired-mode-map "k" 'dired-previous-line)
   )
 
 (provide 'my-dirs)
