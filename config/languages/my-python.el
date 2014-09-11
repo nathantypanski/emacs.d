@@ -13,6 +13,9 @@
     (when (featurep 'python) (unload-feature 'python t))
     (autoload 'python-mode "python-mode" "Python editing mode." t)
     (add-to-list 'auto-mode-alist '("/PYDOCS\\'" . help-mode))
+    (setenv "PYTHONPATH"
+            (shell-command-to-string ". ~/.zshrc; echo -n $PYTHONPATH")
+            )
     )
   :config
   (progn
