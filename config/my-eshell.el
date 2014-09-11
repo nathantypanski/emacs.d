@@ -22,14 +22,15 @@
 
   (defun my-is-eshell-above-last-prompt ()
     "Non-nil when eshell is above the very last prompt."
+    (interactive)
+    (or (> eshell-last-output-end (point)))
     )
 
   (defun my-eshell-evil-insert ()
     "If the eshell prompt is before point, enter insert state. Otherwise, insert after the prompt"
     (interactive)
-    (if (my-is-eshell-before-prompt)
+    (if (or (my-is-eshell-before-prompt) (my-is-eshell-above-last-prompt))
         (progn
-          (eshell-bol)
           (my-eshell-hop-to-bottom)
         ))
     (evil-insert-state))
