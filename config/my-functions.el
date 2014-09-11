@@ -177,5 +177,20 @@ With argument ARG, do this that many times."
     (looking-at "^[ \t]*$")
     ))
 
+(defun my-is-before-point-empty ()
+  "Returns t if the current line up until point is empty, otherwise nil."
+  (interactive)
+  (let ((old-point (point)))
+    (save-excursion
+      (beginning-of-line)
+      (s-blank? (s-trim (buffer-substring (point) old-point)))
+      )
+    )
+  )
+
+(defun my-which-column ()
+  "Returns the column number of point."
+  (interactive)
+  (abs (- (save-excursion (beginning-of-line) (point)) (point))))
 
 (provide 'my-functions)
