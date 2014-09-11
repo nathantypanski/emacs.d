@@ -93,6 +93,8 @@
 
 ;; Flash the frame to represent a bell.
 (setq visible-bell t)
+;; nevermind that's annoying
+(setq ring-bell-function 'ignore)
 
 ;; The default of 16 is too low. Give me a 64-object mark ring.
 ;; Across all files, make it 128.
