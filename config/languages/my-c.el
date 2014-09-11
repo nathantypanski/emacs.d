@@ -1,5 +1,9 @@
+(require 'google-c-style)
+(c-add-style "Google" google-c-style t)
+
 (setq c-default-style '((java-mode . "java")
                         (awk-mode . "awk")
+                        (c++-mode . "Google")
                         (other . "linux")))
 
 (defun my-set-evil-shift-width ()
