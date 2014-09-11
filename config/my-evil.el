@@ -237,8 +237,7 @@ TODO: make this work properly with visual lines, then start using it!"
         'my-backward-delete-word)
 
       (define-key evil-normal-state-map (kbd "SPC a") 'ag)
-      (define-key evil-normal-state-map (kbd "SPC A") 'apropos)
-      (define-key evil-normal-state-map (kbd "SPC X") 'helm-M-x)
+      (define-key evil-normal-state-map (kbd "SPC SPC") 'helm-M-x) 
 
       (define-key evil-normal-state-map (kbd "C-q")   'universal-argument)
 
