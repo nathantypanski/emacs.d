@@ -16,6 +16,7 @@
 (add-hook 'c-initialization-hook 'my-set-evil-shift-width)
 
 (c-set-offset 'case-label '+)
+(setq c-hungry-delete-key t)
 
 (use-package cedet
   :ensure cedet
