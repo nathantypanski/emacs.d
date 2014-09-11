@@ -37,5 +37,7 @@
     (add-to-list 'ac-sources 'ac-source-etags))
   (add-hook 'c-mode-common-hook 'my-c-mode-common-hook)
   )
+(after 'evil
+  (evil-define-key 'insert c++-mode-map (kbd "<backspace>") 'c-electric-backspace)
 
 (provide 'my-c)
