@@ -84,6 +84,7 @@
     (setq evil-insert-state-cursor  '("#f8f893" bar))
     (setq evil-replace-state-cursor '("#cc9393" box))
     (setq evil-want-fine-undo t)
+    (setq evil-want-change-word-to-end t)
 
     (use-package evil-nerd-commenter
       :ensure evil-nerd-commenter
