@@ -49,6 +49,10 @@
     ;; toggle between a function declaration and its implementation
     (evil-leader/set-key-for-mode 'c-mode
       "d" 'semantic-analyze-proto-impl-toggle)
+    (evil-leader/set-key-for-mode 'c++-mode
+      "d" 'semantic-analyze-proto-impl-toggle)
+    (evil-leader/set-key-for-mode 'c++-mode
+      "." 'semantic-ia-fast-jump)
 
     ;; g -> "git"
     (evil-leader/set-key  "gs" 'magit-status)
