@@ -39,7 +39,26 @@
 (defun my-electric-lisp-comment ()
     "Autocomment things for lisp."
   (interactive)
-  (insert ";; "))
+  ;; we can get away with autocommenting on empty lines.
+  ;; not so much on regular ones - that's more likely to be a mistake.
+  (if (my-is-this-line-empty)
+      (insert ";; ")
+    (insert ";")))
+
+(require 'lispy)
+(use-package lispy
+  :disabled t
+  :init
+  (progn
+    (defun my-lispy-mode-enable ()
+      "Enable lispy-mode."
+      (lispy-mode 1)
+      )
+    (add-hook 'emacs-lisp-mode-hook 'my-lispy-mode-enable)
+    (setq lispy-use-ctrl-digits nil)
+    )
+  :config
+  )
 
 (after 'evil
   (evil-define-key 'insert emacs-lisp-mode-map ";" 'my-electric-lisp-comment)
