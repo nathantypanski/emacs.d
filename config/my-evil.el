@@ -95,6 +95,7 @@
         :commands evilmi-jump-items
         :init
         (progn
+          (setq global-evil-matchit-mode t)
           (define-key evil-normal-state-map "%" 'evilmi-jump-items))
         )
       (use-package evil-surround
@@ -167,59 +168,15 @@ of the current visual line and point."
       (defun my-current-line-is-empty ()
         (save-excursion (beginning-of-line) (looking-at "\\s-+$")))
 
-      (defun my-delete-trailing-whitespace-at-line (line)
+      (defun my-delete-trailing-whitespace-at-line ()
         "Delete trailing whitespace on the current line only."
-        (save-excursion
+        (interactive)
         (let ((begin (line-beginning-position))
               (end   (line-end-position)))
           (delete-trailing-whitespace begin end)
-          )))
-
-    (defun my-next-line-with-smart-delete (count)
-        "Delete trailing whitespace on the previous line before moving
-but only if we just exited insert state from an indented blank line
-and are moving down.
-TODO: make this work properly with visual lines, then start using it!"
-        (interactive "p")
-        (let ((line-move-visual t)
-              (old-spot (my-where-beginning-of-visual-line))
-              (old-line (my-what-line)))
-          (if (my-current-line-is-empty)
-            (progn (my-delete-trailing-whitespace-at-point)
-                   (evil-next-visual-line count)
-                   (if (< (my-where-beginning-of-visual-line) old-spot)
-                       (progn
-                         (evil-beginning-of-visual-line)
-                          (evil-forward-char old-spot nil t)
-                          (print old-spot)
-                         )))
-            (evil-next-visual-line count))
           ))
 
-    (defun my-previous-line-with-smart-delete (count)
-        "Delete trailing whitespace on the previous line before moving
-but only if we just exited insert state from an indented blank line
-and are moving down.
-TODO: make this work properly with visual lines, then start using it!"
-        (interactive "p")
-        (let ((line-move-visual t)
-              (old-spot (my-where-beginning-of-visual-line))
-              (old-line (my-what-line)))
-          (if (my-current-line-is-empty)
-            (progn (my-delete-trailing-whitespace-at-point)
-                   (evil-previous-visual-line count)
-                   (if (< (my-where-beginning-of-visual-line) old-spot)
-                       (progn
-                         (evil-beginning-of-visual-line)
-                         (evil-forward-char old-spot nil t)
-                          (print old-spot)
-                         )))
-            (progn (evil-previous-visual-line count)
-                   nil
-             )
-          )))
-
-      (defun my-electric-append-with-indent (count &optional vcount)
+     (defun my-electric-append-with-indent (count &optional vcount)
         "Indent the current line if it is empty. Otherwise, just do a normal append-line."
         (interactive "p")
         (if (and (= (point) (line-beginning-position))
@@ -227,9 +184,8 @@ TODO: make this work properly with visual lines, then start using it!"
             (indent-according-to-mode))
         (evil-append-line count vcount)
         )
-
       ;; exiting insert mode -> delete trailing whitespace
-      ;; (remove-hook 'evil-insert-state-exit-hook 'my-delete-trailing-whitespace-at-point)
+      (remove-hook 'evil-insert-state-exit-hook 'my-exit-insert-state)
 
       ;; entering insert mode -> indent according to mode
       ;; Normal Evil bindings
@@ -252,6 +208,7 @@ TODO: make this work properly with visual lines, then start using it!"
       (define-key evil-normal-state-map "$"           'my-smart-end)
       (define-key evil-normal-state-map "0"           'my-smart-home)
 
+      (define-key evil-motion-state-map "h"           'evil-next-visual-line)
       (define-key evil-motion-state-map "j"           'evil-next-visual-line)
       (define-key evil-motion-state-map "k"           'evil-previous-visual-line)
       (define-key evil-motion-state-map "$"           'evil-end-of-line)
