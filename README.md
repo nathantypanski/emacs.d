@@ -10,3 +10,10 @@ It uses [Evil](http://www.emacswiki.org/emacs/Evil) to emulate Vim keybindings. 
 - [`init.el`](./init.el) does the bare minimum for setting up the package management stuff. Then it loads other elisp files which are in [`./config`](./config).
 - All my custom config files are prefixed with `my-`. Hopefully things I put in the global namespace are, also - this lets me keep them separate from the builtins and packages that I load.
 - I also try to avoid using the [easy customization interface](https://www.gnu.org/software/emacs/manual/html_node/emacs/Easy-Customization.html). In my opinion it doesn't produce readable elisp, and I want to have a maintainable set of config files, not just ones that I can access through a pretty GUI.
+
+## Blog posts
+
+I have blogged about my Emacs configuration before.
+
+- [Switching to Emacs: Becoming Evil](http://nathantypanski.com/blog/2014-07-02-switching-to-emacs.html)
+- [Towards a Vim-like Emacs](nathantypanski.com/blog/2014-08-03-a-vim-like-emacs-config.html)
