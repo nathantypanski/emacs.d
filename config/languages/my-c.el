@@ -1,9 +1,9 @@
-(require 'google-c-style)
-(c-add-style "Google" google-c-style t)
+;;(require 'google-c-style)
+;;(c-add-style "Google" google-c-style t)
 
 (setq c-default-style '((java-mode . "java")
                         (awk-mode . "awk")
-                        (c++-mode . "Google")
+ ;;                       (c++-mode . "Google")
                         (other . "linux")))
 
 (defun my-set-evil-shift-width ()
@@ -15,8 +15,12 @@
 
 (add-hook 'c-initialization-hook 'my-set-evil-shift-width)
 
-(c-set-offset 'case-label '+)
 (setq c-hungry-delete-key t)
+
+(defun my-c-mode-common-hook ()
+  (c-set-offset 'case-label '+)
+  )
+(add-hook 'c-mode-common-hook 'my-c-mode-common-hook)
 
 (use-package cedet
   :ensure cedet
@@ -24,6 +28,9 @@
   (progn
     (after 'evil
       (evil-define-key 'insert c-mode-map (kbd "TAB") 'c-indent-line-or-region)
+
+      (evil-define-key 'insert c++-mode-map (kbd "<backspace>") 'c-electric-backspace)
+      (evil-define-key 'normal c++-mode-map (kbd "SPC o") 'eassist-switch-h-cpp)
       )
     (semantic-mode)
     (after 'evil-leader
@@ -34,19 +41,9 @@
       (evil-leader/set-key-for-mode 'c++-mode "." 'semantic-ia-fast-jump)
       )
     (require 'eassist)
-    (evil-define-key 'normal c++-mode-map (kbd "SPC o") 'eassist-switch-h-cpp)
     ;; show semantic summary in minibuffer when I idle over a function
     (global-semantic-idle-summary-mode)
-    ))
-
-(after 'ac-etags
-  ;; ac-etags setup for C code.
-  ;; See ~/.emacs.d/config/my-autocomplete.el
-  (defun my-c-mode-common-hook ()
-    (add-to-list 'ac-sources 'ac-source-etags))
-  (add-hook 'c-mode-common-hook 'my-c-mode-common-hook)
-  )
-(after 'evil
-  (evil-define-key 'insert c++-mode-map (kbd "<backspace>") 'c-electric-backspace)
+    )
+    )
 
 (provide 'my-c)
