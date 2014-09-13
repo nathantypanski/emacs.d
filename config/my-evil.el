@@ -187,9 +187,10 @@ of the current visual line and point."
       (define-key evil-normal-state-map "$"           'my-smart-end)
       (define-key evil-normal-state-map "0"           'my-smart-home)
 
-      (define-key evil-motion-state-map "h"           'evil-next-visual-line)
+      (define-key evil-motion-state-map "h"           'evil-backward-char)
       (define-key evil-motion-state-map "j"           'evil-next-visual-line)
       (define-key evil-motion-state-map "k"           'evil-previous-visual-line)
+      (define-key evil-motion-state-map "l"           'evil-forward-char)
       (define-key evil-motion-state-map "$"           'evil-end-of-line)
       (define-key evil-motion-state-map "0"           'evil-beginning-of-line)
 
