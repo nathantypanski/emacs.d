@@ -34,21 +34,16 @@
   :commands dired
   :init
   (progn
-    (add-hook 'dired-load-hook
-              (lambda ()
-                (load "dired-x")
-                ;; Set dired-x global variables here.  For example:
-                ;; (setq dired-guess-shell-gnutar "gtar")
-                ;; (setq dired-x-hands-off-my-keys nil)
-                ))
-    (add-hook 'dired-mode-hook
-              (lambda ()
-                ;; Set dired-x buffer-local variables here.  For example:
-                ;; (diredbomit-mode 1)
-                )
-              )
+    (defun my-load-dired-x ()
+      "Load dired-x; for use on dired-load-hook"
+        (load "dired-x")
+        ;; Set dired-x global variables here.  For example:
+        ;; (setq dired-guess-shell-gnutar "gtar")
+        ;; (setq dired-x-hands-off-my-keys nil)
+        )
+      )
     )
-  )
+
 (setq dired-listing-switches "-aBhl  --group-directories-first")
 
 (defun my-dired-up-directory ()
