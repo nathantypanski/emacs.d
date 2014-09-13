@@ -29,6 +29,7 @@
 (require 'my-interaction)
 (require 'my-ibuffer)
 (require 'my-helm)
+(require 'my-woman)
 (require 'my-code)
 (require 'my-comint)
 (require 'my-unbound-keys)

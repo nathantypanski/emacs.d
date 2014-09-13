@@ -28,6 +28,7 @@
   (progn
     (after 'evil
       (evil-define-key 'insert c-mode-map (kbd "TAB") 'c-indent-line-or-region)
+      (evil-define-key 'normal c-mode-map (kbd "K") 'my-woman-entry)
 
       (evil-define-key 'insert c++-mode-map (kbd "<backspace>") 'c-electric-backspace)
       (evil-define-key 'normal c++-mode-map (kbd "SPC o") 'eassist-switch-h-cpp)
