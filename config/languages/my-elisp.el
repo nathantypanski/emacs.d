@@ -26,6 +26,11 @@
             (interactive (list (elisp-slime-nav--read-symbol-at-point)))
             (help-xref-interned (intern sym-name))
             (switch-to-buffer-other-window "*Help*" t))
+
+          (after 'evil-leader
+            (evil-leader/set-key-for-mode 'emacs-lisp-mode
+              "." 'elisp-slime-nav-find-elisp-thing-at-point)
+            )
           )
   :config
   (progn

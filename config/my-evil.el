@@ -13,11 +13,9 @@
     (evil-leader/set-leader ",")
     (evil-leader/set-key    "w"   'save-buffer)
     (evil-leader/set-key    "qq"  'kill-this-buffer)
-    (evil-leader/set-key    "qW"  'kill-buffer-and-window)
     (after 'evil
       (evil-leader/set-key  "qw"  'evil-window-delete)
     )
-    (evil-leader/set-key    "q"   'nil)
     (evil-leader/set-key    "Q"   'kill-buffer-and-window)
     (evil-leader/set-key    "e"   'pp-eval-last-sexp)
     (evil-leader/set-key    "h"   'dired-jump)
@@ -35,43 +33,13 @@
     (evil-leader/set-key    "TAB" 'my-hop-around-buffers)
     (evil-leader/set-key    ","   'other-window)
 
-    ;; s -> "search"
-    (evil-leader/set-key  "sr"  'ag-regexp)
-    (evil-leader/set-key  "sf"  'ag-dired-regexp)
-    (evil-leader/set-key  "ss"  'helm-swoop)
-
-    (evil-leader/set-key-for-mode 'emacs-lisp-mode
-      "." 'elisp-slime-nav-find-elisp-thing-at-point)
 
     (evil-leader/set-key-for-mode 'c-mode
       "." 'semantic-ia-fast-jump)
-
-    ;; toggle between a function declaration and its implementation
-    (evil-leader/set-key-for-mode 'c-mode
-      "d" 'semantic-analyze-proto-impl-toggle)
-    (evil-leader/set-key-for-mode 'c++-mode
-      "d" 'semantic-analyze-proto-impl-toggle)
-    (evil-leader/set-key-for-mode 'c++-mode
-      "." 'semantic-ia-fast-jump)
-
-    ;; g -> "git"
-    (evil-leader/set-key  "gs" 'magit-status)
-    (evil-leader/set-key  "gl" 'magit-log)
-    (evil-leader/set-key  "gd" 'magit-diff)
 
     ;; j -> "jump"
     (evil-leader/set-key    "jf"  'ffap)
-    (evil-leader/set-key    "p"   'project-explorer-open)
-    (evil-leader/set-key  "l"   'helm-semantic-or-imenu)
-    (after 'evil-nerd-commenter
-      (evil-leader/set-key  "/"   'evilnc-comment-or-uncomment-lines)
-      )
     (evil-leader/set-key    "cl"  'my-flycheck-list-errors)
-    (after 'projectile
-      (evil-leader/set-key  "cc"  'projectile-compile-project)
-    )
-    (evil-leader/set-key    "f"   'helm-find-files)
-    (evil-leader/set-key    "x"   'helm-M-x)
     )
   )
 (use-package evil
@@ -92,6 +60,13 @@
 
     (use-package evil-nerd-commenter
       :ensure evil-nerd-commenter
+      :commands (evilnc-comment-or-uncomment-lines)
+      :init
+      (progn
+        (after 'evil-leader
+          (evil-leader/set-key  "/"   'evilnc-comment-or-uncomment-lines)
+          )
+        )
       )
 
       (use-package evil-matchit
@@ -226,12 +201,6 @@ of the current visual line and point."
       (evil-ex-define-cmd "Q"  'evil-quit)
       (evil-ex-define-cmd "Qa" 'evil-quit-all)
       (evil-ex-define-cmd "QA" 'evil-quit-all)
-      (evil-add-hjkl-bindings package-menu-mode-map 'emacs
-        "h" 'evil-backward-word-begin
-        "l" 'evil-forward-word-begin
-        "/" 'evil-search-forward
-        "?" 'evil-search-backward
-        )
 
     (evil-define-key 'motion python-mode-map "]]" 'python-nav-forward-block)
     (evil-define-key 'motion python-mode-map "][" 'python-nav-end-of-block)

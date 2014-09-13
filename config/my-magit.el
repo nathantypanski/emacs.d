@@ -166,6 +166,12 @@
       (evil-define-key 'normal magit-log-mode-map (kbd "+") 'magit-log-show-more-entries)
       (evil-define-key 'normal magit-log-mode-map (kbd "h") 'magit-log-toggle-margin)
       )
+
+    (after 'evil-leader
+      (evil-leader/set-key  "gs" 'magit-status)
+      (evil-leader/set-key  "gl" 'magit-log)
+      (evil-leader/set-key  "gd" 'magit-diff)
+      )
     )
   )
 (provide 'my-magit)

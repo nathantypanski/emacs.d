@@ -26,6 +26,15 @@
       (evil-define-key 'insert c-mode-map (kbd "TAB") 'c-indent-line-or-region)
       )
     (semantic-mode)
+    (after 'evil-leader
+      ;; toggle between a function declaration and its implementation
+      (evil-leader/set-key-for-mode 'c-mode   "d" 'semantic-analyze-proto-impl-toggle)
+      (evil-leader/set-key-for-mode 'c++-mode "d" 'semantic-analyze-proto-impl-toggle)
+      (evil-leader/set-key-for-mode 'c-mode   "." 'semantic-ia-fast-jump)
+      (evil-leader/set-key-for-mode 'c++-mode "." 'semantic-ia-fast-jump)
+      )
+    (require 'eassist)
+    (evil-define-key 'normal c++-mode-map (kbd "SPC o") 'eassist-switch-h-cpp)
     ;; show semantic summary in minibuffer when I idle over a function
     (global-semantic-idle-summary-mode)
     ))
