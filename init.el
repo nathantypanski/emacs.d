@@ -26,6 +26,7 @@
 (require 'my-gtags)
 (require 'my-autocomplete)
 (require 'my-projects)
+(require 'my-ag)
 (require 'my-interaction)
 (require 'my-ibuffer)
 (require 'my-helm)

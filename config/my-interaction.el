@@ -121,25 +121,7 @@
     )
   )
 
-(use-package ag
-  :ensure ag
-  :commands (ag ag-mode ag-files ag-regexp-at-point)
-  :init
-  (progn
-    )
-  :config
-  (progn
-    (setq ag-highlight-search t)
-    (setq ag-reuse-buffers t)
-    (defun my-setup-ag ()
-      "Function called to set my ag stuff up."
-      (toggle-truncate-lines t)
-      (linum-mode 0)
-      (switch-to-buffer-other-window "*ag search*")
-      )
-    (add-hook 'ag-mode-hook 'my-setup-ag)
-    )
-  )
+
 
 (use-package ace-jump-mode
   :ensure ace-jump-mode
