@@ -40,6 +40,7 @@
 (require 'my-magit)
 (require 'my-android)
 (require 'my-eshell)
+(require 'my-package-list)
 (require 'my-evil)
 (require 'my-help)
 (require 'my-god)
