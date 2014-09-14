@@ -108,35 +108,19 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
 ;;this won't matter or even be noticeable, but when it does (in
 ;;comments, for example) it will be quite convenient.
 
-(defun my-beginning-of-line-text-location ()
-  "Returns the location of the beginning of a line's text."
-  (save-excursion (beginning-of-line-text) (point)))
-
-(defun my-end-of-line-text-location ()
-  "Returns the location of the beginning of a line's text."
-  (save-excursion (end-of-line-text) (point)))
-
 (defun my-smart-home ()
   "Odd home to beginning of line, even home to beginning of text/code."
   (interactive)
-  (let ((bol-text (my-beginning-of-line-text-location)))
-  (if (or
-       (and (<= (point) bol-text)
-            (/= (line-beginning-position) (point)))
-       (eq bol-text (point)))
-      (beginning-of-line)
-    (beginning-of-line-text))))
+  (if (bolp)
+      (beginning-of-line-text)
+    (beginning-of-line)))
 
 (defun my-smart-end ()
   "Odd end to end of line, even end to begin of text/code."
   (interactive)
-  (let ((eol-text (my-end-of-line-text-location))) ;; lol
-  (if (or
-       (and (<= (point) (line-end-position))
-            (/= (- (line-end-position) 1) (point)))
-       (eq eol-text (point)))
-      (end-of-line)
-    (end-of-line-text))))
+  (if (eq (point) (- (line-end-position) 1))
+    (end-of-line-text)
+    (end-of-line)))
 
 (defun end-of-line-text ()
   "Move to end of current line and skip comments and trailing space.
