@@ -13,9 +13,6 @@
     (add-hook 'cider-mode-hook 'cider-turn-on-eldoc-mode)
     (add-hook 'cider-mode-hook '(paredit-mode +1))
 
-    (use-package ac-nrepl
-      :ensure ac-nrepl)
-
     (after 'evil
     (defun my-evil-cider-repl-insert ()
       "Enter insert mode at the prompt, if we're behind the prompt."
