@@ -9,6 +9,7 @@
   :config
   (progn
     (setq haskell-process-show-debug-tips nil)
+    (setq haskell-process-type 'cabal-repl)
     (defun my-haskell-autoloads ()
       "Autoloads for entering Haskell-mode."
       (turn-on-haskell-doc-mode)
