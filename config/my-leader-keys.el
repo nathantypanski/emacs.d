@@ -13,6 +13,7 @@
   "-"          'split-window-vertically
   "e"          'pp-eval-last-sexp
   "TAB"        'my-hop-around-buffers
+  "RET"        'my-spawn-terminal-here
   ","          'other-window
   "."          'semantic-ia-fast-jump
   "/"          'evilnc-comment-or-uncomment-lines
