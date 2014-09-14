@@ -82,6 +82,7 @@
     )
 
 (use-package helm-gtags
+  :disabled t
   :ensure helm-gtags
   :commands (
              helm-gtags-mode
