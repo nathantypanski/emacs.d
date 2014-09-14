@@ -3,45 +3,17 @@
 ;; Configuration for ostracizing me from both the Emacs and Vim communities.
 
 (use-package evil-leader
-  :commands (evil-leader-mode)
+  :commands (evil-leader-mode global-evil-leader-mode)
   :ensure evil-leader
   :demand evil-leader
   :init
-  (global-evil-leader-mode t)
-  :config
   (progn
     (evil-leader/set-leader ",")
-    (evil-leader/set-key    "w"   'save-buffer)
-    (evil-leader/set-key    "qq"  'kill-this-buffer)
-    (after 'evil
-      (evil-leader/set-key  "qw"  'evil-window-delete)
+    (global-evil-leader-mode t)
     )
-    (evil-leader/set-key    "Q"   'kill-buffer-and-window)
-    (evil-leader/set-key    "e"   'pp-eval-last-sexp)
-    (evil-leader/set-key    "h"   'dired-jump)
-
-    ;; window splits
-    ;;
-    ;; mnemonic:
-    ;;
-    ;;    |       vertical split      (technically it's the `\` key)
-    ;;    -       horizontal split
-    ;;
-    (evil-leader/set-key    "\\"  'split-window-horizontally)
-    (evil-leader/set-key    "-"   'split-window-vertically)
-    (evil-leader/set-key    "e"   'pp-eval-last-sexp)
-    (evil-leader/set-key    "TAB" 'my-hop-around-buffers)
-    (evil-leader/set-key    ","   'other-window)
-
-
-    (evil-leader/set-key-for-mode 'c-mode
-      "." 'semantic-ia-fast-jump)
-
-    ;; j -> "jump"
-    (evil-leader/set-key    "jf"  'ffap)
-    (evil-leader/set-key    "cl"  'my-flycheck-list-errors)
-    )
+  :config
   )
+
 (use-package evil
   :ensure evil
   :config
@@ -60,14 +32,7 @@
 
     (use-package evil-nerd-commenter
       :ensure evil-nerd-commenter
-      :commands (evilnc-comment-or-uncomment-lines)
-      :init
-      (progn
-        (after 'evil-leader
-          (evil-leader/set-key  "/"   'evilnc-comment-or-uncomment-lines)
-          )
-        )
-      )
+      :commands (evilnc-comment-or-uncomment-lines))
 
       (use-package evil-matchit
         :ensure evil-matchit

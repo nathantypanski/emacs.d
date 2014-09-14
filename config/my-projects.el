@@ -22,10 +22,6 @@
     (projectile-global-mode 1)
     ;; automatically dired in projectile-switch-project
     (setq projectile-switch-project-action 'projectile-dired)
-    (after 'evil-leader
-      (evil-leader/set-key    "P"   'projectile-switch-project)
-      (evil-leader/set-key  "cc"  'projectile-compile-project)
-    )
     )
   )
 

@@ -34,13 +34,7 @@
       (evil-define-key 'normal c++-mode-map (kbd "SPC o") 'eassist-switch-h-cpp)
       )
     (semantic-mode)
-    (after 'evil-leader
-      ;; toggle between a function declaration and its implementation
-      (evil-leader/set-key-for-mode 'c-mode   "d" 'semantic-analyze-proto-impl-toggle)
-      (evil-leader/set-key-for-mode 'c++-mode "d" 'semantic-analyze-proto-impl-toggle)
-      (evil-leader/set-key-for-mode 'c-mode   "." 'semantic-ia-fast-jump)
-      (evil-leader/set-key-for-mode 'c++-mode "." 'semantic-ia-fast-jump)
-      )
+    (semanticdb-enable-gnu-global-databases 'c-mode)
     (require 'eassist)
     ;; show semantic summary in minibuffer when I idle over a function
     (global-semantic-idle-summary-mode)

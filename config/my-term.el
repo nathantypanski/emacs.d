@@ -8,9 +8,4 @@
         (ansi-term (getenv "SHELL")))
     (switch-to-buffer-other-window "*ansi-term*")))
 
-(after 'evil-leader
-    (evil-leader/set-key "`" 'visit-term-buffer)
-)
-
-
 (provide 'my-term)

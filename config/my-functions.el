@@ -169,6 +169,12 @@ With argument ARG, do this that many times."
   (interactive)
   (switch-to-buffer (other-buffer "*Ibuffer*")))
 
+(defun my-kill-other-buffer ()
+  "Kill the buffer opposite the current one."
+  (interactive)
+  (kill-buffer
+   (other-buffer (current-buffer) t)))
+
 (defun my-is-this-line-empty ()
   "Returns t if the current line is empty. Otherwise nil."
   (interactive)

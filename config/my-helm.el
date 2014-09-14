@@ -30,13 +30,6 @@
     (setq helm-command-prefix-key "C-c h")
     (setq helm-quick-update t)
 
-    (after 'evil-leader
-      (evil-leader/set-key    "l"   'helm-semantic-or-imenu)
-      (evil-leader/set-key    "f"   'helm-find-files)
-      (evil-leader/set-key    "x"   'helm-M-x)
-      (evil-leader/set-key    "ss"  'helm-swoop)
-      )
-
     (use-package helm-swoop
       :ensure helm-swoop
       :config

@@ -82,8 +82,6 @@ If couldn't move backward at least once, move up backward and return nil."
   (interactive "p")
   (lispy-delete count))
 
-( evil-lispy-mode-map 'nil)
-
 (evil-define-key 'insert evil-lispy-mode-map (kbd "(") 'lispy-parens)
 (evil-define-key 'insert evil-lispy-mode-map (kbd "\"") 'lispy-quotes)
 (evil-define-key 'insert evil-lispy-mode-map (kbd " ") 'lispy-space)
