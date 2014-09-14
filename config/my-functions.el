@@ -199,6 +199,10 @@ With argument ARG, do this that many times."
   (interactive)
   (abs (- (save-excursion (beginning-of-line) (point)) (point))))
 
+(defvar my-default-source-directory
+  "~/build/aur/emacs-git/src/emacs-git/src"
+  "Default source directory for emacs source code.")
+
 (defun my-set-source-directory (&optional directory)
   "Set the directory for Emacs source code from building."
   (interactive)

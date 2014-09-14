@@ -145,9 +145,7 @@
 (defun my-spawn-terminal-here ()
   "Open a terminal in the current buffer's directory"
   (interactive)
-  (shell-command "urxvt"))
-
-(global-set-key (kbd "M-`") 'my-spawn-terminal-here)
+  (start-process "urxvt" nil "urxvt"))
 
 ;; Set the default font (only matters in graphical mode).
 (when window-system
@@ -179,9 +177,5 @@
 
 ;; easy increment? Good enough ...
 (global-set-key (kbd "C-c +") 'increment-number-at-point)
-
-(defvar my-default-source-directory
-  "~/build/aur/emacs-git/src/emacs-git/src"
-  "Default source directory for emacs source code.")
 
 (provide 'my-core)
