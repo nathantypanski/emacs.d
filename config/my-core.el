@@ -142,10 +142,6 @@
 (plist-put minibuffer-prompt-properties
            'point-entered 'minibuffer-avoid-prompt)
 
-
-(global-set-key [remap eval-expression] 'pp-eval-expression)
-(global-set-key [remap eval-last-sexp] 'pp-eval-last-sexp)
-
 (defun my-spawn-terminal-here ()
   "Open a terminal in the current buffer's directory"
   (interactive)
