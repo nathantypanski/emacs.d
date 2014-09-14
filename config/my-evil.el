@@ -137,7 +137,7 @@ of the current visual line and point."
         'my-backward-delete-word)
 
       (define-key evil-normal-state-map (kbd "SPC a") 'ag)
-      (define-key evil-normal-state-map (kbd "SPC SPC") 'helm-M-x) 
+      (define-key evil-normal-state-map (kbd "SPC SPC") 'helm-M-x)
 
       (define-key evil-normal-state-map (kbd "C-q")   'universal-argument)
 
