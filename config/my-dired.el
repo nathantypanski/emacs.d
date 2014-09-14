@@ -86,4 +86,4 @@
   (evil-define-key 'normal dired-mode-map "k" 'my-dired-previous-line)
   )
 
-(provide 'my-dirs)
+(provide 'my-dired)

@@ -19,7 +19,7 @@
 (require 'my-functions)
 (require 'my-core)
 (require 'my-keychain)
-(require 'my-dirs)
+(require 'my-dired)
 (require 'my-buffers)
 (require 'my-imenu)
 (require 'my-elisp)
