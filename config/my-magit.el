@@ -8,6 +8,7 @@
       (evil-set-initial-state 'magit-status-mode 'normal)
       (evil-set-initial-state 'magit-diff-mode 'normal)
       (evil-set-initial-state 'magit-log-mode 'normal)
+      (evil-set-initial-state 'magit-process-mode 'normal)
 
       (define-key magit-status-mode-map (kbd "C-n") 'magit-goto-next-sibling-section)
       (define-key magit-status-mode-map (kbd "C-p") 'magit-goto-previous-sibling-section)
@@ -165,6 +166,9 @@
       (evil-define-key 'normal magit-log-mode-map (kbd "=") 'magit-diff-with-mark)
       (evil-define-key 'normal magit-log-mode-map (kbd "+") 'magit-log-show-more-entries)
       (evil-define-key 'normal magit-log-mode-map (kbd "h") 'magit-log-toggle-margin)
+
+      (evil-define-key 'normal magit-process-mode-map (kbd "j") 'magit-goto-next-section)
+      (evil-define-key 'normal magit-process-mode-map (kbd "k") 'magit-goto-previous-section)
       )
 
     )
