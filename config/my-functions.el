@@ -199,4 +199,18 @@ With argument ARG, do this that many times."
   (interactive)
   (abs (- (save-excursion (beginning-of-line) (point)) (point))))
 
+(defun my-set-source-directory (&optional directory)
+  "Set the directory for Emacs source code from building."
+  (interactive)
+  (let* ((directory (if directory directory my-default-source-directory))
+         (expanded (directory-file-name (expand-file-name directory)))
+	 (try expanded) new)
+    (if (file-exists-p expanded)
+        (setq source-directory directory)
+    )
+   )
+  )
+
+(my-set-source-directory)
+
 (provide 'my-functions)

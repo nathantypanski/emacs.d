@@ -58,6 +58,7 @@
 ;; toggle between a function declaration and its implementation
 (evil-leader/set-key-for-mode 'c-mode   "d" 'semantic-analyze-proto-impl-toggle)
 (evil-leader/set-key-for-mode 'c++-mode "d" 'semantic-analyze-proto-impl-toggle)
+(evil-leader/set-key-for-mode 'git-commit-mode "qq" 'git-commit-abort)
 (evil-leader/set-key-for-mode 'c-mode   "." 'semantic-ia-fast-jump)
 (evil-leader/set-key-for-mode 'c++-mode "." 'semantic-ia-fast-jump)
 (evil-leader/set-key-for-mode 'emacs-lisp-mode "." 'elisp-slime-nav-find-elisp-thing-at-point)

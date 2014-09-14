@@ -184,5 +184,8 @@
 ;; easy increment? Good enough ...
 (global-set-key (kbd "C-c +") 'increment-number-at-point)
 
+(defvar my-default-source-directory
+  "~/build/aur/emacs-git/src/emacs-git/src"
+  "Default source directory for emacs source code.")
 
 (provide 'my-core)
