@@ -21,8 +21,8 @@
   (progn
       (define-key ag-mode-map (kbd "k") 'nil)
       (evil-define-key 'normal ag-mode-map (kbd "k") 'nil)
-      (evil-define-key 'motion ag-mode-map (kbd "k") 'evil-previous-line)
-      (evil-define-key 'motion ag-mode-map (kbd "j") 'evil-next-line)
+      (evil-define-key 'motion ag-mode-map (kbd "k") 'compilation-previous-error)
+      (evil-define-key 'motion ag-mode-map (kbd "j") 'compilation-next-error)
     )
   )
 
