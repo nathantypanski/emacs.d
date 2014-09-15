@@ -3,7 +3,7 @@
 
 (setq c-default-style '((java-mode . "java")
                         (awk-mode . "awk")
-                        (c++-mode . "Google")
+;;                        (c++-mode . "Google") ;; makes things bug
                         (other . "linux")))
 
 (defun my-set-evil-shift-width ()
