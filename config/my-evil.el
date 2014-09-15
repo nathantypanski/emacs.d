@@ -58,7 +58,7 @@
       (evil-set-initial-state 'term-mode 'emacs)
       (evil-set-initial-state 'multi-term-mode 'emacs)
 
-      (use-package key-chord
+    (use-package key-chord
         :ensure key-chord
         :diminish key-chord-mode
         :config
