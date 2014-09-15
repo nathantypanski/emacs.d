@@ -1,10 +1,20 @@
 (use-package helm
   :ensure helm
+  :init
+  (progn
+    )
   :config
   (progn
     (setq helm-buffers-fuzzy-matching t)
     (setq helm-split-window-default-side (quote other))
     (setq helm-split-window-in-side-p nil)
+    (defun my-helm-in-ido (buffer)
+      "Display a helm buffer in ido. Send the purists screaming."
+      (interactive)
+      (ido-buffer-internal 'display 'display-buffer nil nil nil 'ignore)))
+    (setq helm-display-function 'helm-default-display-buffer)
+    (setq helm-adaptive-history-file "~/.emacs.d/helm-adapative-history")
+    (helm-adaptive-mode)
     (define-key helm-map (kbd "C-p") 'helm-execute-persistent-action)
     (define-key helm-map (kbd "C-n") 'helm-delete-minibuffer-contents)
     (define-key helm-map (kbd "C-j") 'helm-next-line)

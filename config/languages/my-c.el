@@ -31,24 +31,25 @@
 )
 
 (use-package semantic
+  :disabled t
   :ensure semantic
-  :commands
-  (semantic-ia-fast-jump
-   semantic-complete-jump-local
-   semantic-complete-jump
-   semantic-complete-jump-local-members
-   semantic-symref-symbol
-   semantic-symref
-   semantic-complete-analyze-inline
-   senator-kill-tag
-   senator-copy-tag
-   senator-yank-tag
-   senator-copy-tag-to-register
-   semantic-force-refresh
-   senator-transpose-tags-up
-   senator-transpose-tags-down
-   semantic-analyze-possible-completions
-   semantic-mode)
+  ;; :commands
+  ;; (semantic-ia-fast-jump
+  ;;  semantic-complete-jump-local
+  ;;  semantic-complete-jump
+  ;;  semantic-complete-jump-local-members
+  ;;  semantic-symref-symbol
+  ;;  semantic-symref
+  ;;  semantic-complete-analyze-inline
+  ;;  senator-kill-tag
+  ;;  senator-copy-tag
+  ;;  senator-yank-tag
+  ;;  senator-copy-tag-to-register
+  ;;  semantic-force-refresh
+  ;;  senator-transpose-tags-up
+  ;;  senator-transpose-tags-down
+  ;;  semantic-analyze-possible-completions
+  ;;  semantic-mode)
   :init
   (progn
     (global-semanticdb-minor-mode 1)
@@ -61,6 +62,7 @@
   )
 
 (use-package cedet
+  :disabled t
   :ensure cedet
   :commands (
              eassist-switch-h-cpp

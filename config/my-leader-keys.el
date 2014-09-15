@@ -26,12 +26,13 @@
   "gs"         'magit-status
   "gl"         'magit-log
   "gd"         'magit-diff
-  "l"          'helm-semantic-or-imenu
-  "f"          'helm-find-files
-  "x"          'helm-M-x
+  "l"          'ido-goto-symbol
+  "f"          'ido-find-file
+  "k"          'ido-kill-buffer
+  "x"          'smex
   "ss"         'helm-swoop
   "sr"         'ag-regexp
-  "b"          'helm-mini
+  "b"          'switch-to-buffer
   "i"          'helm-imenu
   "zc"         'wg-create-workgroup
   "B"          'ibuffer

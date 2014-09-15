@@ -21,7 +21,6 @@
 (require 'my-keychain)
 (require 'my-dired)
 (require 'my-buffers)
-(require 'my-imenu)
 (require 'my-elisp)
 (require 'my-gtags)
 (require 'my-autocomplete)

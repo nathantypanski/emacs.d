@@ -2,7 +2,6 @@
 
 (use-package rust-mode
   :commands rust-mode
-  :mode ("\\.rs\\'" . rust-mode)
   :config
   (progn
     (defun my-rust-electric-rbrace (arg)
@@ -16,7 +15,7 @@
       (defvar rust-mode-map () "Keymap used in Rust mode.")
       (if rust-mode-map nil
         (setq rust-mode-map (make-sparse-keymap))
-        (define-key rust-mode-map "}" 'my-rust-electric-rbrace)
+;;        (define-key rust-mode-map "}" 'my-rust-electric-rbrace)
         (evil-define-key 'insert rust-mode-map "}" 'my-rust-electric-rbrace)
         )
       (defun my-rust-setup ()
