@@ -24,6 +24,7 @@
 (require 'my-elisp)
 (require 'my-gtags)
 (require 'my-autocomplete)
+(require 'my-ido)
 (require 'my-projects)
 (require 'my-ag)
 (require 'my-interaction)
