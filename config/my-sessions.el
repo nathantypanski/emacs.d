@@ -1,4 +1,5 @@
 (use-package workgroups2
+  :disabled t
   :ensure workgroups2
   :init
   (progn
