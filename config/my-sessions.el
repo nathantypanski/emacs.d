@@ -26,4 +26,10 @@
     )
 )
 
+(use-package persp-mode
+  :config
+  (progn
+    (persp-mode)
+    )
+  )
 (provide 'my-sessions)
