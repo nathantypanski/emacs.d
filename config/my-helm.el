@@ -59,5 +59,4 @@
       (use-package helm-flycheck
         :ensure helm-flycheck))
     )
-  )
 (provide 'my-helm)
