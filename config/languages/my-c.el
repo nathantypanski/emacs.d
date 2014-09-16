@@ -1,4 +1,4 @@
-;;(require 'google-c-style)
+(require 'google-c-style)
 ;;(c-add-style "Google" google-c-style t)
 
 (setq c-default-style '((java-mode . "java")
