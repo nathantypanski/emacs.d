@@ -14,7 +14,7 @@
       (ido-buffer-internal 'display 'display-buffer nil nil nil 'ignore)))
     (setq helm-display-function 'helm-default-display-buffer)
     (setq helm-adaptive-history-file "~/.emacs.d/helm-adapative-history")
-    (helm-adaptive-mode)
+    ;;(helm-adaptive-mode)
     (define-key helm-map (kbd "C-p") 'helm-execute-persistent-action)
     (define-key helm-map (kbd "C-n") 'helm-delete-minibuffer-contents)
     (define-key helm-map (kbd "C-j") 'helm-next-line)
