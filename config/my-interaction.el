@@ -69,6 +69,16 @@
         )
       )
     )
+  :config
+  (progn
+    (use-package ace-jump-buffer
+      :commands
+      (ace-jump-buffer
+       ace-jump-buffer-in-one-window
+       ace-jump-buffer-other-window
+       )
+      :ensure ace-jump-buffer)
+    )
   )
 (use-package guide-key
   :ensure guide-key
