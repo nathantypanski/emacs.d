@@ -3,7 +3,6 @@
   :ensure workgroups2
   :init
   (progn
-    ;;(setq wg-session-file "~/.emacs.d/.emacs_workgroups")
     (setq wg-use-default-session-file nil)
     (setq wg-mode-line-display-on t)          ; Default: (not (featurep 'powerline))
     (setq wg-flag-modified t)                 ; Display modified flags as well
@@ -22,8 +21,7 @@
       (interactive)
       (wg-save-session)
       )
-    (workgroups-mode 1)
-    )
+    (workgroups-mode 1))
 )
 
 (use-package persp-mode
