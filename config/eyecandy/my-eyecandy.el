@@ -1,3 +1,4 @@
+
 (defvar my-use-color-theme t
   "If nil, use color-theme to provide styling. Otherwise, default
 to zenburn.")
@@ -52,7 +53,8 @@ to zenburn.")
   :idle
   :init
   (progn
-    (global-rainbow-delimiters-mode)
+    ;; deprecated - what's a good replacement?
+    ;; (global-rainbow-delimiters-mode)
     )
   )
 
