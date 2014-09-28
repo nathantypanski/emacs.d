@@ -100,9 +100,11 @@
        (define-key ido-file-dir-completion-map "~" 'my-ido-jump-to-home)
        (define-key ido-file-dir-completion-map [tab] 'ido-complete)
        (define-key ido-file-dir-completion-map (kbd "RET") 'exit-minibuffer)
+       (define-key ido-file-dir-completion-map (kbd "C-i") 'ido-select-text)
        (define-key ido-completion-map (kbd "RET") 'exit-minibuffer)
        (define-key ido-completion-map (kbd "TAB") 'ido-complete)
        (define-key ido-completion-map (kbd "C-j") 'ido-next-match)
+       (define-key ido-completion-map (kbd "C-i") 'ido-select-text)
        (define-key ido-completion-map (kbd "C-k") 'ido-prev-match)
        (define-key ido-completion-map (kbd "M-p") 'ido-toggle-prefix))
 
