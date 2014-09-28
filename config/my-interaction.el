@@ -1,6 +1,6 @@
 ;; my-interaction.el
 ;;
-;; ido, helm, smart emacs navigation, etc.
+;; smart emacs navigation, etc.
 
 (use-package ctags-update
   :ensure ctags-update
