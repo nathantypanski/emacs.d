@@ -35,6 +35,7 @@
   "sr"         'ag-regexp
   "b"          'switch-to-buffer
   "i"          'helm-imenu
+  "n"          'neotree-toggle
   "zc"         'wg-create-workgroup
   "B"          'ibuffer
   "ps"         'persp-switch
