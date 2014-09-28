@@ -58,6 +58,10 @@
           (evil-insert-state))
       (evil-append count vcount skip-empty-lines)))
 
+  ;;(require 'esh-alias)
+  ;;(eshell/alias "ll" "ls -l")
+  ;;(eshell/alias "la" "ls -a")
+
   (evil-set-initial-state 'eshell-mode 'insert)
   (defun my-setup-eshell ()
     "Setup eshell as a function, because it breaks normal Evil keybindings"
