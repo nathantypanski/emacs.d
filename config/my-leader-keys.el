@@ -19,7 +19,7 @@
   "/"          'evilnc-comment-or-uncomment-lines
   "jf"         'ffap
   "jb"         'ace-jump-buffer
-  "cl"         'helm-flycheck
+  "cl"         'flycheck-list-errors
   "w"          'save-buffer
   "P"          'projectile-switch-project
   "`"          'visit-term-buffer
