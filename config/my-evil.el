@@ -94,6 +94,8 @@
       (define-key evil-insert-state-map (kbd "RET")        'evil-ret-and-indent)
       (define-key evil-normal-state-map (kbd "RET")        'my-append-and-indent)
       (define-key evil-normal-state-map (kbd "<S-return>") 'my-append-and-indent)
+      (define-key evil-normal-state-map (kbd "C-w }") 'evil-window-rotate-downwards)
+      (define-key evil-normal-state-map (kbd "C-w {") 'evil-window-rotate-upwards)
 
       (defun my-what-line ()
         "Get the line, without printing the word 'line' before it."
