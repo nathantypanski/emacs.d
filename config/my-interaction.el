@@ -57,6 +57,10 @@
     (after 'evil
       ;; Not sure if the `after` here is necessary, but anyway:
       (after 'ace-jump-mode-autoloads
+        (setq ace-jump-mode-move-keys
+              (nconc '(?j ?f ?k ?d ?l ?s ?a ?h ?g)
+                     '(?y ?t ?u ?r ?i ?e ?o ?w ?p ?q)
+                     '(?n ?v ?b ?m ?c ?x ?z)))
         (define-key evil-normal-state-map (kbd "SPC j") 'ace-jump-char-mode)
         (define-key evil-motion-state-map (kbd "SPC") 'evil-ace-jump-char-mode)
         (define-key evil-motion-state-map (kbd "S-SPC") 'evil-ace-jump-line-mode)
