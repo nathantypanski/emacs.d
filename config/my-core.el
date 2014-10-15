@@ -111,7 +111,7 @@
 ;; <https://github.com/bling/dotemacs/blob/master/config/init-core.el>
 (defun my-find-file-check-large-file ()
   "Check the size of files when loading, and don't let me break them."
-  (when (> (buffer-size) (* 1024 1024))
+  (when (> (buffer-size) (* 1024 1024 1024))
     (setq buffer-read-only t)
     (buffer-disable-undo)
     (fundamental-mode)))
