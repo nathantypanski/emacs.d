@@ -6,6 +6,12 @@
     )
   :config
   (progn
+    (defun my-company-pass-key (arg)
+      "Pass a key out of company-mode"
+      (interactive "P")
+      (company-abort)
+      (kbd arg)
+      )
     ;; C-hjkl in company-mode
     (define-key company-active-map (kbd "C-h") 'company-show-doc-buffer)
     (define-key company-active-map (kbd "C-l") 'company-show-location)
@@ -20,7 +26,7 @@
     (define-key company-active-map [up-mouse-1] 'ignore)
     (define-key company-active-map [up-mouse-3] 'ignore)
     (define-key company-active-map [return] 'company-abort)
-    (define-key company-active-map (kbd "SPC") 'company-abort)
+    (define-key company-active-map (kbd "SPC") 'my-company-pass-key)
     (define-key company-active-map "\e\e\e" 'company-abort)
     (define-key company-active-map "\C-g" 'company-abort)
     (define-key company-active-map [tab] 'company-complete-selection)
