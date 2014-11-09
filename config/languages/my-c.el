@@ -25,9 +25,9 @@
 (after 'evil
     (evil-define-key 'insert c-mode-map (kbd "TAB") 'c-indent-line-or-region)
     (evil-define-key 'normal c-mode-map (kbd "K")   'my-woman-entry)
-    (evil-define-key 'insert c-mode-map (kbd "<backspace>") 'c-electric-backspace)
+    (evil-define-key 'insert c-mode-map (kbd "<backspace>") 'backward-delete-char-untabify)
     (evil-define-key 'normal c++-mode-map (kbd "K")   'my-woman-entry)
-    (evil-define-key 'insert c++-mode-map (kbd "<backspace>") 'c-electric-backspace)
+    (evil-define-key 'insert c++-mode-map (kbd "<backspace>") 'backward-delete-char-untabify)
 )
 
 (use-package semantic
