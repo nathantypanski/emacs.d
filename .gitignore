@@ -9,7 +9,10 @@ GTAGS
 abbrev_defs
 ac-comphist.dat
 auto-save-list
+ede-projects.el
 elpa/
+eshell/lastdir
+eshell/history
 games/
 helm-adaptive-history
 image-dired/
