@@ -28,7 +28,6 @@
 (require 'my-projects)
 (require 'my-ag)
 (require 'my-interaction)
-(require 'my-ibuffer)
 (require 'my-helm)
 (require 'my-woman)
 (require 'my-comint)
