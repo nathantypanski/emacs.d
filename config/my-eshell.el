@@ -36,13 +36,7 @@
     (evil-insert-state))
 
   (defun my-eshell-evil-append (count &optional vcount skip-empty-lines)
-    "Switch to Insert state just after point                .
-    The insertion will be repeated COUNT times and repeated once for
-    the next VCOUNT - 1 lines starting at the same column . If
-    SKIP-EMPTY-LINES is non-nil, the insertion will not be performed
-    on lines on which the insertion point would be after the end of
-    the lines                                             . "
-    "If the comint prompt is before point, just do evil-append. Otherwise, insert after the prompt"
+    "Perform an evil-append if point is after the last prompt. Otherwise, jump to the prompt in insert state."
     (interactive
      (list (prefix-numeric-value current-prefix-arg)
            (and (evil-visual-state-p)
@@ -52,11 +46,13 @@
                   ;; `count-lines' yields accurate results
                   (evil-visual-rotate 'upper-left)
                   (count-lines evil-visual-beginning evil-visual-end)))))
-    (if (my-is-eshell-before-prompt)
+    (if (or (my-is-eshell-before-prompt) (my-is-eshell-above-last-prompt))
         (progn
-          (eshell-bol)
+          (my-eshell-hop-to-bottom)
           (evil-insert-state))
-      (evil-append count vcount skip-empty-lines)))
+        (evil-append count vcount skip-empty-lines)
+      )
+    )
 
   ;;(require 'esh-alias)
   ;;(eshell/alias "ll" "ls -l")
