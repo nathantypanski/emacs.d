@@ -14,8 +14,10 @@
   :diminish projectile-mode
   :config
   (progn
+    (setq projectile-indexing-method 'alien)
+    (setq projectile-enable-caching t)
     (setq projectile-cache-file (concat user-emacs-directory ".cache/projectile.cache"))
-    (setq projectile-known-projects-file (concat user-emacs-directory ".cache/projectile-bookmarks.eld"))
+    (setq projectile-known-projects-file (concat user-emacs-directory "projectile-bookmarks.eld"))
     (add-to-list 'projectile-globally-ignored-directories "elpa")
     (add-to-list 'projectile-globally-ignored-directories ".cache")
     (add-to-list 'projectile-globally-ignored-directories "node_modules")
