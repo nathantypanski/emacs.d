@@ -42,6 +42,7 @@
 (require 'my-magit)
 (require 'my-android)
 (require 'my-eshell)
+(require 'my-ielm)
 (require 'my-package-list)
 (require 'my-evil)
 (require 'my-help)
