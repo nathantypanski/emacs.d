@@ -7,7 +7,6 @@
 (defun my-woman-entry ()
   "Jump to a manual entry at point, using helm for completion."
   (interactive)
-  (helm-man-default-action (Man-default-man-entry))
-)
+  (helm-man-default-action (Man-default-man-entry)))
 
 (provide 'my-woman)

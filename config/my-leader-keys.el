@@ -2,6 +2,7 @@
 ;;
 ;; <leader> keybindings for evil-leader
 
+
 (evil-leader/set-key
   "qq"         'kill-this-buffer
   "qw"         'evil-window-delete
@@ -47,12 +48,21 @@
   "pk"         'persp-remove-buffer
 )
 
-;; toggle between a function declaration and its implementation
-(evil-leader/set-key-for-mode 'c-mode   "d" 'semantic-analyze-proto-impl-toggle)
-(evil-leader/set-key-for-mode 'c++-mode "d" 'semantic-analyze-proto-impl-toggle)
-(evil-leader/set-key-for-mode 'git-commit-mode "qq" 'git-commit-abort)
+
+;; Jump to the definition of something.
 (evil-leader/set-key-for-mode 'c-mode   "." 'semantic-ia-fast-jump)
+;; Toggle between a function declaration and its implementation.
+(evil-leader/set-key-for-mode 'c-mode   "d" 'semantic-analyze-proto-impl-toggle)
+
+
 (evil-leader/set-key-for-mode 'c++-mode "." 'semantic-ia-fast-jump)
+(evil-leader/set-key-for-mode 'c++-mode "d" 'semantic-analyze-proto-impl-toggle)
+
+
+(evil-leader/set-key-for-mode 'git-commit-mode "qq" 'git-commit-abort)
+
+
 (evil-leader/set-key-for-mode 'emacs-lisp-mode "." 'elisp-slime-nav-find-elisp-thing-at-point)
+
 
 (provide 'my-leader-keys)
