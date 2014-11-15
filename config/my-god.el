@@ -1,3 +1,12 @@
+;; my-god.el
+;;
+;; God mode bindings for emacs.
+;;
+;; Here, we make god-mode into an Evil state that executes in place of having
+;; a normal Emacs state in Evil. This is really the best of both worlds: the
+;; easiest-on-your-fingers Emacs mappings combined with
+;; even-easier-on-your-fingers Vim mappings.
+
 (use-package god-mode
   :ensure god-mode
   :init
