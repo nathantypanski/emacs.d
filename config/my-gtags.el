@@ -25,7 +25,7 @@
       (interactive)
       (start-process
        "update-gtags" "update-gtags" "bash" "-c"
-       (concat "cd " (my-gtags-root-dir) " ; gtags --single-update " filename)))
+       (concat "cd " (my-gtags-root-dir) " && gtags --single-update " filename)))
 
     (defun my-gtags-update-current-file ()
       (interactive)
