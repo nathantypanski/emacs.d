@@ -1,7 +1,14 @@
+;; my-gtags.el
+;;
+;; A perhaps-better-than-ctags tagger for Emacs.
+;;
+;; Uses GNU Global <http://www.gnu.org/software/global/>.
+
 (use-package ggtags
   :ensure ggtags
   :init
   (progn
+
     (defun my-gtags-root-dir ()
       "Returns GTAGS root directory or nil if doesn't exist."
       (with-temp-buffer
@@ -16,8 +23,9 @@
     (defun my-gtags-update-single (filename)
       "Update Gtags database for changes in a single file"
       (interactive)
-      (start-process "update-gtags" "update-gtags" "bash" "-c"
-                     (concat "cd " (my-gtags-root-dir) " ; gtags --single-update " filename )))
+      (start-process
+       "update-gtags" "update-gtags" "bash" "-c"
+       (concat "cd " (my-gtags-root-dir) " ; gtags --single-update " filename)))
 
     (defun my-gtags-update-current-file ()
       (interactive)
