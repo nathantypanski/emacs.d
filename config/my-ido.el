@@ -75,9 +75,7 @@
       :config
       (progn
         (global-set-key (kbd "M-x") 'smex)
-
         (setq smex-save-file (concat user-emacs-directory ".cache/smex-items"))
-
         (smex-initialize)
 
         ;; The following is from <http://www.emacswiki.org/emacs/Smex>.
@@ -98,12 +96,14 @@
 
         (add-hook 'after-load-functions 'smex-update-after-load)))
 
+
     (defun my-ido-jump-to-home ()
       "Jump to the user's home directory in ido."
       (interactive)
       (ido-set-current-directory "~/")
       (setq ido-exit 'refresh)
       (exit-minibuffer))
+
 
     (defun my-setup-ido ()
       "Configure ido my way."
@@ -120,13 +120,15 @@
        (define-key ido-completion-map (kbd "M-p") 'ido-toggle-prefix))
 
     (add-hook 'ido-setup-hook 'my-setup-ido)
+
+
     (use-package ido-ubiquitous
       :ensure ido-ubiquitous
       :config
       (progn
-        (ido-ubiquitous-mode 1)
-        )
-      )
+        (ido-ubiquitous-mode 1)))
+
+
     (use-package flx-ido
       :ensure flx-ido
       :defines (ido-cur-item ido-default-item ido-cur-list)
@@ -135,15 +137,13 @@
         (flx-ido-mode 1)
         ;; disable ido faces to see flx highlights.
         (setq ido-use-faces nil)
-        (setq flx-ido-use-faces t)
-        )
-      )
+        (setq flx-ido-use-faces t)))
+
+
     (use-package ido-vertical-mode
       :ensure ido-vertical-mode
       :init
       (progn
-       (ido-vertical-mode 1)))
-    )
-  )
+       (ido-vertical-mode 1)))))
 
 (provide 'my-ido)
