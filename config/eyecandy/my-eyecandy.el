@@ -68,11 +68,10 @@ to zenburn.")
     )
   )
 
-;; mouse scrolling in terminal
 ;; is this eyecandy?
 (unless (display-graphic-p)
-  (global-set-key [mouse-4] (bind (scroll-down 1)))
-  (global-set-key [mouse-5] (bind (scroll-up 1))))
+  (global-set-key [mouse-4] (scroll-down 1))
+  (global-set-key [mouse-5] (scroll-up 1)))
 
 ;; restore my blood pressure to normal: stop having fill-column=3 in help mode
 

@@ -6,7 +6,7 @@
                          ("org" . "http://orgmode.org/elpa/")
                          ("gnu" . "http://elpa.gnu.org/packages/")))
 
-;; (byte-recompile-directory "~/.emacs.d")
+(byte-recompile-directory "~/.emacs.d")
 (require 'package)
 (package-initialize)
 (setq package-enable-at-startup nil)
@@ -16,6 +16,7 @@
 
 (require 'use-package)
 
+(eval-when-compile (require 'cl))
 (require 'cl-lib)
 
 (require 'my-functions)
