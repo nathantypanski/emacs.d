@@ -16,6 +16,8 @@
 
 (require 'use-package)
 
+(require 'cl-lib)
+
 (require 'my-functions)
 (require 'my-core)
 (require 'my-keychain)

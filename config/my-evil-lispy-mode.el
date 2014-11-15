@@ -1,3 +1,8 @@
+;; my-evil-lispy-mode.el
+;;
+;; This is a work-in-progress effort at a nice lisp coding mode that is
+;; compatible with Evil. It's not up to snuff quite yet.
+
 (require 'lispy)
 (require 'evil)
 
@@ -29,8 +34,6 @@ Currently does nothing, but that may change later.")
 
 ;; TODO: staying away for now.
 ;; (add-hook 'emacs-lisp-mode 'evil-lispy-mode)
-
-
 
 (evil-define-motion evil-lispy-forward (count)
   "Move forward list COUNT times or until error.
