@@ -1,6 +1,6 @@
 (use-package nlinum
   :ensure nlinum
-  :config
+  :init
   (progn
-   )
-  )
+    (add-hook 'emacs-lisp-mode-hook 'nlinum-mode)
+    ))
