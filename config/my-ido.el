@@ -1,3 +1,9 @@
+;; my-ido.el
+;;
+;; Settings for ido, a better way to select things in a minibuffer.
+
+
+;; From <http://www.emacswiki.org/emacs/ImenuMode>
 (defun ido-goto-symbol (&optional symbol-list)
       "Refresh imenu and jump to a place in the buffer using Ido."
       (interactive)
@@ -46,6 +52,7 @@
               (add-to-list 'symbol-names name)
               (add-to-list 'name-and-pos (cons name position))))))))
 
+
 (use-package ido
   :config
   (progn
@@ -62,17 +69,19 @@
     (setq ido-save-directory-list-file
           (concat user-emacs-directory ".cache/ido.last"))
 
+    ;; ido for M-x.
     (use-package smex
       :ensure smex
       :config
       (progn
         (global-set-key (kbd "M-x") 'smex)
-        (setq smex-save-file (concat user-emacs-directory ".cache/smex-items"))
-        (smex-initialize)
-        ;; the following is from
-        ;; http://www.emacswiki.org/emacs/Smex
 
-        ;; typing SPC inserts a hyphen
+        (setq smex-save-file (concat user-emacs-directory ".cache/smex-items"))
+
+        (smex-initialize)
+
+        ;; The following is from <http://www.emacswiki.org/emacs/Smex>.
+        ;; Typing SPC inserts a hyphen:
         (defadvice smex (around space-inserts-hyphen activate compile)
           (let ((ido-cannot-complete-command
                  `(lambda ()
@@ -81,12 +90,13 @@
                         (insert ?-)
                       (funcall ,ido-cannot-complete-command)))))
             ad-do-it))
-        ;; update less often
+
+        ;; Update less often.
         (defun smex-update-after-load (unused)
           (when (boundp 'smex-cache)
             (smex-update)))
-        (add-hook 'after-load-functions 'smex-update-after-load)
-        ))
+
+        (add-hook 'after-load-functions 'smex-update-after-load)))
 
     (defun my-ido-jump-to-home ()
       "Jump to the user's home directory in ido."
@@ -94,6 +104,7 @@
       (ido-set-current-directory "~/")
       (setq ido-exit 'refresh)
       (exit-minibuffer))
+
     (defun my-setup-ido ()
       "Configure ido my way."
        ;; On ido-find-file, let `~` mean `~/` for fastness.
