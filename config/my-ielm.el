@@ -4,3 +4,4 @@
 
 (add-hook 'ielm-mode-hook 'electric-pair-mode)
 
+(provide 'my-ielm)

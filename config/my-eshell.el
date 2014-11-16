@@ -72,4 +72,5 @@
     )
   (add-hook 'eshell-mode-hook 'my-setup-eshell)
   )
+
 (provide 'my-eshell)

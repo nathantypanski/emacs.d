@@ -15,3 +15,5 @@
     (kbd "q") 'quit-window
     (kbd "k") 'backward-button)
   )
+
+(provide 'my-apropos)

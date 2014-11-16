@@ -8,7 +8,6 @@
     (defun my-setup-ag ()
       "Function called to set my ag stuff up."
       (toggle-truncate-lines t)
-      (linum-mode 0)
       (switch-to-buffer-other-window "*ag search*")
       )
     (add-hook 'ag-mode-hook 'my-setup-ag)

@@ -1,3 +1,10 @@
+;; my-magit.el
+;;
+;; Magit is an Emacs mode for Git.
+;; <https://github.com/magit/magit>
+;;
+;; This file contains my personal customizations - mostly keybindings - for it.
+
 (use-package magit
   :ensure magit
   :config
@@ -150,8 +157,8 @@
         "y" 'magit-cherry
         "z" 'magit-key-mode-popup-stashing
         (kbd "DEL") 'scroll-down
-        (kbd "S-SPC") 'scroll-down-command
-        )
+        (kbd "S-SPC") 'scroll-down-command)
+
       ;; Commit mode - affects diff view
       (evil-define-key 'normal magit-commit-mode-map (kbd "j") 'magit-goto-next-section)
       (evil-define-key 'normal magit-commit-mode-map (kbd "k") 'magit-goto-previous-section)
@@ -171,9 +178,6 @@
       (evil-define-key 'normal magit-process-mode-map (kbd "k") 'magit-goto-previous-section)
 
       (evil-define-key 'normal magit-branch-manager-mode-map (kbd "j") 'magit-goto-next-section)
-      (evil-define-key 'normal magit-branch-manager-mode-map (kbd "k") 'magit-goto-previous-section)
-      )
+      (evil-define-key 'normal magit-branch-manager-mode-map (kbd "k") 'magit-goto-previous-section))))
 
-    )
-  )
 (provide 'my-magit)

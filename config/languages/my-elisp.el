@@ -1,5 +1,4 @@
 ;; Always eldoc in lispy modes.
-(add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
 (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
 (add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)
 
@@ -32,10 +31,14 @@
   (progn
     (after 'evil
       (evil-define-key 'normal emacs-lisp-mode-map (kbd "K")
-        'my-jump-to-elisp-docs)
-      )
-    )
-  )
+        'my-jump-to-elisp-docs))))
+
+(defun my-setup-elisp-mode ()
+  "Commands to be run at the start of Emacs Lisp mode."
+  (turn-on-eldoc-mode)
+  (my-coding-mode-eyecandy))
+
+(add-hook 'emacs-lisp-mode-hook 'my-setup-elisp-mode)
 
 (defun my-electric-lisp-comment ()
     "Autocomment things for lisp."
@@ -46,47 +49,8 @@
       (insert ";; ")
     (insert ";")))
 
-(use-package lispy
-  :disabled t
-  :init
-  (progn
-    (defun my-lispy-mode-enable ()
-      "Enable lispy-mode."
-      (lispy-mode 1)
-      )
-    (add-hook 'emacs-lisp-mode-hook 'my-lispy-mode-enable)
-    (setq lispy-use-ctrl-digits nil)
-    )
-  :config
-  )
-
 (after 'evil
   (evil-define-key 'insert emacs-lisp-mode-map ";" 'my-electric-lisp-comment)
-  (evil-define-key 'normal emacs-lisp-mode-map "\C-c\C-c" 'eval-defun)
-  (use-package paredit
-               :ensure paredit
-               :config
-               (progn
-  (paredit-mode)
-  (use-package evil-paredit
-    :ensure evil-paredit
-    :disabled t
-    :commands enable-paredit-mode
-    :init
-    (progn
-      (autoload 'enable-paredit-mode "paredit"
-        "Turn on pseudo-structural editing of Lisp code." t)
-      (add-hook 'emacs-lisp-mode-hook       #'enable-paredit-mode)
-      (add-hook 'eval-expression-minibuffer-setup-hook #'enable-paredit-mode)
-      (add-hook 'ielm-mode-hook             #'enable-paredit-mode)
-      (add-hook 'lisp-mode-hook             #'enable-paredit-mode)
-      (add-hook 'lisp-interaction-mode-hook #'enable-paredit-mode)
-      (add-hook 'scheme-mode-hook           #'enable-paredit-mode)
-      )
-    :config
-    (progn
-      (evil-define-key 'normal emacs-lisp-mode-map "\M-q" 'paredit-reindent-defun)
-      )
-    )))
-  )
+  (evil-define-key 'normal emacs-lisp-mode-map "\C-c\C-c" 'eval-defun))
+
 (provide 'my-elisp)

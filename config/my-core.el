@@ -142,10 +142,12 @@
 (plist-put minibuffer-prompt-properties
            'point-entered 'minibuffer-avoid-prompt)
 
+(defvar my-terminal-emulator "urxvtc")
+
 (defun my-spawn-terminal-here ()
   "Open a terminal in the current buffer's directory"
   (interactive)
-  (start-process "urxvt" nil "urxvt"))
+  (start-process my-terminal-emulator nil my-terminal-emulator))
 
 ;; Set the default font (only matters in graphical mode).
 (when window-system

@@ -6,7 +6,6 @@
                          ("org" . "http://orgmode.org/elpa/")
                          ("gnu" . "http://elpa.gnu.org/packages/")))
 
-(byte-recompile-directory "~/.emacs.d")
 (require 'package)
 (package-initialize)
 (setq package-enable-at-startup nil)
@@ -19,8 +18,9 @@
 (eval-when-compile (require 'cl))
 (require 'cl-lib)
 
-(require 'my-functions)
 (require 'my-core)
+(require 'my-functions)
+(require 'my-eyecandy)
 (require 'my-keychain)
 (require 'my-dired)
 (require 'my-buffers)
@@ -36,7 +36,6 @@
 (require 'my-comint)
 (require 'my-unbound-keys)
 (require 'my-languages)
-(require 'my-eyecandy)
 (require 'my-shell)
 (require 'my-filetypes)
 (require 'my-term)
@@ -48,6 +47,5 @@
 (require 'my-evil)
 (require 'my-help)
 (require 'my-god)
-(require 'my-line-numbers)
 (require 'my-sessions)
 (require 'my-leader-keys)

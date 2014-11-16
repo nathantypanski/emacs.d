@@ -167,7 +167,6 @@ Require `font-lock'."
 
 (my-set-source-directory)
 
-
 (defun my-list-bind-difference (a b)
   "Remove B from A."
   (cl-dolist (elem a)

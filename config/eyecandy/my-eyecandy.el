@@ -53,10 +53,8 @@ to zenburn.")
   :idle
   :init
   (progn
-    ;; deprecated - what's a good replacement?
-    ;; (global-rainbow-delimiters-mode)
-    )
-  )
+    (rainbow-delimiters-mode-enable)
+    ))
 
 (use-package windsize
   :ensure windsize
@@ -68,16 +66,22 @@ to zenburn.")
     )
   )
 
-;; is this eyecandy?
-(unless (display-graphic-p)
-  (global-set-key [mouse-4] (scroll-down 1))
-  (global-set-key [mouse-5] (scroll-up 1)))
-
 ;; restore my blood pressure to normal: stop having fill-column=3 in help mode
 
 (add-hook 'help-mode-hook
           (lambda ()
             (set-fill-column 80)))
+
+(use-package nlinum
+  :ensure nlinum
+  :init
+  (progn
+     (add-hook 'emacs-lisp-mode-hook 'nlinum-mode)))
+
+(defun my-coding-mode-eyecandy ()
+  "Eyecandy specific to programming text editing modes."
+  (rainbow-delimiters-mode-enable)
+  (nlinum-mode))
 
 (require 'my-modeline)
 (provide 'my-eyecandy)

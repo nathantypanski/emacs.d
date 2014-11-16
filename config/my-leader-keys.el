@@ -4,6 +4,7 @@
 
 
 (evil-leader/set-key
+  "$"          'nlinum-mode
   "qq"         'kill-this-buffer
   "qw"         'evil-window-delete
   "qo"         'my-kill-other-buffer
