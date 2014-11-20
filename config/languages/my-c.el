@@ -3,6 +3,7 @@
 
 (setq c-default-style '((java-mode . "java")
                         (awk-mode . "awk")
+                        (c++-mode . "google")
 ;;                        (c++-mode . "Google") ;; makes things bug
                         (other . "linux")))
 
