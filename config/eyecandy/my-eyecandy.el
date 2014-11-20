@@ -72,16 +72,10 @@ to zenburn.")
           (lambda ()
             (set-fill-column 80)))
 
-(use-package nlinum
-  :ensure nlinum
-  :init
-  (progn
-     (add-hook 'emacs-lisp-mode-hook 'nlinum-mode)))
-
 (defun my-coding-mode-eyecandy ()
   "Eyecandy specific to programming text editing modes."
-  (rainbow-delimiters-mode-enable)
-  (nlinum-mode))
+  (rainbow-delimiters-mode-enable))
 
 (require 'my-modeline)
+
 (provide 'my-eyecandy)
