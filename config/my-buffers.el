@@ -42,15 +42,15 @@
     (defun my-ibuffer-setup ()
       "Configure ibuffer the way I want it."
       (ibuffer-auto-mode 1)
-      (ibuffer-switch-to-saved-filter-groups "default")
-      )
+      (ibuffer-switch-to-saved-filter-groups "default"))
+
     (add-hook 'ibuffer-mode-hook 'my-ibuffer-setup)
     (setq ibuffer-show-empty-filter-groups nil)
 
     (use-package ibuffer-vc
       :ensure ibuffer-vc
-      :config
-      )
+      :config)
+
     (after 'evil
       (evil-set-initial-state 'ibuffer-mode 'normal)
       (evil-define-key 'normal ibuffer-mode-map
