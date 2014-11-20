@@ -1,3 +1,13 @@
+;; my-core.el
+;;
+;; The big, beating heart of my little corner of Emacs.
+;; General, mostly-plugin-independent settings go here.
+
+(defvar my-terminal-emulator "urxvtc"
+  "Terminal emulator to be spawned with my-spawn-terminal-here.")
+(defvar my-graphical-font "Gohufont-12"
+  "Font used for graphical editing sessions.")
+
 ;; Don't show those horrible buttons
 (tool-bar-mode -1)
 
@@ -62,12 +72,12 @@
 
 ;; I know what I'm doing; don't litter my fscking tree!
 
-(defvar my-auto-save-folder "~/.emacs.d/.saves/")
+(defvar my-auto-save-folder "~/.emacs.d/.saves/"
+  "Directory used for Emacs backups.")
+
 (setq backup-directory-alist `(("." . "~/.emacs.d/.saves")))
 (setq auto-save-file-name-transforms
       `((".*" ,my-auto-save-folder t)))
-
-;; (setq make-backup-files nil)
 
 ;; Only scroll one line when near the bottom of the screen, instead
 ;; of jumping the screen around.
@@ -120,8 +130,7 @@
   "Set the defaults for a new file opening."
   (my-find-file-check-large-file)
   (setq show-trailing-whitespace t)
-  (electric-indent-mode 1)
-)
+  (electric-indent-mode 1))
 
 ;; Adapted from
 ;; <https://github.com/bling/dotemacs/blob/master/config/init-core.el>
@@ -142,19 +151,22 @@
 (plist-put minibuffer-prompt-properties
            'point-entered 'minibuffer-avoid-prompt)
 
-(defvar my-terminal-emulator "urxvtc")
 
 (defun my-spawn-terminal-here ()
   "Open a terminal in the current buffer's directory"
   (interactive)
   (start-process my-terminal-emulator nil my-terminal-emulator))
 
-;; Set the default font (only matters in graphical mode).
-(when window-system
-  (progn
-    (set-face-attribute 'default nil :font "Terminus-10")
-    (set-frame-font "Terminus-10" nil t)
-))
+(defun my-set-window-font (font)
+  "Set the frame font to FONT.
+FONT is the name of a xft font, like `Monospace-10'. This command
+only has any effect on graphical frames."
+  (interactive "sFont: ")
+  (when window-system
+    (set-face-attribute 'default nil :font font)
+    (set-frame-font font nil t)))
+
+(my-set-window-font my-graphical-font)
 
 (global-set-key (kbd "C-x C-b") 'ibuffer)
 (global-set-key (kbd "C-x C-k") 'kill-this-buffer)
@@ -165,19 +177,16 @@
 (global-set-key (kbd "C-a") 'my-prefix)
 
 (after 'evil
-    (global-set-key (kbd "C-a h") 'evil-window-left)
-    (global-set-key (kbd "C-a j") 'evil-window-down)
-    (global-set-key (kbd "C-a k") 'evil-window-up)
-    (global-set-key (kbd "C-a l") 'evil-window-right)
-  )
+  (global-set-key (kbd "C-a h") 'evil-window-left)
+  (global-set-key (kbd "C-a j") 'evil-window-down)
+  (global-set-key (kbd "C-a k") 'evil-window-up)
+  (global-set-key (kbd "C-a l") 'evil-window-right))
+
 (global-set-key (kbd "C-a -") 'split-window-vertically)
 (global-set-key (kbd "C-a |") 'split-window-horizontally)
 (global-set-key (kbd "C-a x") 'kill-this-window)
 
 ;; have no use for these default bindings
 (global-unset-key (kbd "C-x m"))
-
-;; easy increment? Good enough ...
-(global-set-key (kbd "C-c +") 'increment-number-at-point)
 
 (provide 'my-core)
