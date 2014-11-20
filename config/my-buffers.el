@@ -46,7 +46,7 @@
       )
     (add-hook 'ibuffer-mode-hook 'my-ibuffer-setup)
     (setq ibuffer-show-empty-filter-groups nil)
-    (after 'evil-leader (evil-leader/set-key "B" 'ibuffer))
+
     (use-package ibuffer-vc
       :ensure ibuffer-vc
       :config
