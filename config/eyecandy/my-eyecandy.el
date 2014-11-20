@@ -62,15 +62,11 @@ to zenburn.")
   (progn
     (setq windsize-cols 16)
     (setq windsize-rows 8)
-    (windsize-default-keybindings)
-    )
-  )
+    (windsize-default-keybindings)))
 
 ;; restore my blood pressure to normal: stop having fill-column=3 in help mode
 
-(add-hook 'help-mode-hook
-          (lambda ()
-            (set-fill-column 80)))
+
 
 (defun my-coding-mode-eyecandy ()
   "Eyecandy specific to programming text editing modes."

@@ -182,11 +182,19 @@ only has any effect on graphical frames."
   (global-set-key (kbd "C-a k") 'evil-window-up)
   (global-set-key (kbd "C-a l") 'evil-window-right))
 
+
+
 (global-set-key (kbd "C-a -") 'split-window-vertically)
 (global-set-key (kbd "C-a |") 'split-window-horizontally)
 (global-set-key (kbd "C-a x") 'kill-this-window)
 
 ;; have no use for these default bindings
 (global-unset-key (kbd "C-x m"))
+
+(defun my-setup-help-mode ()
+  "Setup help mode the way I like it."
+  (set-fill-column 80))
+
+(add-hook 'help-mode-hook 'my-setup-help-mode)
 
 (provide 'my-core)
