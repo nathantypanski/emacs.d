@@ -62,9 +62,17 @@
   :init
   (progn
     (after 'evil
-        (evil-define-key 'normal c++-mode-map (kbd "SPC o") 'eassist-switch-h-cpp)
-        (evil-define-key 'normal c-mode-map   (kbd "SPC o") 'eassist-switch-h-c)
-        (evil-set-initial-state 'eieio-custom-mode 'emacs)))
+      (evil-define-key 'normal c++-mode-map (kbd "SPC o") 'eassist-switch-h-cpp)
+      (evil-define-key 'normal c-mode-map   (kbd "SPC o") 'eassist-switch-h-c)
+      (evil-set-initial-state 'eieio-custom-mode 'emacs))
+    (setq eassist-header-switches '(("h" . ("cpp" "cc" "c"))
+                                    ("hpp" . ("cpp" "cc"))
+                                    ("cpp" . ("h" "hpp"))
+                                    ("c" . ("h"))
+                                    ("C" . ("H"))
+                                    ("H" . ("C" "CPP" "CC"))
+                                    ("cc" . ("h" "hh" "hpp"))
+                                    ("hh" . ("cc" "cpp")))))
   :config
   (progn
     (require 'eassist)
