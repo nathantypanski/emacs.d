@@ -33,11 +33,7 @@
   (evil-define-motion my-comint-beginning-of-line ()
     "Move the cursor to the beginning of the current line, but before the prompt."
     :type exclusive
-    (comint-bol)
-    ;; (if (< (comint-line-beginning-position) (point))
-    ;;     (comint-bol)
-    ;;     (evil-beginning-of-line))
-    )
+    (comint-bol))
 
   (defun my-comint-next-input (n)
     "Get the next matching input and move to the end of line"
