@@ -1,6 +1,5 @@
-(add-to-list 'load-path "~/devel/rust/rust/etc/emacs")
-
 (use-package rust-mode
+  :ensure rust-mode
   :commands rust-mode
   :config
   (progn
