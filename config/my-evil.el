@@ -147,7 +147,7 @@ of the current visual line and point."
     (remove-hook 'evil-insert-state-exit-hook 'my-exit-insert-state)
 
     (define-key evil-insert-state-map (kbd "<S-backspace>")
-      'my-backward-delete-word)
+      'backward-delete-char-untabify)
     (define-key evil-insert-state-map (kbd "<S-return>")
       'electric-indent-just-newline)
     (define-key evil-normal-state-map (kbd "<S-return>")
