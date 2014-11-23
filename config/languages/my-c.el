@@ -1,4 +1,5 @@
-(require 'google-c-style)
+(use-package google-c-style
+  :ensure google-c-style)
 
 (setq c-default-style '((java-mode . "java")
                         (awk-mode . "awk")
