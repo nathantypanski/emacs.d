@@ -3,15 +3,7 @@
 ;; smart emacs navigation, etc.
 
 
-(use-package ctags-update
-  :ensure ctags-update
-  :init
-  (progn
-    (add-hook 'c-mode-common-hook  'turn-on-ctags-auto-update-mode)
-    (add-hook 'emacs-lisp-mode-hook  'turn-on-ctags-auto-update-mode)
-    (autoload 'turn-on-ctags-auto-update-mode
-      "ctags-update"
-      "turn on `ctags-auto-update-mode'." t)))
+
 
 
 (use-package flycheck
