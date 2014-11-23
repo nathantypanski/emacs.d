@@ -25,7 +25,7 @@
 (require 'my-dired)
 (require 'my-buffers)
 (require 'my-elisp)
-(require 'my-gtags)
+(require 'my-tags)
 (require 'my-autocomplete)
 (require 'my-ido)
 (require 'my-projects)
