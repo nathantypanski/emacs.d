@@ -18,6 +18,7 @@
 (eval-when-compile (require 'cl))
 (require 'cl-lib)
 
+(require 'my-env)
 (require 'my-core)
 (require 'my-functions)
 (require 'my-eyecandy)
