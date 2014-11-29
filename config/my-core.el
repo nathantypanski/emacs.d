@@ -165,9 +165,8 @@
 FONT is the name of a xft font, like `Monospace-10'. This command
 only has any effect on graphical frames."
   (interactive "sFont: ")
-  (when window-system
     (set-face-attribute 'default nil :font font)
-    (set-frame-font font nil t)))
+    (set-frame-font font nil t))
 
 (my-set-window-font my-graphical-font)
 

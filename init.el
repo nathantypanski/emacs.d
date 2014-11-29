@@ -16,13 +16,13 @@
 
 (require 'use-package)
 
-(require 'my-packaging)
 (require 'my-env)
 (require 'my-core)
 (require 'my-functions)
 (require 'my-eyecandy)
 (require 'my-keychain)
 (require 'my-dired)
+(require 'my-bookmarks)
 (require 'my-buffers)
 (require 'my-elisp)
 (require 'my-tags)
