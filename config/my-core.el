@@ -162,13 +162,19 @@
 
 (defun my-set-window-font (font)
   "Set the frame font to FONT.
-FONT is the name of a xft font, like `Monospace-10'. This command
-only has any effect on graphical frames."
+FONT is the name of a xft font, like `Monospace-10'."
   (interactive "sFont: ")
     (set-face-attribute 'default nil :font font)
     (set-frame-font font nil t))
 
-(my-set-window-font my-graphical-font)
+;; Set the default font for graphics mode.
+(defun my-set-default-font (&optional frame)
+  "Set the frame font to the font name in the variable my-graphical-font.
+This command only has an effect on graphical frames."
+  (interactive)
+  (when window-system (my-set-window-font my-graphical-font)))
+
+(add-hook 'after-make-frame-functions 'my-set-default-font)
 
 (global-set-key (kbd "C-x C-b") 'ibuffer)
 (global-set-key (kbd "C-x C-k") 'kill-this-buffer)
