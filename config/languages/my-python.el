@@ -13,6 +13,7 @@
       (setq python-indent-trigger-commands nil))
   (progn
     (use-package python-mode
+      :ensure python-mode
       :commands python-mode
       :mode "\\.py\\'"
       :init
