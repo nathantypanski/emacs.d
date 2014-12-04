@@ -175,24 +175,6 @@ only has any effect on graphical frames."
 (global-set-key (kbd "C-x g") 'my-google)
 (global-set-key (kbd "C-c e") 'my-eval-and-replace)
 
-(define-prefix-command 'my-prefix)
-(global-set-key (kbd "C-a") 'my-prefix)
-
-(after 'evil
-  (global-set-key (kbd "C-a h") 'evil-window-left)
-  (global-set-key (kbd "C-a j") 'evil-window-down)
-  (global-set-key (kbd "C-a k") 'evil-window-up)
-  (global-set-key (kbd "C-a l") 'evil-window-right))
-
-
-
-(global-set-key (kbd "C-a -") 'split-window-vertically)
-(global-set-key (kbd "C-a |") 'split-window-horizontally)
-(global-set-key (kbd "C-a x") 'kill-this-window)
-
-;; have no use for these default bindings
-(global-unset-key (kbd "C-x m"))
-
 (defun my-setup-help-mode ()
   "Setup help mode the way I like it."
   (set-fill-column 80))
