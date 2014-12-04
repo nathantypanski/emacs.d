@@ -18,7 +18,6 @@
   "TAB"        'my-hop-around-buffers
   "RET"        'my-spawn-terminal-here
   ","          'other-window
-  "."          'semantic-ia-fast-jump
   "/"          'evilnc-comment-or-uncomment-lines
   "jf"         'ffap
   "jb"         'ace-jump-buffer
@@ -50,21 +49,8 @@
   "pk"         'persp-remove-buffer
 )
 
-
-;; Jump to the definition of something.
-(evil-leader/set-key-for-mode 'c-mode   "." 'semantic-ia-fast-jump)
-;; Toggle between a function declaration and its implementation.
-(evil-leader/set-key-for-mode 'c-mode   "d" 'semantic-analyze-proto-impl-toggle)
-
-
-(evil-leader/set-key-for-mode 'c++-mode "." 'semantic-ia-fast-jump)
-(evil-leader/set-key-for-mode 'c++-mode "d" 'semantic-analyze-proto-impl-toggle)
-
-
 (evil-leader/set-key-for-mode 'git-commit-mode "qq" 'git-commit-abort)
 
-
 (evil-leader/set-key-for-mode 'emacs-lisp-mode "." 'elisp-slime-nav-find-elisp-thing-at-point)
-
 
 (provide 'my-leader-keys)

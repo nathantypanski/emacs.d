@@ -53,24 +53,6 @@
                                     ("C" . ("H"))
                                     ("H" . ("C" "CPP" "CC"))
                                     ("cc" . ("h" "hh" "hpp"))
-                                    ("hh" . ("cc" "cpp"))))
-    (use-package semantic
-      :ensure semantic
-      :init
-      (progn
-        (global-semanticdb-minor-mode 1)
-        (global-semantic-idle-scheduler-mode 1)
-        (global-semantic-stickyfunc-mode 1)
-        (setq semanticdb-default-save-directory
-              (expand-file-name "semanticdb" "~/.emacs.d/.semantic"))
-        (semantic-mode))
-      :config
-      (progn)))
-  :config
-  (progn
-    (semanticdb-enable-gnu-global-databases 'c-mode)
-    (semanticdb-enable-gnu-global-databases 'c++-mode)
-    ;; show semantic summary in minibuffer when I idle over a function
-    (global-semantic-idle-summary-mode)))
+                                    ("hh" . ("cc" "cpp"))))))
 
 (provide 'my-c)
