@@ -1,3 +1,0 @@
-[submodule "emacs"]
-	path = emacs
-	url = http://git.savannah.gnu.org/r/emacs.git
