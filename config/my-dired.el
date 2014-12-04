@@ -4,9 +4,7 @@
   :config
   (progn
     (setq save-place-file (concat user-emacs-directory ".cache/places"))
-    (setq-default save-place t)
-    )
-  )
+    (setq-default save-place t)))
 
 (use-package savehist
   :idle
@@ -15,9 +13,7 @@
         (setq savehist-file (concat user-emacs-directory ".cache/savehist")
             savehist-additional-variables '(search ring regexp-search-ring)
             savehist-autosave-interval 60)
-        (savehist-mode t)
-    )
-)
+        (savehist-mode t)))
 
 (use-package recentf
   :config
@@ -25,24 +21,25 @@
     (setq recentf-save-file (concat user-emacs-directory ".cache/recentf")
           recentf-max-saved-items 1000
           recentf-max-menu-items 500)
-    (recentf-mode +1)
-    )
-)
+    (recentf-mode +1)))
 
-(require 'dired-x)
 (use-package dired-x
-  :commands dired
   :init
   (progn
     (defun my-load-dired-x ()
-      "Load dired-x; for use on dired-load-hook"
-        (load "dired-x")
-        ;; Set dired-x global variables here.  For example:
-        ;; (setq dired-guess-shell-gnutar "gtar")
-        ;; (setq dired-x-hands-off-my-keys nil)
-        )
-      )
-    )
+      "Load dired-x.
+
+For use on dired-load-hook"
+        (load "dired-x"))
+    (add-hook 'dired-load-hook 'my-load-dired-x)))
+
+(defun my-configure-dired ()
+  "Setup dired and dired-x.
+
+For use with dired-mode-hook."
+  (dired-omit-mode 1))
+
+(add-hook 'dired-mode-hook 'my-configure-dired)
 
 (setq dired-listing-switches "-aBhl  --group-directories-first")
 
@@ -51,22 +48,19 @@
   (interactive)
   (let ((old (current-buffer)))
     (dired-up-directory)
-    (kill-buffer old)
-    ))
+    (kill-buffer old)))
 
 (defun my-dired-next-line (count)
   "Move to next line, always staying on the dired filename."
   (interactive "p")
   (dired-next-line count)
-  (dired-move-to-filename)
-  )
+  (dired-move-to-filename))
 
 (defun my-dired-previous-line (count)
   "Move to previous line, always staying on the dired filename."
   (interactive "p")
   (dired-previous-line count)
-  (dired-move-to-filename)
-  )
+  (dired-move-to-filename))
 
 (after 'evil
   (evil-define-key 'normal dired-mode-map "h" 'my-dired-up-directory)
