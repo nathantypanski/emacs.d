@@ -21,10 +21,13 @@
         (when (featurep 'python) (unload-feature 'python t))
         (autoload 'python-mode "python-mode" "Python editing mode." t)
         (add-to-list 'auto-mode-alist '("/PYDOCS\\'" . help-mode))
+        (add-to-list 'auto-mode-alist '("\\.py\\'" . python-mode))
+        (add-to-list 'interpreter-mode-alist '("python" . python-mode))
         )
       :config
       (progn
-        (setq py-electric-comment-p 0)
+        (setq py-electric-comment-p nil)
+        (setq py-max-help-buffer-p nil)
         (setq py-electric-comment-add-space-p nil)
         (setq py-tab-indent nil)
         (setq py-smart-indentation t)
@@ -35,7 +38,7 @@
 
         (defun py-shell-complete (&optional shell debug beg end word)
           "Silence python-mode's complete word before point function by overwriting."
-            (interactive))
+          (interactive))
         ;; Set pylint from venv. See my question at:
         ;;
         ;; https://answers.launchpad.net/python-mode/+question/250108
