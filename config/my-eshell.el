@@ -17,26 +17,29 @@
           1
         (progn
           (goto-char oldpt)
+          ;; Silence the return value of goto-char.
+          ;; Is there a better way of doing this?
           nil)
         )))
 
   (defun my-is-eshell-above-last-prompt ()
     "Non-nil when eshell is above the very last prompt."
     (interactive)
-    (or (> eshell-last-output-end (point)))
-    )
+    (or (> eshell-last-output-end (point))))
 
   (defun my-eshell-evil-insert ()
-    "If the eshell prompt is before point, enter insert state. Otherwise, insert after the prompt"
+    "If the eshell prompt is before point, enter insert state.
+
+Otherwise, insert after the prompt"
     (interactive)
     (if (or (my-is-eshell-before-prompt) (my-is-eshell-above-last-prompt))
-        (progn
-          (my-eshell-hop-to-bottom)
-        ))
+          (my-eshell-hop-to-bottom))
     (evil-insert-state))
 
   (defun my-eshell-evil-append (count &optional vcount skip-empty-lines)
-    "Perform an evil-append if point is after the last prompt. Otherwise, jump to the prompt in insert state."
+    "Perform an evil-append if point is after the last prompt.
+
+Otherwise, jump to the prompt in insert state."
     (interactive
      (list (prefix-numeric-value current-prefix-arg)
            (and (evil-visual-state-p)
@@ -50,17 +53,15 @@
         (progn
           (my-eshell-hop-to-bottom)
           (evil-insert-state))
-        (evil-append count vcount skip-empty-lines)
-      )
-    )
-
-  ;;(require 'esh-alias)
-  ;;(eshell/alias "ll" "ls -l")
-  ;;(eshell/alias "la" "ls -a")
+      (evil-append count vcount skip-empty-lines)))
 
   (evil-set-initial-state 'eshell-mode 'insert)
+
   (defun my-setup-eshell ()
-    "Setup eshell as a function, because it breaks normal Evil keybindings"
+    "Set the eshell bindings and extra triggers.
+
+This is done every time eshell is started, since for some reason doing it
+globally breaks Evil's keybindings."
     (evil-define-key 'normal eshell-mode-map (kbd "RET") 'eshell-send-input)
     (evil-define-key 'insert eshell-mode-map (kbd "RET") 'eshell-send-input)
     (evil-define-key 'normal eshell-mode-map (kbd "i") 'my-eshell-evil-insert)
@@ -68,9 +69,8 @@
     (evil-define-key 'normal eshell-mode-map (kbd "a") 'my-eshell-evil-append)
     (evil-define-key 'visual eshell-mode-map (kbd "a") 'my-eshell-evil-append)
     (evil-define-key 'normal eshell-mode-map (kbd "G") 'my-eshell-hop-to-bottom)
-    (evil-define-key 'normal eshell-mode-map (kbd "G") 'my-eshell-hop-to-bottom)
-    )
-  (add-hook 'eshell-mode-hook 'my-setup-eshell)
-  )
+    (evil-define-key 'normal eshell-mode-map (kbd "G") 'my-eshell-hop-to-bottom))
+
+  (add-hook 'eshell-mode-hook 'my-setup-eshell))
 
 (provide 'my-eshell)
