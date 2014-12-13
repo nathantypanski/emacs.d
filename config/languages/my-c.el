@@ -22,7 +22,15 @@
 
 (defun my-c++-mode-setup ()
   "Setup C++-mode configurations."
-  (google-set-c-style))
+  (interactive)
+  (google-set-c-style)
+  (after 'flycheck
+    (setq flycheck-clang-language-standard "c++11")
+    (after 'projectile 
+      (if (projectile-project-root)
+          (add-to-list 'flycheck-clang-include-path (concat (projectile-project-root) "src")))
+      )))
+
 
 (add-hook 'c-mode-common-hook 'my-c-mode-common-setup)
 (add-hook 'c++-mode-hook 'my-c++-mode-setup)
