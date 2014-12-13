@@ -41,7 +41,7 @@ For use with dired-mode-hook."
 
 (add-hook 'dired-mode-hook 'my-configure-dired)
 
-(setq dired-listing-switches "-aBhl  --group-directories-first")
+(setq dired-listing-switches "-kABhl --group-directories-first")
 
 (defun my-dired-up-directory ()
   "Take dired up one directory, but behave like dired-find-alternate-file"
