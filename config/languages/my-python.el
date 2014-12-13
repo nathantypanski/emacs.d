@@ -87,6 +87,13 @@
                 (progn
                   (python-nav-backward-block 2)
                   (python-nav-end-of-block)))))
+        (defun py-help-at-point (&optional debug)
+          "Print help on symbol at point.
+
+If symbol is defined in current buffer, jump to it's definition
+Optional \\[universal-argument] used for debugging, will prevent deletion of temp file. "
+          (interactive "P")
+          ())
         )
       )
     ))
