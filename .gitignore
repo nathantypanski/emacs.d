@@ -1,5 +1,4 @@
 .emacs_workgroups
-.cache/
 .python-environments/
 .saves/
 .semantic/
