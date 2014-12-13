@@ -2,10 +2,12 @@
 (add-to-list 'load-path (concat user-emacs-directory "elisp"))
 (add-to-list 'load-path (concat user-emacs-directory "config" "/eyecandy"))
 (add-to-list 'load-path (concat user-emacs-directory "config" "/languages"))
+(add-to-list 'load-path (concat user-emacs-directory "/usr/share/emacs/site-lisp"))
 
 (setq package-archives '(("melpa" . "http://melpa.milkbox.net/packages/")
                          ("org" . "http://orgmode.org/elpa/")
                          ("gnu" . "http://elpa.gnu.org/packages/")))
+(setq load-dirs "/usr/share/emacs/site-lisp")
 
 (require 'package)
 (package-initialize)
