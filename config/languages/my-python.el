@@ -12,14 +12,13 @@
       (setq python-indent-offset 4)
       (setq python-indent-trigger-commands nil))
   (progn
+    (when (featurep 'python) (unload-feature 'python t))
+    (autoload 'python-mode "python-mode" "Python editing mode." t)
     (use-package python-mode
-      :ensure python-mode
       :commands python-mode
       :mode "\\.py\\'"
       :init
       (progn
-        (when (featurep 'python) (unload-feature 'python t))
-        (autoload 'python-mode "python-mode" "Python editing mode." t)
         (add-to-list 'auto-mode-alist '("/PYDOCS\\'" . help-mode))
         (add-to-list 'auto-mode-alist '("\\.py\\'" . python-mode))
         (add-to-list 'interpreter-mode-alist '("python" . python-mode))
