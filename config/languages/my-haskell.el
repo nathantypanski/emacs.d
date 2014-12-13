@@ -12,10 +12,11 @@
     (defun my-haskell-autoloads ()
       "Autoloads for entering Haskell-mode."
       (turn-on-haskell-doc-mode)
-      (after 'evil
-        (setq evil-auto-indent nil)
-        )
+      (after 'evil (setq evil-auto-indent nil))
+
+      (electric-indent-mode 0)
       (turn-on-haskell-indentation))
+
     (add-hook 'haskell-mode-hook 'my-haskell-autoloads)
 
     (defun my-haskell-interactive-evil-bol ()
