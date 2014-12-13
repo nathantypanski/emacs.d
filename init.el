@@ -7,7 +7,6 @@
 (setq package-archives '(("melpa" . "http://melpa.milkbox.net/packages/")
                          ("org" . "http://orgmode.org/elpa/")
                          ("gnu" . "http://elpa.gnu.org/packages/")))
-(setq load-dirs "/usr/share/emacs/site-lisp")
 
 (require 'package)
 (package-initialize)
