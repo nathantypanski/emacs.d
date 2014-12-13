@@ -1,3 +1,7 @@
+;; my-eshell.el
+;;
+;; Configure Eshell nicely for Evil.
+
 (after 'evil
 
   (defun my-eshell-hop-to-bottom ()
