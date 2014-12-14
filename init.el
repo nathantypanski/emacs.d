@@ -52,4 +52,4 @@
 (require 'my-sessions)
 (require 'my-leader-keys)
 
-(provide 'my-init)
+(provide 'init)
