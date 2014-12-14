@@ -1,26 +1,10 @@
 
-(defvar my-use-color-theme t
-  "If nil, use color-theme to provide styling. Otherwise, default
-to zenburn.")
-(setq my-use-color-theme nil)
-
-;; Colors!
-(if my-use-color-theme
-    (use-package color-theme
-      :ensure color-theme
-      :init
-      (progn
-        (color-theme-initialize)
-        (require 'color-theme-jellybeans)
-        (color-theme-jellybeans)
-        ))
- (use-package zenburn-theme
+(use-package zenburn-theme
    :ensure zenburn-theme
    :config
    (progn
-     (load-theme 'zenburn t)
-     ))
-  )
+     (unless noninteractive
+     (load-theme 'zenburn t))))
 
 (global-hl-line-mode t)
 (set-face-background 'hl-line "#3e4446")
