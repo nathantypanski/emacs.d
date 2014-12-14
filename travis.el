@@ -1,7 +1,15 @@
+;; travis.el
+;;
+;; Test my emacs configuration using Travis-CI.
+
+;; Set the emacs directory using Travis environment variables to find
+;; our repo.
 (setq user-emacs-directory (concat (getenv "TRAVIS_BUILD_DIR") "/"))
-(print (concat "Using emacs directory: " user-emacs-directory))
 (add-to-list 'load-path user-emacs-directory)
 
-(print (concat "Load path: " user-emacs-directory))
+;; Load my config files.
 (require 'init)
+
+;; Running this tries to byte-compile everything in the home directory,
+;; when executed with a noninteractive Emacs.
 (batch-byte-compile)
