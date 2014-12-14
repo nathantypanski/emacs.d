@@ -1,4 +1,4 @@
-# emacs.d
+# emacs.d [![Build Status](https://travis-ci.org/nathantypanski/emacs.d.svg?branch=travis)](https://travis-ci.org/nathantypanski/emacs.d)
 
 This is my Emacs configuration.
 
