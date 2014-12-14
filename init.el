@@ -51,3 +51,5 @@
 (require 'my-god)
 (require 'my-sessions)
 (require 'my-leader-keys)
+
+(provide 'my-init)
