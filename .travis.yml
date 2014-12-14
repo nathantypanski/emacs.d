@@ -8,4 +8,6 @@ install:
       sudo apt-get -qq install emacs24 emacs24-el;
 
 script:
-    emacs -l "$TRAVIS_BUILD_DIR"'/init.el' --batch  --eval "(batch-byte-compile)"
+    emacs -l "$TRAVIS_BUILD_DIR"'/init.el' --batch  --eval \
+    '(setq user-emacs-directory (getenv "TRAVIS_BUILD_DIR")) \
+     (batch-byte-compile)'
