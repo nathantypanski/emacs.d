@@ -39,10 +39,21 @@
                    ("*buffer*" (name . "\\*.*\\*"))
                    )))
           )
+    (defvar my-ibuffer-use-vc-groups t
+      "Use filter groups detected from vc root when non-nil.
+This will be done with `ibuffer-vc-set-filter-groups-by-vc-root'
+If this is nil, then filter groups will be restored from `ibuffer-saved-filter-groups'.")
+
+
     (defun my-ibuffer-setup ()
-      "Configure ibuffer the way I want it."
+      "Configure ibuffer the way I want it.
+This sets `ibuffer-auto-mode' and restores the chosen filter group settings,
+according to the values of `my-ibuffer-use-vc-groups' and
+`ibuffer-saved-filter-groups'."
       (ibuffer-auto-mode 1)
-      (ibuffer-switch-to-saved-filter-groups "default"))
+      (if my-ibuffer-use-vc-groups
+          (ibuffer-vc-set-filter-groups-by-vc-root)
+        (ibuffer-switch-to-saved-filter-groups "default")))
 
     (add-hook 'ibuffer-mode-hook 'my-ibuffer-setup)
     (setq ibuffer-show-empty-filter-groups nil)
