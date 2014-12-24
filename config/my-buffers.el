@@ -30,8 +30,8 @@
                             (name . ".nasa.")
                             (filename . ".nasa.")))
                    ("wiki" (or
-                            (filename . "/home/nathan/wiki")
-                            (filename . "/home/nathan/.gitit")))
+                            (filename . (concat (getenv "HOME") "/wiki"))
+                            (filename . (concat (getenv "HOME") ".gitit"))))
                    ("notes" (or
                              (name . "^\\*Calendar\\*$")
                              (name . "^diary$")
