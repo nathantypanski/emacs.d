@@ -50,7 +50,17 @@ For use with dired-mode-hook."
     (dired-up-directory)
     (kill-buffer old)))
 
+(defun my-dired-next-line (count)
+  "Move to next line, always staying on the dired filename."
+  (interactive "p")
+  (dired-next-line count)
+  (dired-move-to-filename))
 
+(defun my-dired-previous-line (count)
+  "Move to previous line, always staying on the dired filename."
+  (interactive "p")
+  (dired-previous-line count)
+  (dired-move-to-filename))
 
 (defun my-dired-interact-with-file ()
   "Interact with a dired file!"
@@ -239,22 +249,10 @@ Otherwise, returns nil."
   (evil-define-key 'normal dired-mode-map "/" 'evil-search-forward)
   (evil-define-key 'normal dired-mode-map "n" 'evil-search-next)
   (evil-define-key 'normal dired-mode-map "N" 'evil-search-previous)
+  (evil-define-key 'normal dired-mode-map "j" 'my-dired-next-line)
+  (evil-define-key 'normal dired-mode-map "k" 'my-dired-previous-line)
   (evil-define-key 'normal dired-mode-map (kbd "TAB") 'dired-hide-subdir)
   (evil-define-key 'normal dired-mode-map (kbd "<backspace>") 'my-dired-remove-from-buffer)
   )
-
-(after 'evil
-  (evil-define-motion my-dired-next-line (count)
-    "Move to next line, always staying on the dired filename."
-    (dired-next-line count)
-    (dired-move-to-filename))
-
-  (evil-define-motion my-dired-previous-line (count)
-    "Move to previous line, always staying on the dired filename."
-    (dired-previous-line count)
-    (dired-move-to-filename))
-
-  (evil-define-key 'normal dired-mode-map "j" 'my-dired-next-line)
-  (evil-define-key 'normal dired-mode-map "k" 'my-dired-previous-line))
 
 (provide 'my-dired)
