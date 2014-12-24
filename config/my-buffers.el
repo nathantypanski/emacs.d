@@ -150,7 +150,7 @@
         (kbd "/ X") 'ibuffer-delete-saved-filter-groups
         (kbd "/ \\") 'ibuffer-clear-filter-groups
 
-        (kbd "q") 'ibuffer-quit
+        (kbd "q") 'bury-buffer
         (kbd "h") 'describe-mode
         (kbd "?") 'describe-mode
 
