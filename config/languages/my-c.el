@@ -31,9 +31,14 @@
           (add-to-list 'flycheck-clang-include-path (concat (projectile-project-root) "src")))
       )))
 
+(defun my-c-mode-setup ()
+  "Setup for C mode."
+  (interactive)
+  (setq flycheck-clang-language-standard "c99"))
 
 (add-hook 'c-mode-common-hook 'my-c-mode-common-setup)
 (add-hook 'c++-mode-hook 'my-c++-mode-setup)
+(add-hook 'c-mode-hook 'my-c-mode-setup)
 
 (after 'evil
     (evil-define-key 'insert c-mode-map (kbd "TAB") 'c-indent-line-or-region)
@@ -46,6 +51,7 @@
 
 (use-package cedet
   :ensure cedet
+  :disabled t
   :commands (eassist-switch-h-cpp)
   :init
   (progn

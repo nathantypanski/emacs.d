@@ -21,7 +21,6 @@
 
 (use-package smart-mode-line
   :ensure smart-mode-line
-  :idle
   :config
   (progn
     (setq sml/theme 'dark)
@@ -34,23 +33,10 @@
 
 (use-package rainbow-delimiters
   :ensure rainbow-delimiters
-  :idle
   :init
   (progn
     (rainbow-delimiters-mode-enable)
     ))
-
-(use-package windsize
-  :ensure windsize
-  :init
-  (progn
-    (setq windsize-cols 16)
-    (setq windsize-rows 8)
-    (windsize-default-keybindings)))
-
-;; restore my blood pressure to normal: stop having fill-column=3 in help mode
-
-
 
 (defun my-coding-mode-eyecandy ()
   "Eyecandy specific to programming text editing modes."

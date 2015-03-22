@@ -7,13 +7,12 @@
 ;; In order to work properly, we need to load evil-leader-mode before we load
 ;; evil-mode.
 (use-package evil-leader
-  :commands (evil-leader-mode global-evil-leader-mode)
   :ensure evil-leader
-  :demand evil-leader
   :init
   (progn
+    (global-evil-leader-mode t)
     (evil-leader/set-leader ",")
-    (global-evil-leader-mode t)))
+    ))
 
 
 ;; Here's what we've all been waiting for.
@@ -63,13 +62,6 @@
     (evil-set-initial-state 'diff-mode 'emacs)
     (evil-set-initial-state 'term-mode 'emacs)
     (evil-set-initial-state 'multi-term-mode 'emacs)
-
-    (use-package key-chord
-      :ensure key-chord
-      :diminish key-chord-mode
-      :config
-      (progn
-        (key-chord-mode 1)))
 
     (evil-define-text-object my-evil-next-match (count &optional beg end type)
       "Select next match."
@@ -211,7 +203,12 @@ Loads indent data from my-sensible-to-indent-p and uses that to determine
 whether to call indent-according-to-mode."
       (interactive)
       (if (my-sensible-to-indent-p)
-            (indent-according-to-mode)))
+          ;; Wrap this in a condition-case, because python-mode is broken
+          ;; and spits errors when it is unsure of the indent level
+          ;; for things like empty scripts with a shebang line.
+          (condition-case nil
+              (indent-according-to-mode)
+            (error nil))))
 
     ;; exiting insert mode -> delete trailing whitespace
     (add-hook 'evil-insert-state-exit-hook 'my-exit-insert-state)

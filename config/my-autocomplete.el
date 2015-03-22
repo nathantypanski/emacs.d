@@ -1,5 +1,6 @@
 (use-package company
   :ensure company
+  :disabled t
   :init
   (progn
     (global-company-mode)
@@ -35,6 +36,7 @@
     (define-key company-active-map "\C-w" 'company-show-location)
     (define-key company-active-map "\C-s" 'company-search-candidates)
     (define-key company-active-map "\C-\M-s" 'company-filter-candidates)
+    (setq completion-at-point-functions ())
     )
   )
 

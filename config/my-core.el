@@ -8,7 +8,7 @@
 
 (defvar my-terminal-emulator "urxvtc"
   "Terminal emulator to be spawned with my-spawn-terminal-here.")
-(defvar my-graphical-font "Gohufont-12"
+(defvar my-graphical-font "Gohufont-18"
   "Font used for graphical editing sessions.")
 
 ;; Don't show those horrible buttons
@@ -47,13 +47,6 @@
   (declare (indent defun))
   `(eval-after-load ,feature
      '(progn ,@body)))
-
-;; make sure $PATH is set correctly
-(use-package exec-path-from-shell
-  :ensure exec-path-from-shell)
-
-(ignore-errors ;; windows
-  (exec-path-from-shell-initialize))
 
 ;; Hide startup messages
 (setq inhibit-splash-screen t
