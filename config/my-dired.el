@@ -171,7 +171,6 @@ Otherwise, returns nil."
   (evil-define-key 'normal dired-mode-map "i" 'dired-maybe-insert-subdir)
   (evil-define-key 'normal dired-mode-map "j" 'dired-goto-file)
   (evil-define-key 'normal dired-mode-map "k" 'dired-do-kill-lines)
-  (evil-define-key 'normal dired-mode-map "l" 'dired-do-redisplay)
   (evil-define-key 'normal dired-mode-map "m" 'dired-mark)
   (evil-define-key 'normal dired-mode-map "n" 'dired-next-line)
   (evil-define-key 'normal dired-mode-map "o" 'dired-find-file-other-window)
