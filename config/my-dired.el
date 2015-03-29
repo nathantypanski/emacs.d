@@ -88,11 +88,6 @@ Otherwise, returns nil."
          buffer-read-only)
         (if at-title elt nil)))
 
-(defun my-dired-remove-from-buffer ()
-  (interactive)
-  (if (my-dired-at-title)
-      (dired-kill-subdir)))
-
 (after 'evil
   (evil-define-key 'normal dired-mode-map "#" 'dired-flag-auto-save-files)
   (evil-define-key 'normal dired-mode-map "." 'dired-clean-directory)
@@ -196,7 +191,7 @@ Otherwise, returns nil."
   (evil-define-key 'normal dired-mode-map "(" 'dired-hide-details-mode)
   ;; isearch
   (evil-define-key 'normal dired-mode-map (kbd "M-s a C-s")   'dired-do-isearch)
-  (evil-define-key 'normal dired-mode-map (kbd "M-s a M-C-s") 'dired-do-isearch-regexp)
+  (evil-define-key 'normaj dired-mode-map (kbd "M-s a M-C-s") 'dired-do-isearch-regexp)
   (evil-define-key 'normal dired-mode-map (kbd "M-s f C-s")   'dired-isearch-filenames)
   (evil-define-key 'normal dired-mode-map (kbd "M-s f M-C-s") 'dired-isearch-filenames-regexp)
   ;; misc
@@ -239,7 +234,7 @@ Otherwise, returns nil."
   (evil-define-key 'normal dired-mode-map "j" 'my-dired-next-line)
   (evil-define-key 'normal dired-mode-map "k" 'my-dired-previous-line)
   (evil-define-key 'normal dired-mode-map (kbd "TAB") 'dired-hide-subdir)
-  (evil-define-key 'normal dired-mode-map (kbd "<backspace>") 'my-dired-remove-from-buffer)
+  (evil-define-key 'normal dired-mode-map (kbd "<backspace>") 'dired-kill-subdir)
   )
 
 (provide 'my-dired)
