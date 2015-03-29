@@ -94,12 +94,6 @@ Otherwise, returns nil."
       (dired-kill-subdir)))
 
 (after 'evil
-  ;;
-  ;; These are plain ol' dired bindings, kept here for reference and future
-  ;; modification.
-  ;;
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
   (evil-define-key 'normal dired-mode-map "#" 'dired-flag-auto-save-files)
   (evil-define-key 'normal dired-mode-map "." 'dired-clean-directory)
   (evil-define-key 'normal dired-mode-map "~" 'dired-flag-backup-files)
@@ -225,13 +219,8 @@ Otherwise, returns nil."
   (evil-define-key 'normal dired-mode-map "\C-tf" 'image-dired-mark-tagged-files)
   (evil-define-key 'normal dired-mode-map "\C-t\C-t" 'image-dired-dired-toggle-marked-thumbs)
   (evil-define-key 'normal dired-mode-map "\C-te" 'image-dired-dired-edit-comment-and-tags)
-  ;; encryption and decryption (epa-dired)
 
-  ;;
   ;; My bindings.
-  ;;
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
   (evil-define-key 'normal dired-mode-map (kbd "C-j") 'dired-next-subdir)
   (evil-define-key 'normal dired-mode-map (kbd "C-k") 'dired-prev-subdir)
   (evil-define-key 'normal dired-mode-map "h" 'my-dired-up-directory)
