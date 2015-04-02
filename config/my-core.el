@@ -3,7 +3,6 @@
 ;; The big, beating heart of my little corner of Emacs.
 ;; General, mostly-plugin-independent settings go here.
 
-(eval-when-compile (require 'cl))
 (require 'cl-lib)
 
 (defvar my-terminal-emulator "urxvtc"
