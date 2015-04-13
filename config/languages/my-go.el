@@ -3,7 +3,6 @@
 ;; Settings for the Go programming language.
 
 (use-package go-mode
-  :commands go-mode godoc
   :mode "\\.go\\'"
   :config
   (progn
