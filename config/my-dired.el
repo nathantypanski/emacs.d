@@ -7,7 +7,6 @@
     (setq-default save-place t)))
 
 (use-package savehist
-  :idle
   :config
     (progn
         (setq savehist-file (concat user-emacs-directory ".cache/savehist")

@@ -21,7 +21,6 @@
 
 (use-package smart-mode-line
   :ensure smart-mode-line
-  :idle
   :config
   (progn
     (setq sml/theme 'dark)
@@ -34,7 +33,6 @@
 
 (use-package rainbow-delimiters
   :ensure rainbow-delimiters
-  :idle
   :init
   (progn
     (rainbow-delimiters-mode-enable)
