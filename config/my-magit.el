@@ -9,6 +9,9 @@
   :ensure magit
   :config
   (progn
+    (setq magit-auto-revert-mode nil)
+    ;; tell magit not to complain about auto-revert-mode being a new setting
+    (setq magit-last-seen-setup-instructions "1.4.0")
     (after 'evil
       (evil-set-initial-state 'magit-mode 'normal)
       (evil-set-initial-state 'magit-commit-mode 'normal)
