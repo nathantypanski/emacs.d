@@ -66,7 +66,6 @@
 
     (use-package key-chord
       :ensure key-chord
-      :diminish key-chord-mode
       :config
       (progn
         (key-chord-mode 1)))
