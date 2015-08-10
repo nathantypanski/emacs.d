@@ -8,7 +8,11 @@
 
 (defvar my-terminal-emulator "urxvtc"
   "Terminal emulator to be spawned with my-spawn-terminal-here.")
-(defvar my-graphical-font "Gohufont-12"
+
+(defvar my-graphical-font
+  (if (eq system-type 'darwin)
+      "Inconsolata 18"
+    "Gohufont-12")
   "Font used for graphical editing sessions.")
 
 ;; Don't show those horrible buttons
@@ -50,7 +54,12 @@
 
 ;; make sure $PATH is set correctly
 (use-package exec-path-from-shell
-  :ensure exec-path-from-shell)
+  :ensure exec-path-from-shell
+  :config
+  (progn
+    (exec-path-from-shell-copy-env "PATH")
+    (exec-path-from-shell-copy-env "PYTHONPATH")
+))
 
 (ignore-errors ;; windows
   (exec-path-from-shell-initialize))
@@ -200,5 +209,17 @@ This command only has an effect on graphical frames."
   (set-fill-column 80))
 
 (add-hook 'help-mode-hook 'my-setup-help-mode)
+
+;; Thanks
+;; http://www.jesshamrick.com/2013/03/31/macs-and-emacs/
+;; for the my-system-is-x functions below.
+(defun my-system-is-mac ()
+  (interactive)
+  (string-equal system-type "darwin"))
+
+(defun my-system-is-linux ()
+  (interactive)
+  (string-equal system-type "gnu/linux"))
+
 
 (provide 'my-core)
