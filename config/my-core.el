@@ -11,7 +11,7 @@
 
 (defvar my-graphical-font
   (if (eq system-type 'darwin)
-      "Inconsolata 12"
+      "Terminus 12"
     "Gohufont-12")
   "Font used for graphical editing sessions.")
 
