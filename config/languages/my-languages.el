@@ -12,6 +12,7 @@
 (require 'my-org)
 (require 'my-javascript)
 (require 'my-jade)
+(require 'my-yaml)
 (require 'my-snippets)
 
 
