@@ -6,13 +6,13 @@
 (eval-when-compile (require 'cl))
 (require 'cl-lib)
 
-(defvar my-terminal-emulator "urxvtc"
+(defvar my-terminal-emulator "urxvt"
   "Terminal emulator to be spawned with my-spawn-terminal-here.")
 
 (defvar my-graphical-font
   (if (eq system-type 'darwin)
       "Terminus 12"
-    "Gohufont-12")
+    "Terminus-12")
   "Font used for graphical editing sessions.")
 
 ;; Don't show those horrible buttons
