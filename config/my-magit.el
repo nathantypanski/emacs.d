@@ -178,6 +178,7 @@
       (evil-define-key 'normal magit-process-mode-map (kbd "k") 'magit-goto-previous-section)
 
       (evil-define-key 'normal magit-branch-manager-mode-map (kbd "j") 'magit-goto-next-section)
-      (evil-define-key 'normal magit-branch-manager-mode-map (kbd "k") 'magit-goto-previous-section))))
+      (evil-define-key 'normal magit-branch-manager-mode-map (kbd "k") 'magit-goto-previous-section)
+      (setq magit-auto-revert-mode nil))))
 
 (provide 'my-magit)
