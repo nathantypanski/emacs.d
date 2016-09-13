@@ -7,7 +7,7 @@
 
 (defvar my-terminal-emulator "urxvtc"
   "Terminal emulator to be spawned with my-spawn-terminal-here.")
-(defvar my-graphical-font "Gohufont-18"
+(defvar my-graphical-font "Gohufont-16"
   "Font used for graphical editing sessions.")
 
 ;; Don't show those horrible buttons
