@@ -271,10 +271,4 @@ whether to call indent-according-to-mode."
     (evil-define-key 'motion python-mode-map "]}" 'evil-next-close-brace)
     ))
 
-(use-package evil-jumper
-  :ensure evil-jumper
-  :init
-  ;; C-i and C-o don't work unless we load it again like this ...
-  (require 'evil-jumper))
-
 (provide 'my-evil)

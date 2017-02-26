@@ -6,9 +6,13 @@
 (eval-when-compile (require 'cl))
 (require 'cl-lib)
 
-(defvar my-terminal-emulator "urxvtc"
+(defvar my-terminal-emulator "urxvt"
   "Terminal emulator to be spawned with my-spawn-terminal-here.")
-(defvar my-graphical-font "Gohufont-12"
+
+(defvar my-graphical-font
+  (if (eq system-type 'darwin)
+      "Terminus 10"
+    "Terminus-10")
   "Font used for graphical editing sessions.")
 
 ;; Don't show those horrible buttons
@@ -50,7 +54,12 @@
 
 ;; make sure $PATH is set correctly
 (use-package exec-path-from-shell
-  :ensure exec-path-from-shell)
+  :ensure exec-path-from-shell
+  :config
+  (progn
+    (exec-path-from-shell-copy-env "PATH")
+    (exec-path-from-shell-copy-env "PYTHONPATH")
+))
 
 (ignore-errors ;; windows
   (exec-path-from-shell-initialize))
@@ -120,6 +129,17 @@
 ;; Show me the new saved file if the contents change on disk when editing.
 (global-auto-revert-mode 1)
 
+;; Thanks
+;; http://www.jesshamrick.com/2013/03/31/macs-and-emacs/
+;; for the my-system-is-x functions below.
+(defun my-system-is-mac ()
+  (interactive)
+  (string-equal system-type "darwin"))
+
+(defun my-system-is-linux ()
+  (interactive)
+  (string-equal system-type "gnu/linux"))
+
 ;; Repurposed from
 ;; <https://github.com/bling/dotemacs/blob/master/config/init-core.el>
 (defun my-find-file-check-large-file ()
@@ -186,13 +206,14 @@ FONT is the name of a xft font, like `Monospace-10'."
   "Set the frame font to the font name in the variable my-graphical-font.
 This command only has an effect on graphical frames."
   (interactive)
-  (if (eq system-type 'darwin)
+  (if (my-system-is-mac)
     (set-face-attribute 'default nil
        :family "Monaco" :height 100 :weight 'normal))
   (when window-system
     (my-set-window-font my-graphical-font)))
 
 (add-hook 'after-make-frame-functions 'my-use-default-font)
+(my-use-default-font)
 
 (global-set-key (kbd "C-x C-b") 'ibuffer)
 (global-set-key (kbd "C-x C-k") 'kill-this-buffer)
@@ -205,7 +226,7 @@ This command only has an effect on graphical frames."
 
 (add-hook 'help-mode-hook 'my-setup-help-mode)
 
-(when (eq system-type 'darwin)
+(when (my-system-is-mac)
   (require 'ls-lisp)
   (setq ls-lisp-use-insert-directory-program nil))
 

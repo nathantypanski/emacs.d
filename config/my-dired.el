@@ -1,4 +1,21 @@
+
+;; ugly workaround because OSX ls doesn't support the -X switch
+;;
+;; ref:
+;; http://stackoverflow.com/questions/4076360/error-in-dired-sorting-on-os-x
+;;(when (eq system-type 'darwin)
+;;  (require 'ls-lisp)
+;;    (setq ls-lisp-use-insert-directory-program nil))
+
 (put 'dired-find-alternate-file 'disabled nil)
+
+;; on OSX, dired's ls binary doesn't support some of the required options.
+;; Thankfully, I use Homebrew, so I can hack around this and tell it to use
+;; the proper ls.
+(if (not (my-system-is-mac))
+  (setq dired-listing-switches "-kABhl --group-directories-first")
+  (setq dired-listing-switches "-kABhl")
+  )
 
 (use-package saveplace
   :config
@@ -39,8 +56,6 @@ For use with dired-mode-hook."
   (dired-omit-mode 1))
 
 (add-hook 'dired-mode-hook 'my-configure-dired)
-
-(setq dired-listing-switches "-kABhl --group-directories-first")
 
 (defun my-dired-up-directory ()
   "Take dired up one directory, but behave like dired-find-alternate-file"
@@ -235,8 +250,8 @@ Otherwise, returns nil."
   (evil-define-key 'normal dired-mode-map (kbd "C-j") 'dired-next-subdir)
   (evil-define-key 'normal dired-mode-map (kbd "C-k") 'dired-prev-subdir)
   (evil-define-key 'normal dired-mode-map "h" 'my-dired-up-directory)
-  (evil-define-key 'normal dired-mode-map "l" 'my-dired-interact-with-file)
-  (evil-define-key 'normal dired-mode-map "L" 'dired-find-alternate-file)
+  (evil-define-key 'normal dired-mode-map "L" 'my-dired-interact-with-file)
+  (evil-define-key 'normal dired-mode-map "l" 'dired-find-alternate-file)
   (evil-define-key 'normal dired-mode-map "a" 'ag-dired)
   (evil-define-key 'normal dired-mode-map "o" 'dired-sort-toggle-or-edit)
   (evil-define-key 'normal dired-mode-map "v" 'dired-toggle-marks)
