@@ -186,7 +186,11 @@ FONT is the name of a xft font, like `Monospace-10'."
   "Set the frame font to the font name in the variable my-graphical-font.
 This command only has an effect on graphical frames."
   (interactive)
-  (when window-system (my-set-window-font my-graphical-font)))
+  (if (eq system-type 'darwin)
+    (set-face-attribute 'default nil
+       :family "Monaco" :height 100 :weight 'normal))
+  (when window-system
+    (my-set-window-font my-graphical-font)))
 
 (add-hook 'after-make-frame-functions 'my-use-default-font)
 
@@ -200,5 +204,9 @@ This command only has an effect on graphical frames."
   (set-fill-column 80))
 
 (add-hook 'help-mode-hook 'my-setup-help-mode)
+
+(when (eq system-type 'darwin)
+  (require 'ls-lisp)
+  (setq ls-lisp-use-insert-directory-program nil))
 
 (provide 'my-core)
