@@ -34,7 +34,7 @@
 (setq require-final-newline t)
 
 ;; I never look at right-side fringes. Do you?
-(set-fringe-style '(8 . 0))
+(if (fboundp 'set-fringe-style) (set-fringe-style '(8 . 0)))
 
 ;; don't put intitial text in scratch buffer
 (setq initial-scratch-message nil)
