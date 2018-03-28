@@ -122,11 +122,9 @@
     (add-hook 'ido-setup-hook 'my-setup-ido)
 
 
-    (use-package ido-ubiquitous
-      :ensure ido-ubiquitous
-      :config
-      (progn
-        (ido-ubiquitous-mode 1)))
+    (use-package ido-completing-read+
+      :ensure ido-completing-read+
+      :config)
 
 
     (use-package flx-ido
