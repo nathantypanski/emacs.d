@@ -12,6 +12,7 @@
     (setq flycheck-check-syntax-automatically '(save mode-enabled))
     (setq flycheck-checkers (delq 'emacs-lisp-checkdoc flycheck-checkers))
     (setq flycheck-checkers (delq 'html-tidy flycheck-checkers))
+    (setq flycheck-rust-cargo-executable "/usr/bin/cargo")
 
     (defun my-flycheck-list-errors ()
       "Jump to flycheck errors and switch to the errorlist buffer"
