@@ -11,7 +11,7 @@
 
 (defvar my-graphical-font
   (if (eq system-type 'darwin)
-      "Terminus 10"
+      "Terminus 14"
     "xos4 Terminus 10")
   "Font used for graphical editing sessions.")
 
@@ -199,7 +199,8 @@ name of the buffer."
   "Set the frame font to FONT.
 FONT is the name of a xft font, like `Monospace-10'."
   (interactive "sFont: ")
-    (set-face-attribute 'default nil :font font)
+  ;; (set-face-attribute 'default nil :height 125 :family "Fira Mono"))
+    (set-face-attribute 'default nil :height 120 :font font)
     (set-frame-font font nil t))
 
 (defun my-use-default-font (&optional frame)
