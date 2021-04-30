@@ -114,9 +114,9 @@
        (define-key ido-file-dir-completion-map (kbd "C-i") 'ido-select-text)
        (define-key ido-completion-map (kbd "RET") 'exit-minibuffer)
        (define-key ido-completion-map (kbd "TAB") 'ido-complete)
-       (define-key ido-completion-map (kbd "C-j") 'ido-next-match)
+       (define-key ido-completion-map (kbd "C-n") 'ido-next-match)
        (define-key ido-completion-map (kbd "C-i") 'ido-select-text)
-       (define-key ido-completion-map (kbd "C-k") 'ido-prev-match)
+       (define-key ido-completion-map (kbd "C-p") 'ido-prev-match)
        (define-key ido-completion-map (kbd "M-p") 'ido-toggle-prefix))
 
     (add-hook 'ido-setup-hook 'my-setup-ido)
