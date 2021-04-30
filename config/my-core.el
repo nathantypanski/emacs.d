@@ -6,12 +6,12 @@
 (eval-when-compile (require 'cl))
 (require 'cl-lib)
 
-(defvar my-terminal-emulator "urxvt"
+(defvar my-terminal-emulator "alacritty"
   "Terminal emulator to be spawned with my-spawn-terminal-here.")
 
 (defvar my-graphical-font
   (if (eq system-type 'darwin)
-      "Terminus 14"
+      "Terminus 10"
     "xos4 Terminus 10")
   "Font used for graphical editing sessions.")
 
