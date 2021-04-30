@@ -28,7 +28,7 @@
         (setq py-electric-comment-p nil)
         (setq py-max-help-buffer-p nil)
         (setq py-electric-comment-add-space-p nil)
-        (setq py-tab-indent nil)
+        (setq py-tab-indent t)
         (setq py-smart-indentation t)
         (setq py-return-key 'py-newline-and-indent)
         (setq py-complete-function nil)
