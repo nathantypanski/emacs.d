@@ -50,6 +50,5 @@
 (require 'my-god)
 (require 'my-sessions)
 (require 'my-leader-keys)
-(require 'my-docker)
 
 (provide 'init)

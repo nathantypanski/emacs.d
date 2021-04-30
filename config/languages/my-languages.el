@@ -14,6 +14,7 @@
 (require 'my-jade)
 (require 'my-yaml)
 (require 'my-snippets)
+(require 'my-docker)
 
 
 (provide 'my-languages)
