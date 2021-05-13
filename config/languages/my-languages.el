@@ -15,6 +15,6 @@
 (require 'my-yaml)
 (require 'my-snippets)
 (require 'my-docker)
-
+(require 'my-nix)
 
 (provide 'my-languages)
