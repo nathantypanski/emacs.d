@@ -94,7 +94,7 @@
  '(org-startup-truncated nil)
  '(org-use-sub-superscripts '{})
  '(package-selected-packages
-   '(nix-env-install nix-haskell-mode nix-mode go-mode docker dockerfile-mode dockefile-mode god-mode evil-jumper key-chord evil-surround evil-matchit evil-nerd-commenter evil-leader android-mode magit yasnippet yaml-mode jade-mode js2-mode markdown-mode haskell-mode scss-mode rust-mode ess ein jedi cider clojure-mode google-c-style helm-flycheck helm-swoop helm-projectile helm flycheck expand-region guide-key ace-jump-mode ag neotree ibuffer-vc projectile ido-vertical-mode flx-ido ido-ubiquitous smex company ggtags elisp-slime-nav slime keychain-environment powerline-evil powerline rainbow-delimiters rainbow-mode smart-mode-line zenburn-theme exec-path-from-shell use-package))
+   '(pyvenv epc nix-env-install nix-haskell-mode nix-mode go-mode docker dockerfile-mode dockefile-mode god-mode evil-jumper key-chord evil-surround evil-matchit evil-nerd-commenter evil-leader android-mode magit yasnippet yaml-mode jade-mode js2-mode markdown-mode haskell-mode scss-mode rust-mode ess ein jedi cider clojure-mode google-c-style helm-flycheck helm-swoop helm-projectile helm flycheck expand-region guide-key ace-jump-mode ag neotree ibuffer-vc projectile ido-vertical-mode flx-ido ido-ubiquitous smex company ggtags elisp-slime-nav slime keychain-environment powerline-evil powerline rainbow-delimiters rainbow-mode smart-mode-line zenburn-theme exec-path-from-shell use-package))
  '(preview-TeX-style-dir "/home/nathan/.emacs.d/elpa/auctex-11.87.2/latex")
  '(python-indent-guess-indent-offset nil)
  '(python-indent-offset 0)
