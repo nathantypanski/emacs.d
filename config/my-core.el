@@ -10,9 +10,9 @@
   "Terminal emulator to be spawned with my-spawn-terminal-here.")
 
 (defvar my-graphical-font
-  (if (eq system-type 'darwin)
-      "Terminus 10"
-    "xos4 Terminus 10")
+  (cond
+    ((eq system-type 'darwin) "Terminus 10")
+    ((eq system-type 'gnu/linux) "Terminus 16"))
   "Font used for graphical editing sessions.")
 
 ;; Don't show those horrible buttons
