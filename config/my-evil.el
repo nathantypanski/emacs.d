@@ -271,4 +271,8 @@ whether to call indent-according-to-mode."
     (evil-define-key 'motion python-mode-map "]}" 'evil-next-close-brace)
     ))
 
+(use-package evil-collection
+  :ensure evil-collection
+  :demand evil-collection)
+
 (provide 'my-evil)
