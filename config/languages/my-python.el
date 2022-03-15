@@ -126,8 +126,4 @@ Optional \\[universal-argument] used for debugging, will prevent deletion of tem
     ))
 
 
-(use-package ein
-  :ensure ein
-  :config (progn))
-
 (provide 'my-python)

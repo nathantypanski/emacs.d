@@ -4,7 +4,7 @@
 (add-to-list 'load-path (concat user-emacs-directory "config" "/languages"))
 (add-to-list 'load-path "/usr/share/emacs/site-lisp")
 
-(setq package-archives '(("melpa" . "https://melpa.org/packages/")
+(setq package-archives '(("melpa" . "https://stable.melpa.org/packages/")
                          ("gnu" . "https://elpa.gnu.org/packages/")))
 
 (require 'package)
@@ -22,7 +22,6 @@
 (require 'my-eyecandy)
 (require 'my-keychain)
 (require 'my-dired)
-(require 'my-bookmarks)
 (require 'my-buffers)
 (require 'my-elisp)
 (require 'my-tags)

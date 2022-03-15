@@ -25,6 +25,7 @@
 
     (evil-mode 1)
     (setq evil-want-C-u-scroll t)
+    (setq evil-want-C-u-delete nil)
     (setq evil-want-C-w-in-emacs-state t)
     (setq evil-search-module        'isearch)
     (setq evil-magic                'very-magic)
@@ -273,6 +274,9 @@ whether to call indent-according-to-mode."
 
 (use-package evil-collection
   :ensure evil-collection
-  :demand evil-collection)
+  :config (progn
+    (evil-collection-init)
+
+))
 
 (provide 'my-evil)

@@ -1,11 +1,6 @@
-(use-package google-c-style
-  :ensure google-c-style)
-
 (setq c-default-style '((java-mode . "java")
                         (awk-mode . "awk")
                         (other . "linux")))
-
-
 
 (defun my-set-evil-shift-width ()
   "Set Evil's shift width for C editing."

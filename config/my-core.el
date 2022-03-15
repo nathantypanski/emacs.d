@@ -231,4 +231,6 @@ This command only has an effect on graphical frames."
   (require 'ls-lisp)
   (setq ls-lisp-use-insert-directory-program nil))
 
+(global-linum-mode 1)
+
 (provide 'my-core)
