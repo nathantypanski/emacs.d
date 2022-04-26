@@ -3,6 +3,8 @@
 ;; Settings for ostracizing me from both the Emacs and Vim communities.
 ;; a.k.a. evil-mode
 
+;; https://github.com/emacs-evil/evil-collection/issues/60
+(setq evil-want-keybinding nil)
 
 ;; In order to work properly, we need to load evil-leader-mode before we load
 ;; evil-mode.
