@@ -1,3 +1,5 @@
+;; https://www.emacswiki.org/emacs/unbound.el
+
 ;; Quiet the byte compiler
 (defvar unbound-keys nil
 "Used internally by `unbound-keys'.")
@@ -99,7 +101,7 @@ Currently KEY must be of the [(control shift ?s) ...] format."
 		 ((and (>= key ?0) (<= key ?9)) 2)
 		 ((memq key '(?\b ?\r ?\ )) 1)
 		 ;; Unshifted punctuation (US keyboards)
-		 ((memq key '(?` ?- ?= ?\t ?[ ?] ?\\ ?\; ?' ?, ?. ?/)) 3)
+		 ((memq key '(?` ?- ?= ?\t ?\[ ?\] ?\\ ?\; ?' ?, ?. ?/)) 3)
 		 ;; Other letters -- presume that one's keyboard has them if
 		 ;; we're going to consider binding them.
 		 ((let (case-fold-search)
