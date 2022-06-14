@@ -3,8 +3,7 @@
 ;; The big, beating heart of my little corner of Emacs.
 ;; General, mostly-plugin-independent settings go here.
 
-(eval-when-compile (require 'cl))
-(require 'cl-lib)
+(eval-when-compile (require 'cl-lib))
 
 (defvar my-terminal-emulator "alacritty"
   "Terminal emulator to be spawned with my-spawn-terminal-here.")
