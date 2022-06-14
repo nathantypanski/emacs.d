@@ -37,25 +37,4 @@
     (evil-define-key 'normal c++-mode-map (kbd "K")   'my-woman-entry)
     (evil-define-key 'insert c++-mode-map (kbd "<backspace>") 'backward-delete-char-untabify))
 
-
-
-(use-package cedet
-  :ensure cedet
-  :commands (eassist-switch-h-cpp)
-  :init
-  (progn
-    (after 'evil
-      (evil-define-key 'normal c++-mode-map (kbd "SPC o") 'eassist-switch-h-cpp)
-      (evil-define-key 'normal c-mode-map   (kbd "SPC o") 'eassist-switch-h-c)
-      (evil-set-initial-state 'eieio-custom-mode 'emacs))
-    (require 'eassist)
-    (setq eassist-header-switches '(("h" . ("cpp" "cc" "c"))
-                                    ("hpp" . ("cpp" "cc"))
-                                    ("cpp" . ("h" "hpp"))
-                                    ("c" . ("h"))
-                                    ("C" . ("H"))
-                                    ("H" . ("C" "CPP" "CC"))
-                                    ("cc" . ("h" "hh" "hpp"))
-                                    ("hh" . ("cc" "cpp"))))))
-
 (provide 'my-c)
