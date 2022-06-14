@@ -215,9 +215,22 @@ whether to call indent-according-to-mode."
       (if (my-sensible-to-indent-p)
             (indent-according-to-mode)))
 
+    (defun enable-tabs ()
+      "Enable tabs in a file."
+        (interactive)
+        (setq indent-tabs-mode t)
+        (define-key evil-insert-state-map (kbd "TAB") 'tab-to-tab-stop))
+
+    (defun disable-tabs ()
+      "Enable tabs in a file."
+        (interactive)
+        (setq indent-tabs-mode nil)
+        (define-key evil-insert-state-map (kbd "TAB") 'indent-for-tab-command))
+
     ;; exiting insert mode -> delete trailing whitespace
     (add-hook 'evil-insert-state-exit-hook 'my-exit-insert-state)
     (add-hook 'evil-insert-state-entry-hook 'my-enter-insert-state)
+
 
     (define-key evil-normal-state-map (kbd "RET") 'my-append-and-indent)
     (define-key evil-normal-state-map (kbd "<S-return>") 'my-append-and-indent)
