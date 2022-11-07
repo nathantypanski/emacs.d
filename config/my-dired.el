@@ -39,15 +39,15 @@
           recentf-max-menu-items 500)
     (recentf-mode +1)))
 
-(use-package dired-x
-  :init
-  (progn
-    (defun my-load-dired-x ()
-      "Load dired-x.
-
-For use on dired-load-hook"
-        (load "dired-x"))
-    (add-hook 'dired-load-hook 'my-load-dired-x)))
+;; (use-package dired-x
+;;   :init
+;;   (progn
+;;     (defun my-load-dired-x ()
+;;       "Load dired-x.
+;; 
+;; For use on dired-load-hook"
+;;         (load "dired-x"))
+;;     (add-hook 'dired-load-hook 'my-load-dired-x)))
 
 (defun my-configure-dired ()
   "Setup dired and dired-x.
