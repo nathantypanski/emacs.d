@@ -108,4 +108,8 @@ Otherwise, returns nil."
   (if (my-dired-at-title)
       (dired-kill-subdir)))
 
+;; TODO: make this work
+;; (after 'evil
+;;  (evil-define-key 'normal evil-normal-state-map (kbd "R") 'revert-buffer))
+
 (provide 'my-dired)
