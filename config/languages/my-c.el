@@ -13,6 +13,7 @@
 
 (defun my-c-mode-common-setup ()
   "Setup C/C++-mode common configurations."
+  ;; (setq flycheck-clang-language-standard "c17")
   (c-set-offset 'case-label '+))
 
 (defun my-c++-mode-setup ()
@@ -20,8 +21,8 @@
   (interactive)
   (google-set-c-style)
   (after 'flycheck
-    (setq flycheck-clang-language-standard "c++11")
-    (after 'projectile 
+    ;; (setq flycheck-clang-language-standard "c++11")
+    (after 'projectile
       (if (projectile-project-root)
           (add-to-list 'flycheck-clang-include-path (concat (projectile-project-root) "src")))
       )))
