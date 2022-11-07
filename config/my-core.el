@@ -232,4 +232,7 @@ This command only has an effect on graphical frames."
 
 (global-linum-mode 1)
 
+;; TODO: is this a plugin or can we turn it on here?
+(global-undo-tree-mode)
+
 (provide 'my-core)
