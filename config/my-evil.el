@@ -284,14 +284,14 @@ whether to call indent-according-to-mode."
     (evil-define-key 'motion python-mode-map "[(" 'evil-previous-open-paren)
     (evil-define-key 'motion python-mode-map "])" 'evil-next-close-paren)
     (evil-define-key 'motion python-mode-map "[{" 'evil-previous-open-brace)
-    (evil-define-key 'motion python-mode-map "]}" 'evil-next-close-brace)
-    ))
+    (evil-define-key 'motion python-mode-map "]}" 'evil-next-close-brace)))
 
 (use-package evil-collection
   :ensure evil-collection
   :config (progn
-    (evil-collection-init)
+    (evil-collection-init)))
 
-))
+(global-undo-tree-mode)
+
 
 (provide 'my-evil)
