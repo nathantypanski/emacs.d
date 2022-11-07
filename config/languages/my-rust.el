@@ -23,4 +23,13 @@
     )
   )
 
+(after 'lsp-mode
+  (setq lsp-rust-analyzer-server-command
+        (list
+         (substring
+          (shell-command-to-string "/home/ndt/.nix-profile/bin/rust-analyzer")
+          0 -1)))
+)
+
+
 (provide 'my-rust)
