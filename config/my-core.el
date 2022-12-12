@@ -230,7 +230,7 @@ This command only has an effect on graphical frames."
   (require 'ls-lisp)
   (setq ls-lisp-use-insert-directory-program nil))
 
-(global-linum-mode 1)
+;; (global-linum-mode 1)
 
 ;; TODO: is this a plugin or can we turn it on here?
 (global-undo-tree-mode)
