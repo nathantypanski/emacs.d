@@ -11,7 +11,7 @@
 (defvar my-graphical-font
   (cond
     ((eq system-type 'darwin) "Terminus 10")
-    ((eq system-type 'gnu/linux) "Terminus 14"))
+    ((eq system-type 'gnu/linux) "Terminus 16"))
   "Font used for graphical editing sessions.")
 
 ;; Don't show those horrible buttons
