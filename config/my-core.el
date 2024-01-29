@@ -239,4 +239,6 @@ This command only has an effect on graphical frames."
   :init
   (progn (global-undo-tree-mode)))
 
+(global-display-line-numbers-mode)
+
 (provide 'my-core)
