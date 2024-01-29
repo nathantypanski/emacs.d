@@ -1,5 +1,6 @@
 ;; (require 'my-lsp)
 (require 'my-tree-sitter)
+(require 'my-lsp)
 
 (require 'my-c)
 (require 'my-clojure)

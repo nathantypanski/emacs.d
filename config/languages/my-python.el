@@ -93,37 +93,6 @@
 If symbol is defined in current buffer, jump to it's definition
 Optional \\[universal-argument] used for debugging, will prevent deletion of temp file. "
           (interactive "P")
-          ())
-        )
-      )
-    ))
-
-
-
-(use-package jedi
-  :commands jedi:setup
-  :ensure jedi
-  :init
-  (progn
-    (add-hook 'python-mode-hook 'jedi:setup)
-    )
-  :config
-  (progn
-    (setq jedi:complete-on-dot t)
-    (setq jedi:doc-mode 'help-mode.)
-    (defun my-jump-to-python-docs (w)
-      "Jump to a pane and do py-documentation"
-      (interactive (list (let* ((word (thing-at-point 'word)))
-                           word)))
-      (jedi:show-doc)
-      (switch-to-buffer-other-window "*jedi:doc*" t))
-
-    (after 'evil
-      (evil-define-key 'normal python-mode-map (kbd "K") 'my-jump-to-python-docs))
-    (after 'evil-leader
-      (evil-leader/set-key-for-mode 'python-mode "." 'jedi:goto-definition)
-      )
-    ))
-
+          ())))))
 
 (provide 'my-python)

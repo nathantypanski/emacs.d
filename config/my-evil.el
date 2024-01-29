@@ -291,7 +291,6 @@ whether to call indent-according-to-mode."
   :config (progn
     (evil-collection-init)))
 
-(global-undo-tree-mode)
 
 
 (provide 'my-evil)

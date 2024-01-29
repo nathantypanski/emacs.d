@@ -233,6 +233,10 @@ This command only has an effect on graphical frames."
 ;; (global-linum-mode 1)
 
 ;; TODO: is this a plugin or can we turn it on here?
-(global-undo-tree-mode)
+
+(use-package undo-tree
+  :ensure undo-tree
+  :init
+  (progn (global-undo-tree-mode)))
 
 (provide 'my-core)
