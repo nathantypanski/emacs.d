@@ -36,7 +36,7 @@
 (require 'my-elisp)
 (require 'my-tags)
 (require 'my-autocomplete)
-(require 'my-ido)
+(require 'my-completion)
 (require 'my-projects)
 (require 'my-ag)
 (require 'my-interaction)
