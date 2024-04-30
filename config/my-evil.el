@@ -291,6 +291,4 @@ whether to call indent-according-to-mode."
   :config (progn
     (evil-collection-init)))
 
-
-
 (provide 'my-evil)

@@ -236,9 +236,9 @@ This command only has an effect on graphical frames."
 
 (use-package undo-tree
   :ensure undo-tree
-  :init
-  (progn (global-undo-tree-mode)))
-
+  :config (progn
+    (global-undo-tree-mode)
+    (setq undo-tree-auto-save-history nil)))
 (global-display-line-numbers-mode)
 
 (provide 'my-core)
