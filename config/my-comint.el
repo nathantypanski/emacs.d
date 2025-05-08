@@ -50,8 +50,7 @@
     (comint-bol)
     (comint-previous-input n)
     (evil-end-of-line)
-    (evil-forward-char 1)
-    )
+    (evil-forward-char 1))
 
   (add-hook 'R-mode-hook 'ansi-color-for-comint-mode-on)
   (setq comint-prompt-read-only t)
@@ -88,7 +87,6 @@
   (evil-define-key 'normal comint-mode-map "\C-c\C-s"    'comint-write-output)
   (evil-define-key 'normal comint-mode-map "\C-c."    'comint-insert-previous-argument)
   ;; Mouse Buttons:
-  (evil-define-key 'normal comint-mode-map [mouse-2]     'comint-insert-input)
-  )
+  (evil-define-key 'normal comint-mode-map [mouse-2]     'comint-insert-input))
 
 (provide 'my-comint)

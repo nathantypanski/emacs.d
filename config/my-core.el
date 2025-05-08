@@ -6,7 +6,7 @@
 (eval-when-compile (require 'cl))
 (require 'cl-lib)
 
-(defvar my-terminal-emulator "alacritty"
+(defvar my-terminal-emulator "foot"
   "Terminal emulator to be spawned with my-spawn-terminal-here.")
 
 (defvar my-graphical-font
@@ -14,6 +14,9 @@
       "Terminus 10"
     "xos4 Terminus 10")
   "Font used for graphical editing sessions.")
+
+;; evil-collection requires this set before loading evil
+(setq evil-want-keybinding nil)
 
 ;; Don't show those horrible buttons
 (tool-bar-mode -1)

@@ -96,10 +96,6 @@
                             (powerline-render lhs)
                             (powerline-fill mode-line
                                             (powerline-width rhs))
-                            (powerline-render rhs))))))
-        )
-      )
-    )
-  )
+                            (powerline-render rhs))))))))))
 
 (provide 'my-modeline)

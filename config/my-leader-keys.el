@@ -5,7 +5,7 @@
 
 (evil-leader/set-key
   "$"          'linum-mode
-  "qq"         'delete-window
+  "qq"         'kill-current-buffer
   "qw"         'evil-window-delete
   "qo"         'my-kill-other-buffer
   "Q"          'kill-buffer-and-window
@@ -40,7 +40,7 @@
   "i"          'helm-imenu
   "n"          'neotree-toggle
   "zc"         'wg-create-workgroup
-  "B"          'ibuffer
+  "B"          'my-ibuffer-raise-other-window
   "ps"         'persp-switch
   "pr"         'persp-rename
   "pK"         'persp-kill

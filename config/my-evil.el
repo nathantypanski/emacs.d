@@ -15,11 +15,11 @@
     (evil-leader/set-leader ",")
     (global-evil-leader-mode t)))
 
-
 ;; Here's what we've all been waiting for.
 ;; Recreate Vim inside Emacs.
 (use-package evil
   :ensure evil
+  :init
   :config
   (progn
 
@@ -41,7 +41,6 @@
       :ensure evil-nerd-commenter
       :commands (evilnc-comment-or-uncomment-lines))
 
-
     (use-package evil-matchit
       :ensure evil-matchit
       :commands evilmi-jump-items
@@ -50,12 +49,18 @@
         (setq global-evil-matchit-mode t)
         (define-key evil-normal-state-map "%" 'evilmi-jump-items)))
 
-
     (use-package evil-surround
       :ensure evil-surround
       :config
       (progn
         (global-evil-surround-mode 1)))
+
+    (use-package evil-collection
+      :ensure evil-collection
+      :after evil
+      :demand t
+      :config (progn
+                (evil-collection-init)))
 
     (evil-set-initial-state 'flycheck-error-list-mode 'normal)
     (evil-set-initial-state 'git-commit-mode 'insert)

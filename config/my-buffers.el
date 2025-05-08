@@ -20,27 +20,40 @@
   :ensure ibuffer
   :config
   (progn
-    (setq ibuffer-expert t)
-    (setq ibuffer-saved-filter-groups
-          (quote (("default"
-                   ("dired" (mode . dired-mode))
-                   ("haskell" (mode . haskell-mode))
-                   ("python" (mode . python-mode))
-                   ("nasa" (or
-                            (name . ".nasa.")
-                            (filename . ".nasa.")))
-                   ("wiki" (or
-                            (filename . (concat (getenv "HOME") "/wiki"))
-                            (filename . (concat (getenv "HOME") ".gitit"))))
-                   ("notes" (or
-                             (name . "^\\*Calendar\\*$")
-                             (name . "^diary$")
-                             (mode . org-mode)))
-                   ("*buffer*" (name . "\\*.*\\*"))
-                   )))
-          )
-    (defvar my-ibuffer-use-vc-groups t
-      "Use filter groups detected from vc root when non-nil.
+    (defun my/ibuffer-raise ()
+      (interactive)
+      (if-let ((win (get-buffer-window "*Ibuffer*" t)))
+          (select-window win)
+        (ibuffer)))
+    (defun my/ibuffer-raise-other-window ()
+      "Display *Ibuffer* in the other window and select it.
+If *Ibuffer* is already visible anywhere, just raise that window."
+      (interactive)
+      (if-let ((win (get-buffer-window "*Ibuffer*" t)))
+          (select-window win)
+        (ibuffer-other-window)))
+
+      (defalias 'my-ibuffer-raise-other-window #'my/ibuffer-raise-other-window)
+
+      (setq ibuffer-expert t)
+      (setq ibuffer-saved-filter-groups
+            (quote (("default"
+                     ("dired" (mode . dired-mode))
+                     ("haskell" (mode . haskell-mode))
+                     ("python" (mode . python-mode))
+                     ("nasa" (or
+                              (name . ".nasa.")
+                              (filename . ".nasa.")))
+                     ("wiki" (or
+                              (filename . (concat (getenv "HOME") "/wiki"))
+                              (filename . (concat (getenv "HOME") ".gitit"))))
+                     ("notes" (or
+                               (name . "^\\*Calendar\\*$")
+                               (name . "^diary$")
+                               (mode . org-mode)))
+                     ("*buffer*" (name . "\\*.*\\*"))))))
+      (defvar my-ibuffer-use-vc-groups t
+        "Use filter groups detected from vc root when non-nil.
 This will be done with `ibuffer-vc-set-filter-groups-by-vc-root'
 If this is nil, then filter groups will be restored from `ibuffer-saved-filter-groups'.")
 
@@ -205,11 +218,6 @@ according to the values of `my-ibuffer-use-vc-groups' and
         (kbd "C-x v") 'ibuffer-do-view-horizontally
         (kbd "C-c C-a") 'ibuffer-auto-mode
         (kbd "C-x 4 RET") 'ibuffer-visit-buffer-other-window
-        (kbd "C-x 5 RET") 'ibuffer-visit-buffer-other-frame
-        )
-      )
-    )
-  )
-
+        (kbd "C-x 5 RET") 'ibuffer-visit-buffer-other-frame))))
 
 (provide 'my-buffers)
