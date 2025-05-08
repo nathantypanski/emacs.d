@@ -34,8 +34,6 @@
     (define-key company-active-map (kbd "<f1>") 'company-show-doc-buffer)
     (define-key company-active-map "\C-w" 'company-show-location)
     (define-key company-active-map "\C-s" 'company-search-candidates)
-    (define-key company-active-map "\C-\M-s" 'company-filter-candidates)
-    )
-  )
+    (define-key company-active-map "\C-\M-s" 'company-filter-candidates)))
 
 (provide 'my-autocomplete)

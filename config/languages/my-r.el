@@ -55,9 +55,6 @@
 
     (evil-define-key 'normal ess-help-mode-map "\C-c\C-d"   'ess-doc-map)
     (evil-define-key 'normal ess-help-mode-map "\C-c\C-e"   'ess-extra-map)
-    (evil-define-key 'normal ess-help-mode-map "\C-c\C-t"   'ess-dev-map)
-    )
-    )
-  )
+    (evil-define-key 'normal ess-help-mode-map "\C-c\C-t"   'ess-dev-map))))
 
 (provide 'my-r)

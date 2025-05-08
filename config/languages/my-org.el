@@ -4,8 +4,7 @@
   (progn
     (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
     (global-set-key (kbd "C-c c") 'org-capture)
-    (global-set-key (kbd "C-c a") 'org-agenda)
-    )
+    (global-set-key (kbd "C-c a") 'org-agenda))
   :config
   (progn
     (setq org-default-notes-file "~/.notes.org" org-log-done t)

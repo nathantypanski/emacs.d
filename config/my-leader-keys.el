@@ -47,11 +47,9 @@
   "pa"         'persp-add-buffer
   "pt"         'persp-temporarily-display-buffer
   "pi"         'persp-import-buffers
-  "pk"         'persp-remove-buffer
-)
+  "pk"         'persp-remove-buffer)
 
 (evil-leader/set-key-for-mode 'git-commit-mode "qq" 'git-commit-abort)
-
 (evil-leader/set-key-for-mode 'emacs-lisp-mode "." 'elisp-slime-nav-find-elisp-thing-at-point)
 
 (provide 'my-leader-keys)
