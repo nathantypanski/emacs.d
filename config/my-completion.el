@@ -20,7 +20,7 @@
   (ivy-use-virtual-buffers t)   ;; show recent files and bookmarks
   (enable-recursive-minibuffers t)
   (ivy-count-format "(%d/%d) ") ;; show candidate count
-  (ivy-wrap t))
+  (ivy-wrap nil))
 
 ;; Counsel: Ivy-enhanced versions of built-ins
 (use-package counsel

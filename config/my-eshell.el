@@ -37,7 +37,7 @@
 Otherwise, insert after the prompt"
     (interactive)
     (if (or (my-is-eshell-before-prompt) (my-is-eshell-above-last-prompt))
-          (my-eshell-hop-to-bottom))
+        (my-eshell-hop-to-bottom))
     (evil-insert-state))
 
   (defun my-eshell-evil-append (count &optional vcount skip-empty-lines)

@@ -33,8 +33,6 @@
 (require 'my-keychain)
 (require 'my-dired)
 (require 'my-buffers)
-;; (require 'my-multi-tty-tools)
-;; (require 'my-tmux-unique-server)
 (require 'my-tmux-frames)
 (require 'my-elisp)
 (require 'my-tags)
