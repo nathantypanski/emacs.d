@@ -91,7 +91,17 @@
  '(org-startup-folded 'content)
  '(org-startup-truncated nil)
  '(org-use-sub-superscripts '{})
- '(package-selected-packages nil)
+ '(package-selected-packages
+   '(ace-jump-mode ag android-mode cider company docker dockerfile-mode ein
+                   elisp-slime-nav ess evil-collection evil-leader evil-matchit
+                   evil-nerd-commenter evil-surround exec-path-from-shell
+                   expand-region flx-ido ggtags god-mode google-c-style
+                   guide-key helm-flycheck helm-projectile helm-swoop ibuffer-vc
+                   ido-completing-read+ ido-vertical-mode jade-mode jedi
+                   js2-mode key-chord keychain-environment magit markdown-mode
+                   neotree nix-env-install nix-haskell-mode powerline-evil
+                   rainbow-delimiters rainbow-mode rust-mode scss-mode slime
+                   smart-mode-line smex yaml-mode yasnippet zenburn-theme))
  '(preview-TeX-style-dir "/home/nathan/.emacs.d/elpa/auctex-11.87.2/latex")
  '(python-indent-guess-indent-offset nil)
  '(python-indent-offset 0)
