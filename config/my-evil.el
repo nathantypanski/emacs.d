@@ -216,6 +216,11 @@ whether to call indent-according-to-mode."
     (add-hook 'evil-insert-state-exit-hook 'my-exit-insert-state)
     (add-hook 'evil-insert-state-entry-hook 'my-enter-insert-state)
 
+    ;; give us a bar cursor
+    (add-hook 'evil-normal-state-entry-hook #'my/tty-cursor-update)
+    (add-hook 'evil-insert-state-entry-hook #'my/tty-cursor-update)
+    (add-hook 'evil-insert-state-exit-hook  #'my/tty-cursor-update))
+
     (define-key evil-normal-state-map (kbd "RET") 'my-append-and-indent)
     (define-key evil-normal-state-map (kbd "<S-return>") 'my-append-and-indent)
     (define-key evil-normal-state-map (kbd "C-w }") 'evil-window-rotate-downwards)
@@ -268,7 +273,6 @@ whether to call indent-according-to-mode."
     (evil-define-key 'motion python-mode-map "[(" 'evil-previous-open-paren)
     (evil-define-key 'motion python-mode-map "])" 'evil-next-close-paren)
     (evil-define-key 'motion python-mode-map "[{" 'evil-previous-open-brace)
-    (evil-define-key 'motion python-mode-map "]}" 'evil-next-close-brace)
-    ))
+    (evil-define-key 'motion python-mode-map "]}" 'evil-next-close-brace))
 
 (provide 'my-evil)

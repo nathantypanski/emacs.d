@@ -24,6 +24,17 @@
 ;; lockfiles are evil.
 (setq create-lockfiles nil)
 
+;; bar cursor
+(setq cursor-type 'bar)
+;; cursor-shape control for foot
+(defun my/tty-cursor-update ()
+  "Block cursor by default; beam cursor in Evil Insert state."
+  (when (not (display-graphic-p))              ; TTY frames only
+    (send-string-to-terminal
+     (if (evil-insert-state-p)
+         "\e[6 q"   ;; Ps = 6  → steady beam (vertical bar)
+       "\e[2 q")))) ;; Ps = 2  → steady block
+
 ;; also tabs are evil
 (setq-default indent-tabs-mode nil)
 
