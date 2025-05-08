@@ -31,13 +31,13 @@
   "gs"         'magit-status
   "gl"         'magit-log
   "gd"         'magit-diff
-  "l"          'ido-goto-symbol
-  "f"          'counsel-find-file
+  "l"          'consult-imenu
+  "f"          'find-file
   "k"          'kill-buffer
-  "x"          'counsel-M-x
+  "x"          'M-x
   "s"          'swiper
   "R"          'ag-regexp
-  "b"          'ivy-switch-buffer
+  "b"          'consult-buffer
   "n"          'neotree-toggle
   "zc"         'wg-create-workgroup
   "ps"         'persp-switch

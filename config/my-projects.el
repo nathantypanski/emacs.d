@@ -24,7 +24,7 @@
     (projectile-global-mode 1)
     ;; automatically dired in projectile-switch-project
     (setq projectile-switch-project-action 'projectile-dired)
-    (setq projectile-completion-system 'ido)
+    (setq projectile-completion-system 'default)
     (setq projectile-globally-ignored-directories
           '(".idea"
             ".eunit"
