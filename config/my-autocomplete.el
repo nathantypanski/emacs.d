@@ -9,7 +9,6 @@
       (interactive "P")
       (company-abort)
       (kbd arg))
-    (global-company-mode)
     ;; C-hjkl in company-mode
     (define-key company-active-map (kbd "C-h") 'company-show-doc-buffer)
     (define-key company-active-map (kbd "C-l") 'company-show-location)
@@ -33,5 +32,9 @@
     (define-key company-active-map "\C-w" 'company-show-location)
     (define-key company-active-map "\C-s" 'company-search-candidates)
     (define-key company-active-map "\C-\M-s" 'company-filter-candidates)))
+
+;; Company UI improvement
+(use-package company-box
+  :hook (company-mode . company-box-mode))
 
 (provide 'my-autocomplete)
