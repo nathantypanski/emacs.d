@@ -1,9 +1,7 @@
 ;;; tmux-frames.el --- one Emacs server per tmux session  -*- lexical-binding:t; -*-
 
-
 (require 'server)
 
-;; 1.  Choose a socket name once, based on tmux session
 (setq server-name
       (if (getenv "TMUX")
           (format "tmux-%s"

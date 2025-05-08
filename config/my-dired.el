@@ -12,10 +12,13 @@
 ;; on OSX, dired's ls binary doesn't support some of the required options.
 ;; Thankfully, I use Homebrew, so I can hack around this and tell it to use
 ;; the proper ls.
+
+;; help me simplify this using the variable I defined
+(setq my-default-dired-switches "--kibibytes --ignore-backups --human-readable -l")
+
 (if (not (my-system-is-mac))
-  (setq dired-listing-switches "-kABhl --group-directories-first")
-  (setq dired-listing-switches "-kABhl")
-  )
+    (setq dired-listing-switches (concat my-default-dired-switches " --group-directories-first"))
+  (setq dired-listing-switches my-default-dired-switches))
 
 (use-package saveplace
   :config
@@ -97,6 +100,41 @@ Otherwise, returns nil."
   (interactive)
   (if (my-dired-at-title)
       (dired-kill-subdir)))
+
+(use-package diredfl
+  :hook (dired-mode . diredfl-mode)
+  :custom
+  (custom-set-faces
+   ;; Directories (blue)
+   '(diredfl-dir-name ((t (:foreground "#8cd0d3" :weight bold))))
+   '(diredfl-dir-heading ((t (:foreground "#efef8f" :weight bold))))
+   '(diredfl-dir-priv ((t (:foreground "#8cd0d3" :background nil))))
+
+   ;; Executables (green)
+   '(diredfl-exec-priv ((t (:foreground "#7f9f7f"))))
+   '(diredfl-executable-tag ((t (:foreground "#7f9f7f"))))
+
+   ;; Symlinks (magenta)
+   '(diredfl-symlink ((t (:foreground "#dc8cc3" :italic t))))
+
+   ;; Compressed (orange)
+   '(diredfl-compressed-file-name ((t (:foreground "#dfaf8f"))))
+
+   ;; Media files (light gray)
+   '(diredfl-media ((t (:foreground "#dcdccc"))))
+
+   ;; Marked files (red)
+   '(diredfl-flag-mark ((t (:foreground "#cc9393" :weight bold))))
+   '(diredfl-flag-mark-line ((t (:background "#3f3f3f"))))
+
+   ;; Other
+   '(diredfl-date-time ((t (:foreground "#93e0e3"))))
+   '(diredfl-number ((t (:foreground "#9fafaf"))))
+   '(diredfl-permission ((t (:foreground "#9fafaf")))))
+)
+
+(add-hook 'dired-mode-hook 'hl-line-mode)
+(setq dired-use-ls-dired t)
 
 ;; TODO: make this work
 ;; (after 'evil

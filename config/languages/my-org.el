@@ -35,20 +35,11 @@
           (concat str "-> "))))
 
     (advice-add 'org-clocktable-indent-string :override #'my-org-clocktable-indent-string)
+    (org-babel-do-load-languages
+     'org-babel-load-languages
+     '((R . t)
+       (emacs-lisp . t)
+       (python . t)))
 
-    (setq org-src-fontify-natively t)
-    (use-package ob
-      :config
-      (progn
-	(org-babel-do-load-languages
-	 'org-babel-load-languages
-	 '((R . t)
-	   (emacs-lisp . t)
-	   (python . t)
-	   ))
-	)
-      )
-    )
-  )
-
+    (setq org-src-fontify-natively t)))
 (provide 'my-org)
