@@ -1,12 +1,13 @@
 ;; my-ido.el
 ;;
 (use-package vertico
+  :ensure vertico
   :init (vertico-mode))
 
 (use-package orderless
+  :ensure orderless
   :custom
-  (completion-styles '(orderless basic))
-  (completion-category-defaults nil))
+  (completion-styles '(orderless flex)))
 
 ;; Rich annotations
 (use-package marginalia

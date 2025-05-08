@@ -32,12 +32,12 @@
   "gl"         'magit-log
   "gd"         'magit-diff
   "l"          'consult-imenu
-  "f"          'find-file
+  "f"          'ido-find-file
   "k"          'kill-buffer
   "x"          'M-x
   "s"          'swiper
   "R"          'ag-regexp
-  "b"          'consult-buffer
+  "b"          'ido-switch-buffer
   "n"          'neotree-toggle
   "zc"         'wg-create-workgroup
   "ps"         'persp-switch

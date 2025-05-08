@@ -14,8 +14,6 @@
   :diminish projectile-mode
   :config
   (progn
-    (setq projectile-indexing-method 'alien)
-    (setq projectile-enable-caching t)
     (setq projectile-cache-file (concat user-emacs-directory ".cache/projectile.cache"))
     (setq projectile-known-projects-file (concat user-emacs-directory "projectile-bookmarks.eld"))
     (add-to-list 'projectile-globally-ignored-directories "elpa")
@@ -25,6 +23,9 @@
     ;; automatically dired in projectile-switch-project
     (setq projectile-switch-project-action 'projectile-dired)
     (setq projectile-completion-system 'default)
+    (setq projectile-enable-caching t)
+    ;; use ripgrep/fd if available
+    (setq projectile-indexing-method 'alien)
     (setq projectile-globally-ignored-directories
           '(".idea"
             ".eunit"
