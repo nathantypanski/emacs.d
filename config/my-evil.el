@@ -35,6 +35,7 @@
     (setq evil-want-fine-undo t)
     (setq evil-want-change-word-to-end t)
 
+    (evil-set-undo-system 'undo-redo)
 
     (use-package evil-nerd-commenter
       :ensure evil-nerd-commenter
