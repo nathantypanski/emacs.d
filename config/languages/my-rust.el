@@ -18,9 +18,14 @@
         (evil-define-key 'insert rust-mode-map "}" 'my-rust-electric-rbrace)
         (use-local-map rust-mode-map)
         (flycheck-mode 0))
-      (add-hook 'rust-mode-hook 'my-rust-setup)
-      )
-    )
-  )
+      (add-hook 'rust-mode-hook 'my-rust-setup))))
+
+(after 'lsp-mode
+  (setq lsp-rust-analyzer-server-command
+        (list
+         (substring
+          (shell-command-to-string "/home/ndt/.nix-profile/bin/rust-analyzer")
+          0 -1))))
+
 
 (provide 'my-rust)

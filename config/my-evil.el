@@ -3,6 +3,8 @@
 ;; Settings for ostracizing me from both the Emacs and Vim communities.
 ;; a.k.a. evil-mode
 
+;; https://github.com/emacs-evil/evil-collection/issues/60
+(setq evil-want-keybinding nil)
 
 ;; In order to work properly, we need to load evil-leader-mode before we load
 ;; evil-mode.
@@ -25,6 +27,7 @@
 
     (evil-mode 1)
     (setq evil-want-C-u-scroll t)
+    (setq evil-want-C-u-delete nil)
     (setq evil-want-C-w-in-emacs-state t)
     (setq evil-search-module        'isearch)
     (setq evil-magic                'very-magic)
@@ -218,6 +221,18 @@ whether to call indent-according-to-mode."
       (if (my-sensible-to-indent-p)
             (indent-according-to-mode)))
 
+    (defun enable-tabs ()
+      "Enable tabs in a file."
+        (interactive)
+        (setq indent-tabs-mode t)
+        (define-key evil-insert-state-map (kbd "TAB") 'tab-to-tab-stop))
+
+    (defun disable-tabs ()
+      "Enable tabs in a file."
+        (interactive)
+        (setq indent-tabs-mode nil)
+        (define-key evil-insert-state-map (kbd "TAB") 'indent-for-tab-command))
+
     ;; exiting insert mode -> delete trailing whitespace
     (add-hook 'evil-insert-state-exit-hook 'my-exit-insert-state)
     (add-hook 'evil-insert-state-entry-hook 'my-enter-insert-state)
@@ -280,5 +295,10 @@ whether to call indent-according-to-mode."
     (evil-define-key 'motion python-mode-map "])" 'evil-next-close-paren)
     (evil-define-key 'motion python-mode-map "[{" 'evil-previous-open-brace)
     (evil-define-key 'motion python-mode-map "]}" 'evil-next-close-brace))
+
+(use-package evil-collection
+  :ensure evil-collection
+  :config (progn
+    (evil-collection-init)))
 
 (provide 'my-evil)

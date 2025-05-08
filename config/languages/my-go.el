@@ -4,6 +4,7 @@
 
 (use-package go-mode
   :commands go-mode godoc
+  :ensure go-mode
   :mode "\\.go\\'"
   :config
   (progn
@@ -36,8 +37,11 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
                             (buffer-list))))
               (pop-to-buffer (buffer-name helpdoc)))))
 
+        (add-hook 'go-mode-hook (lambda ()
+                                  (setq evil-shift-width 8)
+                                  (setq indent-tabs-mode t)
 
-        (evil-define-key 'normal go-mode-map (kbd "K") 'my-jump-to-go-docs)))
+        (evil-define-key 'normal go-mode-map (kbd "K") 'my-jump-to-go-docs)))))
 
 
 (provide 'my-go)

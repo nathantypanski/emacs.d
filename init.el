@@ -4,17 +4,27 @@
 (add-to-list 'load-path (concat user-emacs-directory "config" "/languages"))
 (add-to-list 'load-path "/usr/share/emacs/site-lisp")
 
-(setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                         ("gnu" . "https://elpa.gnu.org/packages/")))
+;; (setq package-archives '(("melpa" . "https://stable.melpa.org/packages/")
+;;                          ("gnu" . "https://elpa.gnu.org/packages/")))
 
-(require 'package)
-(package-initialize)
 (setq package-enable-at-startup nil)
-(unless (package-installed-p 'use-package)
-    (package-refresh-contents)
-    (package-install 'use-package))
 
-(require 'use-package)
+;; boostrap straight.el
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 6))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+
+(setq straight-use-package-by-default :t)
+(straight-use-package 'use-package)
 
 (require 'my-env)
 (require 'my-core)
@@ -22,7 +32,6 @@
 (require 'my-eyecandy)
 (require 'my-keychain)
 (require 'my-dired)
-(require 'my-bookmarks)
 (require 'my-buffers)
 ;; (require 'my-multi-tty-tools)
 ;; (require 'my-tmux-unique-server)
@@ -30,7 +39,7 @@
 (require 'my-elisp)
 (require 'my-tags)
 (require 'my-autocomplete)
-(require 'my-ido)
+(require 'my-completion)
 (require 'my-projects)
 (require 'my-ag)
 (require 'my-interaction)

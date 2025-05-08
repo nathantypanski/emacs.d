@@ -23,3 +23,5 @@ tutorial/
 url/
 srecode-map.el
 projectile-bookmarks.eld
+**/*.~undo-tree~
+*.~undo-tree~

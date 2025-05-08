@@ -2,11 +2,6 @@
 ;;
 ;; Settings for the Nix programming language.
 
-(use-package nix-env-install
-  :commands (nix-env-install
-             nix-env-install-npm)
-  :ensure nix-env-install)
-
 (use-package nix-haskell-mode
   :commands (nix-haskell-mode)
   :ensure nix-haskell-mode)
@@ -15,5 +10,13 @@
   :commands nix-mode
   :ensure nix-mode
   :mode "\\.nix\\'")
+
+;; (use-package nix-repl
+;;   :ensure nix-mode
+;;   :commands (nix-repl))
+
+;; (use-package nix-shell
+;;   :ensure nix-mode
+;;   :commands (nix-shell-unpack nix-shell-configure nix-shell-build))
 
 (provide 'my-nix)

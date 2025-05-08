@@ -35,13 +35,9 @@
             "_darcs"
             ".tox"
             ".svn"
-            "build")
-          )
+            "build"))
     (after 'evil
-      (define-key evil-normal-state-map (kbd "C-p") 'projectile-find-file)
-      )
-    )
-  )
+      (define-key evil-normal-state-map (kbd "C-p") 'projectile-find-file))))
 
 (use-package neotree
   :ensure neotree
@@ -62,9 +58,6 @@
       (kbd "k")   'neotree-previous-node
       (kbd "SPC") 'neotree-change-root
       (kbd "q")   'neotree-hide
-      (kbd "l")   'neotree-enter
-      )
-    )
-    ))
+      (kbd "l")   'neotree-enter))))
 
 (provide 'my-projects)

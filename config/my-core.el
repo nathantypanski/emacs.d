@@ -3,16 +3,15 @@
 ;; The big, beating heart of my little corner of Emacs.
 ;; General, mostly-plugin-independent settings go here.
 
-(eval-when-compile (require 'cl))
-(require 'cl-lib)
+(eval-when-compile (require 'cl-lib))
 
 (defvar my-terminal-emulator "foot"
   "Terminal emulator to be spawned with my-spawn-terminal-here.")
 
 (defvar my-graphical-font
-  (if (eq system-type 'darwin)
-      "Terminus 10"
-    "xos4 Terminus 10")
+  (cond
+    ((eq system-type 'darwin) "Terminus 10")
+    ((eq system-type 'gnu/linux) "Terminus 16"))
   "Font used for graphical editing sessions.")
 
 ;; evil-collection requires this set before loading evil
@@ -251,5 +250,16 @@ This command only has an effect on graphical frames."
 (when (my-system-is-mac)
   (require 'ls-lisp)
   (setq ls-lisp-use-insert-directory-program nil))
+
+;; (global-linum-mode 1)
+
+;; TODO: is this a plugin or can we turn it on here?
+
+(use-package undo-tree
+  :ensure undo-tree
+  :config (progn
+    (global-undo-tree-mode)
+    (setq undo-tree-auto-save-history nil)))
+(global-display-line-numbers-mode)
 
 (provide 'my-core)

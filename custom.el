@@ -53,6 +53,7 @@
      "4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4"
      "06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" default))
  '(ess-swv-pdflatex-commands '("texi2pdf" "pdflatex" "make" "xelatex"))
+ '(evil-undo-system 'undo-tree)
  '(fci-rule-character-color "#192028")
  '(fci-rule-color "#282a2e")
  '(fill-column 80)
@@ -64,6 +65,7 @@
  '(global-semantic-highlight-func-mode t)
  '(global-semantic-idle-summary-mode t)
  '(gud-gdb-command-name "gdb --annotate=1")
+ '(helm-minibuffer-history-key "M-p")
  '(ibuffer-saved-filter-groups
    '(("groups" ("nasa-filer" (filename . "/home/nathan/devel/nasa/filer/")))
      ("default" ("dired" (mode . dired-mode)) ("haskell" (mode . haskell-mode))
@@ -91,17 +93,6 @@
  '(org-startup-folded 'content)
  '(org-startup-truncated nil)
  '(org-use-sub-superscripts '{})
- '(package-selected-packages
-   '(ace-jump-mode ag android-mode cider company docker dockerfile-mode ein
-                   elisp-slime-nav ess evil-collection evil-leader evil-matchit
-                   evil-nerd-commenter evil-surround exec-path-from-shell
-                   expand-region flx-ido ggtags god-mode google-c-style
-                   guide-key helm-flycheck helm-projectile helm-swoop ibuffer-vc
-                   ido-completing-read+ ido-vertical-mode jade-mode jedi
-                   js2-mode key-chord keychain-environment magit markdown-mode
-                   neotree nix-env-install nix-haskell-mode powerline-evil
-                   rainbow-delimiters rainbow-mode rust-mode scss-mode slime
-                   smart-mode-line smex yaml-mode yasnippet zenburn-theme))
  '(preview-TeX-style-dir "/home/nathan/.emacs.d/elpa/auctex-11.87.2/latex")
  '(python-indent-guess-indent-offset nil)
  '(python-indent-offset 0)
@@ -146,6 +137,7 @@
  '(info-title-1 ((t (:inherit info-title-2 :height 1.1))))
  '(info-title-2 ((t (:inherit info-title-3 :height 0.9))))
  '(linum ((t (:background "#4f4f4f" :foreground "#656555"))))
+ '(markdown-code-face ((t (:inherit fixed-pitch :family "Terminus"))))
  '(mode-line-highlight ((t (:box nil))))
  '(mode-line-inactive ((t (:inherit mode-line :background "#404045" :foreground "gray60" :inverse-video nil :box nil :weight light))))
  '(org-block-background ((t (:background "gray23"))))

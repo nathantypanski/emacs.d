@@ -29,8 +29,7 @@
         (god-local-mode 1))
 
       (defun evil-god-stop-hook ()
-        (god-local-mode -1)
-        (diminish-undo 'god-local-mode))
+        (god-local-mode -1))
 
       (defvar evil-execute-in-god-state-buffer nil)
 

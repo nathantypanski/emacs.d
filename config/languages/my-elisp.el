@@ -21,8 +21,7 @@
     (defun my-jump-to-elisp-docs (sym-name)
       "Jump to a pane and do elisp-slime-nav-describe-elisp-thing-at-point"
       (interactive (list (elisp-slime-nav--read-symbol-at-point)))
-      (help-xref-interned (intern sym-name)))
-    )
+      (help-xref-interned (intern sym-name))))
   :config
   (progn
     (after 'evil

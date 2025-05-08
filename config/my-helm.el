@@ -63,6 +63,10 @@
         (evil-leader/set-key "b" 'helm-mini)
         (evil-leader/set-key "i" 'helm-imenu))
 
+    (use-package helm-dash
+    :ensure helm-dash
+    :config
+    (progn))
 
     (after 'flycheck
       (use-package helm-flycheck

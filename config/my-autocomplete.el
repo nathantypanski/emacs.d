@@ -1,7 +1,7 @@
 (use-package company
   :ensure company
   :init
-  ;; (global-company-mode)
+  (global-company-mode)
   :config
   (progn
     (defun my-company-pass-key (arg)
