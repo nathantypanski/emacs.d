@@ -251,7 +251,18 @@ This command only has an effect on graphical frames."
   (require 'ls-lisp)
   (setq ls-lisp-use-insert-directory-program nil))
 
+
 ;; (global-linum-mode 1)
+(defun my-enable-line-numbers ()
+  "Enable line numbers in a smart way."
+  (interactive)
+  (unless (or (minibufferp)
+              (member major-mode '(org-mode eshell-mode
+                                            shell-mode term-mode
+                                            vterm-mode eshell-mode)))
+(display-line-numbers-mode)))
+(add-hook 'prog-mode-hook #'my-enable-line-numbers)
+(add-hook 'text-mode-hook #'my-enable-line-numbers)
 
 ;; TODO: is this a plugin or can we turn it on here?
 
@@ -260,6 +271,5 @@ This command only has an effect on graphical frames."
   :config (progn
     (global-undo-tree-mode)
     (setq undo-tree-auto-save-history nil)))
-(global-display-line-numbers-mode)
 
 (provide 'my-core)
