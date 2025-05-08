@@ -2,7 +2,6 @@
 ;;
 ;; Settings for ido, a better way to select things in a minibuffer.
 
-
 (use-package ivy
   :ensure ivy
   :diminish

@@ -42,8 +42,6 @@
 (require 'my-ag)
 (require 'my-interaction)
 (require 'my-flycheck)
-(require 'my-helm)
-(require 'my-woman)
 (require 'my-comint)
 (require 'my-unbound-keys)
 (require 'my-copy)

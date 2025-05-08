@@ -32,13 +32,12 @@
   "gl"         'magit-log
   "gd"         'magit-diff
   "l"          'ido-goto-symbol
-  "f"          'ido-find-file
-  "k"          'ido-kill-buffer
-  "x"          'smex
-  "ss"         'helm-swoop
-  "sr"         'ag-regexp
-  "b"          'switch-to-buffer
-  "i"          'helm-imenu
+  "f"          'counsel-find-file
+  "k"          'kill-buffer
+  "x"          'counsel-M-x
+  "s"          'swiper
+  "R"          'ag-regexp
+  "b"          'ivy-switch-buffer
   "n"          'neotree-toggle
   "zc"         'wg-create-workgroup
   "ps"         'persp-switch
