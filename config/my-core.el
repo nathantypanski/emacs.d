@@ -211,6 +211,11 @@ name of the buffer."
   (interactive)
   (start-process my-terminal-emulator nil my-terminal-emulator))
 
+;; (defun my-spawn-emacs-in-terminal-here ()
+;;   "" (interactive)
+;;   (start-process "foot-emacsclient" nil "foot" "-e" "sh" "-c" "emacsclient -nw -c -a \"\""))
+
+
 (defun my-set-window-font (font)
   "Set the frame font to FONT.
 FONT is the name of a xft font, like `Monospace-10'."

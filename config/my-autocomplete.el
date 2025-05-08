@@ -8,8 +8,8 @@
       "Pass a key out of company-mode"
       (interactive "P")
       (company-abort)
-      (kbd arg)
-      )
+      (kbd arg))
+    (global-company-mode)
     ;; C-hjkl in company-mode
     (define-key company-active-map (kbd "C-h") 'company-show-doc-buffer)
     (define-key company-active-map (kbd "C-l") 'company-show-location)

@@ -12,12 +12,13 @@
   "e"          'pp-eval-last-sexp
   "h"          'dired-jump
   ">"          'find-file-at-point
-  "B"          'ibuffer
   "\\"         'split-window-horizontally
   "-"          'split-window-vertically
   "e"          'pp-eval-last-sexp
   "TAB"        'my-hop-around-buffers
   "RET"        'my-spawn-terminal-here
+  "<SPC>RET"   'my-new-tty-frame
+  "B"          'my-ibuffer-raise-other-window
   ","          'other-window
   "/"          'evilnc-comment-or-uncomment-lines
   "jf"         'ffap
@@ -40,7 +41,6 @@
   "i"          'helm-imenu
   "n"          'neotree-toggle
   "zc"         'wg-create-workgroup
-  "B"          'my-ibuffer-raise-other-window
   "ps"         'persp-switch
   "pr"         'persp-rename
   "pK"         'persp-kill
