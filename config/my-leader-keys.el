@@ -1,4 +1,4 @@
-;; my-leader-keys.el
+;; my-leader-keys.eljGk
 ;;
 ;; <leader> keybindings for evil-leader
 
@@ -17,7 +17,7 @@
   "e"          'pp-eval-last-sexp
   "TAB"        'my-hop-around-buffers
   "RET"        'my-spawn-terminal-here
-  "<SPC>RET"   'my-new-tty-frame
+  "<SPC>RET"   'my-tmux-new-frame
   "B"          'my-ibuffer-raise-other-window
   ","          'other-window
   "/"          'evilnc-comment-or-uncomment-lines

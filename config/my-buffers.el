@@ -57,6 +57,14 @@ according to the values of `my-ibuffer-use-vc-groups' and
 
     (use-package ibuffer-vc
       :ensure ibuffer-vc
-      :config)))
+      :config)
+
+    (defun my/ibuffer-raise-other-window ()
+      (interactive)
+      (let* ((buf (ibuffer-list-buffers))
+             (win (get-buffer-window buf 0)))
+        (if win (select-window win) (ibuffer-other-window))))
+
+    (defalias 'my-ibuffer-raise-other-window #'my/ibuffer-raise-other-window)))
 
 (provide 'my-buffers)
