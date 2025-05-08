@@ -5,7 +5,7 @@
 
 (evil-leader/set-key
   "$"          'linum-mode
-  "qq"         'kill-this-buffer
+  "qq"         'delete-window
   "qw"         'evil-window-delete
   "qo"         'my-kill-other-buffer
   "Q"          'kill-buffer-and-window
