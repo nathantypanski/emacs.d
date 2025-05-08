@@ -24,6 +24,8 @@
 ;; break long lines at word boundaries
 (visual-line-mode 1)
 
+(global-display-line-numbers-mode)
+
 ;; lockfiles are evil.
 (setq create-lockfiles nil)
 
