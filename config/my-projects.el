@@ -36,9 +36,7 @@
             "_darcs"
             ".tox"
             ".svn"
-            "build"))
-    (after 'evil
-      (define-key evil-normal-state-map (kbd "C-p") 'projectile-find-file))))
+            "build"))))
 
 (use-package neotree
   :ensure neotree

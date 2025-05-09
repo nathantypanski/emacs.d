@@ -24,6 +24,7 @@
   "jb"         'ace-jump-buffer
   "cl"         'flycheck-list-errors
   "w"          'save-buffer
+  "p"          'projectile-find-file
   "P"          'projectile-switch-project
   "`"          'visit-term-buffer
   "cc"         'projectile-compile-project
