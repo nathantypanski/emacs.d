@@ -7,7 +7,7 @@
     (global-set-key (kbd "C-c a") 'org-agenda))
   :config
   (progn
-    (setq org-default-notes-file "~/.notes.org" org-log-done t)
+    (setq org-default-notes-file (concat (getenv "HOME") "/notes/notes.org") org-log-done t)
     (defface org-block-begin-line '((t ( org-meta-line :background "gray27" :overline "gray20" :underline "gray20" :height 0.8)))
       "Face used for the line delimiting the begin of source blocks.")
 
