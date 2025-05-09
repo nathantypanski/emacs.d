@@ -36,6 +36,7 @@
 (require 'my-tmux-frames)
 (require 'my-elisp)
 (require 'my-tags)
+(require 'my-spelling)
 (require 'my-completion)
 (require 'my-projects)
 (require 'my-ag)
