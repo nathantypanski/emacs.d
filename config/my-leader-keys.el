@@ -2,9 +2,8 @@
 ;;
 ;; <leader> keybindings for evil-leader
 
-
 (evil-leader/set-key
-  "$"          'linum-mode
+  "$"          'display-line-numbers-mode
   "qq"         'kill-current-buffer
   "qw"         'evil-window-delete
   "qo"         'my-kill-other-buffer
@@ -34,19 +33,11 @@
   "l"          'consult-imenu
   "f"          'ido-find-file
   "k"          'kill-buffer
-  "x"          'M-x
-  "s"          'swiper
+  "x"          'execute-extended-command
+  "s"          'consult-line
   "R"          'ag-regexp
   "b"          'ido-switch-buffer
-  "n"          'neotree-toggle
-  "zc"         'wg-create-workgroup
-  "ps"         'persp-switch
-  "pr"         'persp-rename
-  "pK"         'persp-kill
-  "pa"         'persp-add-buffer
-  "pt"         'persp-temporarily-display-buffer
-  "pi"         'persp-import-buffers
-  "pk"         'persp-remove-buffer)
+  "n"          'neotree-toggle)
 
 (evil-leader/set-key-for-mode 'git-commit-mode "qq" 'git-commit-abort)
 (evil-leader/set-key-for-mode 'emacs-lisp-mode "." 'elisp-slime-nav-find-elisp-thing-at-point)
