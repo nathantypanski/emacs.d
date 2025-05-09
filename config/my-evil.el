@@ -335,9 +335,8 @@ whether to call indent-according-to-mode."
             ;; Fallback (e.g. insert or emacs state)
             (insert text))))))
 
-    ;; Evil bindings
-    (define-key evil-visual-state-map (kbd "yg") #'my-wl-copy-evil-operator)
-    (define-key evil-normal-state-map (kbd "gP") #'my-wl-paste-evil)
+    (define-key evil-visual-state-map (kbd "C-y") #'my-wl-copy-evil-operator)
+    (define-key evil-normal-state-map (kbd "C-p") #'my-wl-paste-evil)
 
 (with-eval-after-load 'org
   (evil-define-key 'normal org-mode-map
