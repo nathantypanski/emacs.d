@@ -77,9 +77,10 @@
     (with-eval-after-load 'evil
       (evil-define-key 'normal org-mode-map
         (kbd "<TAB>")     #'org-cycle
-        (kbd "o q")       #'org-set-tags-command
-        (kbd "] ]")       #'org-next-visible-heading
+        (kbd "o [")       #'org-metaup
+        (kbd "o ]")       #'org-metadown
         (kbd "[ [")       #'org-previous-visible-heading
+        (kbd "] ]")       #'org-next-visible-heading
         (kbd "o h")       #'org-insert-heading
         (kbd "o s")       #'org-insert-subheading
         (kbd "o <RET>")   #'org-insert-heading-after-current
@@ -89,8 +90,18 @@
         (kbd "o s")       #'org-schedule
         (kbd "o p")       #'org-priority
         (kbd "o z")       #'org-add-note
-        (kbd "o t")       #'org-todo
+        (kbd "o t")       #'org-set-tags-command
+        (kbd "o q")       #'org-todo
         (kbd "o g")       #'org-open-at-point
+        (kbd "o e")       #'org-set-effort
+        (kbd "o O")       #'org-toggle-ordered-property
+        (kbd "o B")       #'org-toggle-checkbox
+        (kbd "o r")       #'org-refile
+        (kbd "o C i")     #'org-clock-in
+        (kbd "o C o")     #'org-clock-out
+        (kbd "o C r")     #'org-clock-report
+        (kbd "o v t")     #'org-tags-expand
+        (kbd "M-<RET>")   #'org-insert-todo-heading-respect-content
         ;; the following should mirror leader keys
         (kbd "o a")       #'org-agenda
         (kbd "o T")       #'org-todo-list
