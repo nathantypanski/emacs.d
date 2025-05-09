@@ -337,13 +337,20 @@ whether to call indent-according-to-mode."
 
     (define-key evil-visual-state-map (kbd "C-y") #'my-wl-copy-evil-operator)
     (define-key evil-normal-state-map (kbd "C-p") #'my-wl-paste-evil)
+    (define-key evil-insert-state-map (kbd "C-p") #'my-wl-paste-evil)
 
-(with-eval-after-load 'org
-  (evil-define-key 'normal org-mode-map
-    "g a" #'org-agenda
-    "g c" #'org-capture
-    "]]"  #'org-next-visible-heading
-    "[["  #'org-previous-visible-heading)))
+    (with-eval-after-load 'org
+      (evil-define-key 'normal org-mode-map
+        (kbd "<TAB>")     #'org-cycle
+        (kbd "o a")       #'org-agenda
+        (kbd "o c")       #'org-capture
+        (kbd "] ]")       #'org-next-visible-heading
+        (kbd "[ [")       #'org-previous-visible-heading
+        (kbd "o h")       #'org-insert-heading
+        (kbd "o s")       #'org-insert-subheading
+        (kbd "o <RET>")   #'org-insert-heading-after-current
+        (kbd "o t")       #'org-capture
+        (kbd "o a")       #'org-agenda)))
 
 (use-package evil-collection
   :ensure evil-collection

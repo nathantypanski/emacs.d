@@ -35,9 +35,16 @@
   "f"          'ido-find-file
   "k"          'kill-buffer
   "x"          'execute-extended-command
-  "sr"          'ag-regexp
-  "ss"          'consult-line
+  "sr"         'ag-regexp
+  "ss"         'consult-line
   "b"          'ido-switch-buffer
+  "ot"         'org-todo-list
+  "oc"         'org-capture
+  "ol"         'org-store-link
+  "os"         'org-schedule
+  "oi"         'org-clock-in
+  "oo"         'org-clock-out
+  "oe"         'org-set-effort
   "n"          'neotree-toggle)
 
 (evil-leader/set-key-for-mode 'git-commit-mode "qq" 'git-commit-abort)

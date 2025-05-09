@@ -53,7 +53,6 @@
      "4cf3221feff536e2b3385209e9b9dc4c2e0818a69a1cdb4b522756bcdf4e00a4"
      "06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" default))
  '(ess-swv-pdflatex-commands '("texi2pdf" "pdflatex" "make" "xelatex"))
- '(evil-undo-system 'undo-tree)
  '(fci-rule-character-color "#192028")
  '(fci-rule-color "#282a2e")
  '(fill-column 80)

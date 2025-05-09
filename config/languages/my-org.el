@@ -7,6 +7,7 @@
     (global-set-key (kbd "C-c a") 'org-agenda))
   :config
   (progn
+    (setq org-startup-folded nil)
     (setq org-default-notes-file (concat (getenv "HOME") "/notes/notes.org") org-log-done t)
     (defface org-block-begin-line '((t ( org-meta-line :background "gray27" :overline "gray20" :underline "gray20" :height 0.8)))
       "Face used for the line delimiting the begin of source blocks.")
@@ -23,8 +24,19 @@
     (add-hook 'org-mode-hook 'org-indent-mode)
 
     (setq org-agenda-files
-          (list
-           (concat (getenv "HOME") "/org/agenda.org"))
+          (mapcar (apply-partially #'my-home-path "notes")
+                  '("agenda.org"
+                    "todo/todo.org"
+                    "todo/home.org")))
+
+    (setq org-capture-templates
+          `(("t" "Todo" entry
+             (file+headline ,(my-home-path "notes/todo/todo.org") "Tasks")
+             "* TODO %?\n  %U\n  %a")
+            ("h" "Todo" entry
+             (file+headline ,(my-home-path "notes/todo/home.org") "Home Tasks")
+             "* TODO %?\n  %U\n  %a")
+            ))
 
     (org-babel-do-load-languages
      'org-babel-load-languages
@@ -32,5 +44,6 @@
        (emacs-lisp . t)
        (python . t)))
 
-    (setq org-src-fontify-natively t))))
+    (setq org-src-fontify-natively t)))
+
 (provide 'my-org)

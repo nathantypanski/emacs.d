@@ -263,12 +263,13 @@ This command only has an effect on graphical frames."
 (add-hook 'prog-mode-hook #'my-enable-line-numbers)
 (add-hook 'text-mode-hook #'my-enable-line-numbers)
 
-;; TODO: is this a plugin or can we turn it on here?
-
-(use-package undo-tree
-  :ensure undo-tree
-  :config (progn
-    (global-undo-tree-mode)
-    (setq undo-tree-auto-save-history nil)))
+(defun my-home-path (&rest components)
+  "Join COMPONENTS relative to `user-home-directory`, even if some start with '/'."
+  (expand-file-name
+   (string-join (seq-remove #'string-empty-p
+                            (mapcar (lambda (s) (string-remove-prefix "/" s))
+                                    components))
+                "/")
+   (getenv "HOME")))
 
 (provide 'my-core)
