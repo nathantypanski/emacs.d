@@ -34,12 +34,14 @@
   "f"          'ido-find-file
   "k"          'kill-buffer
   "x"          'execute-extended-command
-  "s"          'consult-line
-  "R"          'ag-regexp
+  "sr"          'ag-regexp
+  "ss"          'consult-line
   "b"          'ido-switch-buffer
   "n"          'neotree-toggle)
 
 (evil-leader/set-key-for-mode 'git-commit-mode "qq" 'git-commit-abort)
+(evil-leader/set-key-for-mode 'git-commit-mode "C" 'with-editor-finish)
+
 (evil-leader/set-key-for-mode 'emacs-lisp-mode "." 'elisp-slime-nav-find-elisp-thing-at-point)
 
 (provide 'my-leader-keys)

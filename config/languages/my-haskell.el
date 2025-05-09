@@ -84,8 +84,7 @@
       (evil-define-key 'insert haskell-interactive-mode-map
         (kbd "<up>")          'my-haskell-interactive-history-previous
         (kbd "<down>")        'my-haskell-interactive-history-next
-        (kbd "RET")           'haskell-interactive-mode-return
-        (kbd "TAB")           'company-complete)
+        (kbd "RET")           'haskell-interactive-mode-return)
       (evil-define-key 'normal haskell-interactive-mode-map
         (kbd "<up>")          'my-haskell-interactive-history-previous
         (kbd "<down>")        'my-haskell-interactive-history-next
