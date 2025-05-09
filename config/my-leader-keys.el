@@ -35,17 +35,23 @@
   "f"          'ido-find-file
   "k"          'kill-buffer
   "x"          'execute-extended-command
-  "sr"         'ag-regexp
-  "ss"         'consult-line
+  "s r"        'ag-regexp
+  "s s"        'consult-line
   "b"          'ido-switch-buffer
-  "ot"         'org-todo-list
-  "oc"         'org-capture
-  "ol"         'org-store-link
-  "os"         'org-schedule
-  "oi"         'org-clock-in
-  "oo"         'org-clock-out
-  "oe"         'org-set-effort
-  "n"          'neotree-toggle)
+  "n"          'neotree-toggle
+  ;; org bindings
+  "o a"        'org-agenda
+  "o T"        'org-todo-list
+  "o p"        'org-priority
+  "o q"        'org-set-tags-command
+  "o d"        'org-deadline
+  "o c"        'org-capture
+  "o l"        'org-store-link
+  "o s"        'org-schedule
+  "o i"        'org-clock-in
+  "o o"        'org-clock-out
+  "o e"        'org-set-effort
+  )
 
 (evil-leader/set-key-for-mode 'git-commit-mode "qq" 'git-commit-abort)
 (evil-leader/set-key-for-mode 'git-commit-mode "C" 'with-editor-finish)

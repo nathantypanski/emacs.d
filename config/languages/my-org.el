@@ -30,13 +30,12 @@
                     "todo/home.org")))
 
     (setq org-capture-templates
-          `(("t" "Todo" entry
+          `(("t" "Tasks" entry
              (file+headline ,(my-home-path "notes/todo/todo.org") "Tasks")
              "* TODO %?\n  %U\n  %a")
-            ("h" "Todo" entry
+            ("h" "Home Tasks" entry
              (file+headline ,(my-home-path "notes/todo/home.org") "Home Tasks")
-             "* TODO %?\n  %U\n  %a")
-            ))
+             "* TODO %?\n  %u")))
 
     (org-babel-do-load-languages
      'org-babel-load-languages
@@ -44,6 +43,32 @@
        (emacs-lisp . t)
        (python . t)))
 
-    (setq org-src-fontify-natively t)))
+    (setq org-src-fontify-natively t)
+
+    (setq org-agenda-prefix-format
+      '((home  . "  %i %-12:c%?-12t% s")
+        (todo    . "  %i %-12:c [%e] %b ")
+        (tags    . "  %i %-12:c")
+        (search  . "  %i %-12:c")))
+
+    (with-eval-after-load 'evil
+      (evil-define-key 'normal org-mode-map
+        (kbd "<TAB>")     #'org-cycle
+        (kbd "o a")       #'org-agenda
+        (kbd "o T")       #'org-todo-list
+        (kbd "o c")       #'org-capture
+        (kbd "o d")       #'org-deadline
+        (kbd "o s")       #'org-schedule
+        (kbd "o p")       #'org-priority
+        (kbd "o q")       #'org-set-tags-command
+        (kbd "] ]")       #'org-next-visible-heading
+        (kbd "[ [")       #'org-previous-visible-heading
+        (kbd "o h")       #'org-insert-heading
+        (kbd "o s")       #'org-insert-subheading
+        (kbd "o <RET>")   #'org-insert-heading-after-current
+        (kbd "o }")       #'org-do-demote
+        (kbd "o {")       #'org-do-promote
+        (kbd "o a")       #'org-agenda)
+      )))
 
 (provide 'my-org)
