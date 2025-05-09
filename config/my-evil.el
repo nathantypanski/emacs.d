@@ -296,16 +296,14 @@ whether to call indent-according-to-mode."
     (evil-define-key 'motion python-mode-map "[{" 'evil-previous-open-brace)
     (evil-define-key 'motion python-mode-map "]}" 'evil-next-close-brace)
 
-;; copy/paste
-    ;; depends on my-copy.el
-  ;; Operator-compatible version of wl-copy (works with evil or M-x)
-  (defun my-wl-copy-operator (beg end &optional _type)
-    "Copy region to clipboard using wl-copy. Works with Evil and M-x."
-    (interactive
-     (if (use-region-p)
-         (list (region-beginning) (region-end))
-       (error "No active region")))
-    (my-wl-copy-region beg end))
+    ;; depends on my-copy
+    (defun my-wl-copy-operator (beg end &optional _type)
+      "Copy region to clipboard using wl-copy. Works with Evil and M-x."
+      (interactive
+       (if (use-region-p)
+           (list (region-beginning) (region-end))
+         (error "No active region")))
+      (my-wl-copy-region beg end))
 
   ;; Optional global keybindings (non-Evil)
   (global-set-key (kbd "C-c w c") #'my-wl-copy-operator)
@@ -339,7 +337,14 @@ whether to call indent-according-to-mode."
 
     ;; Evil bindings
     (define-key evil-visual-state-map (kbd "yg") #'my-wl-copy-evil-operator)
-    (define-key evil-normal-state-map (kbd "gP") #'my-wl-paste-evil))
+    (define-key evil-normal-state-map (kbd "gP") #'my-wl-paste-evil)
+
+(with-eval-after-load 'org
+  (evil-define-key 'normal org-mode-map
+    "g a" #'org-agenda
+    "g c" #'org-capture
+    "]]"  #'org-next-visible-heading
+    "[["  #'org-previous-visible-heading)))
 
 (use-package evil-collection
   :ensure evil-collection
