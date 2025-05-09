@@ -1,22 +1,22 @@
 
 (use-package vertico
-  :ensure vertico
+  :ensure t
   :init (vertico-mode))
 
 (use-package orderless
-  :ensure orderless
+  :ensure t
   :custom
   (completion-styles '(orderless flex)))
 
 ;; Rich annotations
 (use-package marginalia
-  :ensure marginalia
+  :ensure t
   :init
   (marginalia-mode))
 
 ;; Better commands
 (use-package consult
-  :ensure consult
+  :ensure t
   :bind (("C-s" . consult-line)
          ("M-y" . consult-yank-pop)
          ("C-x b" . consult-buffer)))
@@ -46,14 +46,16 @@
   ;; disable floating doc popup (bad in terminal)
   (corfu-popupinfo-mode nil)
   :config
-  ;; in terminal frames, use corfu-terminal and echo fallback
-  (unless (display-graphic-p)
-    (use-package corfu-terminal
-      :ensure t
-      :config
-      (corfu-terminal-mode +1))
-    (corfu-echo-mode +1)))
+  (progn
+    (global-set-key (kbd "M-TAB") #'corfu-complete)))
 
-(global-set-key (kbd "M-TAB") #'corfu-complete)
+(unless (display-graphic-p)
+  ;; in terminal frames, use corfu-terminal and echo fallback
+  (use-package corfu-terminal
+    :ensure t
+    :after corfu
+    :config
+    (corfu-terminal-mode +1))
+  (corfu-echo-mode +1))
 
 (provide 'my-completion)
