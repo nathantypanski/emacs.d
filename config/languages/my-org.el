@@ -51,15 +51,32 @@
         (tags    . "  %i %-12:c")
         (search  . "  %i %-12:c")))
 
+    ;; don't kill my windows
+    (setq
+     ;; Agenda views
+     org-agenda-window-setup       'current-window
+     org-agenda-restore-windows-after-quit t
+
+     ;; Capture
+     org-capture-window-setup      'current-window
+
+     ;; Refile targets (C-c C-w)
+     org-refile-window-setup       'current-window
+
+     ;; Tag searches (C-c a m)
+     org-tags-view-window-setup    'current-window
+
+     ;; Search (C-c a /)
+     org-search-view-window-setup  'current-window)
+
+    ;; (Optional) if you want also to restore windows after a capture or refile:
+    (setq
+     org-capture-restore-windows-after-quit    t
+     org-refile-restore-windows-after-quit     t)
+
     (with-eval-after-load 'evil
       (evil-define-key 'normal org-mode-map
         (kbd "<TAB>")     #'org-cycle
-        (kbd "o a")       #'org-agenda
-        (kbd "o T")       #'org-todo-list
-        (kbd "o c")       #'org-capture
-        (kbd "o d")       #'org-deadline
-        (kbd "o s")       #'org-schedule
-        (kbd "o p")       #'org-priority
         (kbd "o q")       #'org-set-tags-command
         (kbd "] ]")       #'org-next-visible-heading
         (kbd "[ [")       #'org-previous-visible-heading
@@ -68,6 +85,16 @@
         (kbd "o <RET>")   #'org-insert-heading-after-current
         (kbd "o }")       #'org-do-demote
         (kbd "o {")       #'org-do-promote
+        (kbd "o d")       #'org-deadline
+        (kbd "o s")       #'org-schedule
+        (kbd "o p")       #'org-priority
+        (kbd "o z")       #'org-add-note
+        (kbd "o t")       #'org-todo
+        (kbd "o g")       #'org-open-at-point
+        ;; the following should mirror leader keys
+        (kbd "o a")       #'org-agenda
+        (kbd "o T")       #'org-todo-list
+        (kbd "o c")       #'org-capture
         (kbd "o a")       #'org-agenda)
       )))
 

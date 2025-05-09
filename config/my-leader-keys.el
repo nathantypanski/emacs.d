@@ -43,14 +43,8 @@
   "o a"        'org-agenda
   "o T"        'org-todo-list
   "o p"        'org-priority
-  "o q"        'org-set-tags-command
-  "o d"        'org-deadline
   "o c"        'org-capture
   "o l"        'org-store-link
-  "o s"        'org-schedule
-  "o i"        'org-clock-in
-  "o o"        'org-clock-out
-  "o e"        'org-set-effort
   )
 
 (evil-leader/set-key-for-mode 'git-commit-mode "qq" 'git-commit-abort)
