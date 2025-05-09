@@ -101,7 +101,8 @@
         (kbd "o C o")     #'org-clock-out
         (kbd "o C r")     #'org-clock-report
         (kbd "o v t")     #'org-tags-expand
-        (kbd "M-<RET>")   #'org-insert-todo-heading-respect-content
+        (kbd "M-<RET>")   #'org-insert-heading-respect-content
+        (kbd "o i")       #'org-insert-todo-heading-respect-content
         ;; the following should mirror leader keys
         (kbd "o a")       #'org-agenda
         (kbd "o T")       #'org-todo-list
