@@ -26,3 +26,8 @@ projectile-bookmarks.eld
 **/*.~undo-tree~
 *.~undo-tree~
 eln-cache/*
+tramp
+transient/
+straight/
+bookmarks
+smex-items
