@@ -23,8 +23,6 @@
 ;; break long lines at word boundaries
 (visual-line-mode 1)
 
-(global-display-line-numbers-mode)
-
 ;; lockfiles are evil.
 (setq create-lockfiles nil)
 
@@ -260,7 +258,8 @@ This command only has an effect on graphical frames."
               (member major-mode '(org-mode eshell-mode
                                             shell-mode term-mode
                                             vterm-mode eshell-mode)))
-(display-line-numbers-mode)))
+    (display-line-numbers-mode)))
+
 (add-hook 'prog-mode-hook #'my-enable-line-numbers)
 (add-hook 'text-mode-hook #'my-enable-line-numbers)
 
