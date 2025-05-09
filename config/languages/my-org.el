@@ -22,7 +22,9 @@
     ;; better default
     (add-hook 'org-mode-hook 'org-indent-mode)
 
-    (setq org-agenda-files (list "~/org/agenda.org"))
+    (setq org-agenda-files
+          (list
+           (concat (getenv "HOME") "/org/agenda.org"))
 
     ;; https://emacs.stackexchange.com/questions/9528/is-it-possible-to-remove-emsp-from-clock-report-but-preserve-indentation
     (defun my-org-clocktable-indent-string (level)
@@ -41,5 +43,5 @@
        (emacs-lisp . t)
        (python . t)))
 
-    (setq org-src-fontify-natively t)))
+    (setq org-src-fontify-natively t))))
 (provide 'my-org)
