@@ -29,8 +29,7 @@
   :config
   (progn
     (after 'evil
-      (evil-define-key 'normal emacs-lisp-mode-map (kbd "K")
-        'my-jump-to-elisp-docs))))
+      (evil-define-key 'normal emacs-lisp-mode-map (kbd "K") 'my-jump-to-elisp-docs))))
 
 (defun my-setup-elisp-mode ()
   "Commands to be run at the start of Emacs Lisp mode."

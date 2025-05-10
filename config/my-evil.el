@@ -243,12 +243,12 @@ whether to call indent-according-to-mode."
     (add-hook 'evil-insert-state-entry-hook #'my/tty-cursor-update)
     (add-hook 'evil-insert-state-exit-hook  #'my/tty-cursor-update))
 
-    ;; (define-key evil-normal-state-map (kbd "RET") 'my-append-and-indent)
+    (define-key evil-normal-state-map (kbd "RET") 'my-append-and-indent)
     (define-key evil-normal-state-map (kbd "<S-return>") 'my-append-and-indent)
     (define-key evil-normal-state-map (kbd "C-w }") 'evil-window-rotate-downwards)
     (define-key evil-normal-state-map (kbd "C-w {") 'evil-window-rotate-upwards)
 
-    ;; (define-key evil-insert-state-map (kbd "RET") 'my-ret-and-indent)
+    (define-key evil-insert-state-map (kbd "RET") 'my-ret-and-indent)
     (define-key evil-insert-state-map (kbd "<S-backspace>")
       'backward-delete-char-untabify)
     (define-key evil-insert-state-map (kbd "<S-return>")
@@ -341,23 +341,17 @@ whether to call indent-according-to-mode."
     (define-key evil-insert-state-map (kbd "C-p") #'my-wl-paste-evil)
 
     (define-key evil-insert-state-map (kbd "C-SPC") #'completion-at-point)
-    (defun my-evil-correct-point-after-completion (&rest _)
-      (when (evil-insert-state-p)
-        (evil-insert 1)))
-    (advice-add 'completion-at-point :after #'my-evil-correct-point-after-completion)
+
 
     (defun my-evil-complete-or-indent ()
-      "Complete symbol at point, or indent line if nothing to complete."
+      "Try `completion-at-point`; otherwise indent."
       (interactive)
-      (let ((bounds (bounds-of-thing-at-point 'symbol)))
-        (if bounds
-            (completion-at-point)
-          (indent-for-tab-command))))
+      (if (and (bound-and-true-p completion-in-region-function)
+               (completion-at-point))
+          t
+        (indent-for-tab-command)))
 
     (define-key evil-insert-state-map (kbd "TAB") #'my-evil-complete-or-indent)
-
-    (after 'lsp-ui
-      (define-key evil-normal-state-map (kbd "K") #'my-lsp-doc-no-completion))
 
     ;; (define-key evil-insert-state-map (kbd "TAB") #'completion-at-point)
 )

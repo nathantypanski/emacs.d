@@ -17,6 +17,7 @@
   "TAB"        'my-hop-around-buffers
   "RET"        'my-spawn-terminal-here
   "<SPC>RET"   'my-tmux-new-frame
+  "b"          'consult-buffer
   "B"          'my-ibuffer-raise-other-window
   ","          'other-window
   "/"          'evilnc-comment-or-uncomment-lines
@@ -32,12 +33,11 @@
   "gl"         'magit-log
   "gd"         'magit-diff
   "l"          'consult-imenu
-  "f"          'ido-find-file
+  "f"          'find-file
   "k"          'kill-buffer
   "x"          'execute-extended-command
   "s r"        'ag-regexp
   "s s"        'consult-line
-  "b"          'ido-switch-buffer
   "n"          'neotree-toggle
   ;; org bindings
   "o a"        'org-agenda
