@@ -352,7 +352,40 @@ whether to call indent-according-to-mode."
         (indent-for-tab-command)))
 
     (define-key evil-insert-state-map (kbd "TAB") #'my-evil-complete-or-indent)
-    (define-key evil-normal-state-map (kbd "K") 'my-lsp-doc-no-completion)
+
+    (defun my-doc-at-point (&optional pos)
+      "Describe the thing at POS via LSP or, in shell buffers, via man‑page.
+With prefix (C‑u), prompt for POS; otherwise use point."
+      (interactive
+       (list (if current-prefix-arg
+                 (read-number "Position to describe: " (point))
+               (point))))
+      (let ((symbol (save-excursion
+                      (goto-char pos)
+                      (thing-at-point 'symbol t))))
+        (cond
+         ;; 1) LSP describe
+         ((and (fboundp #'lsp-describe-thing-at-point)
+               (bound-and-true-p lsp-mode))
+          (my-with-suppressed-capf
+           (lambda ()
+             (let ((help-window-select t))
+               (save-excursion
+                 (goto-char pos)
+                 (lsp-describe-thing-at-point))))))
+         ;; 2) Shell‑mode fallback → man
+         ((and symbol
+               (derived-mode-p 'sh-mode 'shell-mode 'eshell-mode 'term-mode 'comint-mode))
+          (if (executable-find "man")
+              (man symbol)
+            (user-error "Cannot find ‘man’ executable to look up %S" symbol)))
+         ;; 3) Woman fallback if you prefer Emacs‑internal
+         ((and symbol (fboundp #'woman-manual-entry))
+          (woman-manual-entry symbol))
+         (t
+          (user-error "No documentation available for %S" symbol)))))
+
+    (define-key evil-normal-state-map (kbd "K") 'my-doc-at-point)
 
     ;; (define-key evil-insert-state-map (kbd "TAB") #'completion-at-point)
 )

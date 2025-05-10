@@ -12,7 +12,7 @@
   :ensure t
   :commands (lsp lsp-deferred)
   :hook
-  ((nix-mode go-mode rust-mode) . lsp-deferred)
+  ((sh-mode nix-mode go-mode rust-mode) . lsp-deferred)
   ;; when LSP’s completion system is initialized, switch to Consult/Vertico
   :custom
   (ls-log-io nil)
@@ -60,12 +60,23 @@
       "Suppress `completion-in-region-function` while calling FN."
       (let ((completion-in-region-function #'completion--in-region))
         (funcall fn)))
-    (defun my-lsp-doc-no-completion ()
-      "Show LSP docs in the help window *and* select that window."
-      (interactive)
-      (my-with-suppressed-capf
-       (lambda ()
-         (let ((help-window-select t))
-           (lsp-describe-thing-at-point)))))))
+
+    (defun my-lsp-doc-no-completion (&optional pos)
+  "Show LSP docs in the help window *and* select that window.
+With a prefix argument, prompt for a buffer position to describe.
+If LSP isn’t active here, signal a user‑friendly error."
+  (interactive
+   (list (if current-prefix-arg
+             (read-number "Describe at buffer position: " (point))
+           (point))))
+  (my-with-suppressed-capf
+   (lambda ()
+     (let ((help-window-select t))
+       (save-excursion
+         (goto-char pos)
+         (if (and (fboundp #'lsp-describe-thing-at-point)
+                  (bound-and-true-p lsp-mode))
+             (lsp-describe-thing-at-point)
+           (user-error "No LSP available to describe here")))))))))
 
 (provide 'my-lsp)
