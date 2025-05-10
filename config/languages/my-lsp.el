@@ -24,6 +24,8 @@
   (lsp-log-io t)
   ;; reduces flicker
   (lsp-progress-spinner-type 'none)
+  (lsp-enable-folding nil)
+  (lsp-lens-enable nil)
   :config
   ;; tweak a couple of defaults
   (progn
@@ -35,14 +37,17 @@
      lsp-prefer-flymake nil
      lsp-modeline-diagnostics-enable t
      lsp-gopls-server-path "/home/ndt/.nix-profile/bin/gopls")
-    ;;"/nix/store/pdhabp3icm7bd8ym9lb0labmw91qcfj5-gopls-0.18.1/bin/gopls")
-    ))
+    (advice-add
+     'lsp-lens--make
+     :filter-return
+     (lambda (text)
+       (replace-regexp-in-string "[^[:ascii:]]+" "" text)))))
 
 (use-package lsp-ui
   :ensure t
   :after lsp-mode
   :custom
-  (lsp-ui-sideline-enable t)
+  (lsp-ui-sideline-enable nil)
   (lsp-ui-doc-enable t)
   (lsp-ui-doc-show-with-cursor nil)
   (lsp-ui-doc-show-with-mouse nil)

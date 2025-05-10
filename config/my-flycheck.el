@@ -9,9 +9,9 @@
     (setq flycheck-check-syntax-automatically '(save mode-enabled))
     (setq flycheck-checkers (delq 'emacs-lisp-checkdoc flycheck-checkers))
     (setq flycheck-checkers (delq 'html-tidy flycheck-checkers))
-    (setq flycheck-rust-cargo-executable "/usr/bin/cargo")
-    (setq flycheck-go-vet-executable "/usr/bin/go vet")
-    (setq flycheck-go-fmt-executable "/usr/bin/go fmt")
+    ;; (setq flycheck-rust-cargo-executable "/usr/bin/cargo")
+    ;; (setq flycheck-go-vet-executable "/usr/bin/go vet")
+    ;; (setq flycheck-go-fmt-executable "/usr/bin/go fmt")
     (setq flycheck-display-errors-function nil)
     (add-hook 'after-init-hook #'global-flycheck-mode)
 
