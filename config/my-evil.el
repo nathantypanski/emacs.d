@@ -342,6 +342,24 @@ whether to call indent-according-to-mode."
 
     (define-key evil-insert-state-map (kbd "C-SPC") #'completion-at-point)
 
+    (after 'lsp-mode
+    (defun my-lsp-doc-no-completion (&optional pos)
+      "Show LSP docs in the help window *and* select that window.
+With a prefix argument, prompt for a buffer position to describe.
+If LSP isn’t active here, signal a user‑friendly error."
+      (interactive
+       (list (if current-prefix-arg
+                 (read-number "Describe at buffer position: " (point))
+                 (point))))
+      (my-with-suppressed-capf
+       (lambda ()
+         (let ((help-window-select t))
+           (save-excursion
+             (goto-char pos)
+             (if (and (fboundp #'lsp-describe-thing-at-point)
+                      (bound-and-true-p lsp-mode))
+                 (lsp-describe-thing-at-point)
+                 (user-error "No LSP available to describe here"))))))))
 
     (defun my-evil-complete-or-indent ()
       "Try `completion-at-point`; otherwise indent."
@@ -353,37 +371,49 @@ whether to call indent-according-to-mode."
 
     (define-key evil-insert-state-map (kbd "TAB") #'my-evil-complete-or-indent)
 
+    (defun my-with-suppressed-capf (fn)
+      "Temporarily restore the raw CAPF handler around FN."
+      (let ((completion-in-region-function #'completion--in-region))
+        (funcall fn)))
+
     (defun my-doc-at-point (&optional pos)
-      "Describe the thing at POS via LSP or, in shell buffers, via man‑page.
-With prefix (C‑u), prompt for POS; otherwise use point."
-      (interactive
-       (list (if current-prefix-arg
-                 (read-number "Position to describe: " (point))
-               (point))))
-      (let ((symbol (save-excursion
-                      (goto-char pos)
-                      (thing-at-point 'symbol t))))
+      "Describe the thing at POS via man, LSP hover, or Woman, and select its window.
+With `C-u` prefix, prompt for a position; otherwise use point."
+      (interactive "d")  ; reads POS or prompts if prefix given
+      (let* ((symbol (save-excursion
+                       (goto-char pos)
+                       (thing-at-point 'symbol t)))
+             (man-spec (and symbol (concat "1 " symbol))))
         (cond
-         ;; 1) LSP describe
-         ((and (fboundp #'lsp-describe-thing-at-point)
-               (bound-and-true-p lsp-mode))
-          (my-with-suppressed-capf
-           (lambda ()
-             (let ((help-window-select t))
-               (save-excursion
-                 (goto-char pos)
-                 (lsp-describe-thing-at-point))))))
-         ;; 2) Shell‑mode fallback → man
-         ((and symbol
-               (derived-mode-p 'sh-mode 'shell-mode 'eshell-mode 'term-mode 'comint-mode))
-          (if (executable-find "man")
-              (man symbol)
-            (user-error "Cannot find ‘man’ executable to look up %S" symbol)))
-         ;; 3) Woman fallback if you prefer Emacs‑internal
-         ((and symbol (fboundp #'woman-manual-entry))
-          (woman-manual-entry symbol))
-         (t
-          (user-error "No documentation available for %S" symbol)))))
+          ;; 1) Shell-script or interactive shell → pop man(1)
+          ((and symbol
+                (derived-mode-p 'sh-mode
+                                'shell-mode 'eshell-mode
+                                'term-mode  'comint-mode))
+           (if (executable-find "man")
+               (let ((buf (man man-spec)))
+                 (pop-to-buffer buf))
+               (user-error "No ‘man’ executable found to look up %s" symbol)))
+
+          ;; 2) LSP hover → help buffer + select
+          ((and (fboundp #'lsp-describe-thing-at-point)
+                (bound-and-true-p lsp-mode))
+           (my-with-suppressed-capf
+            (lambda ()
+              (let ((help-window-select t))
+                (save-excursion
+                  (goto-char pos)
+                  (lsp-describe-thing-at-point))))))
+
+          ;; 3) Woman fallback → select
+          ((and symbol (fboundp #'woman-manual-entry))
+           (pop-to-buffer (woman-manual-entry symbol)))
+
+          ;; 4) Nothing found → friendly error
+          (t
+           (user-error "No documentation available for %s"
+                       (or symbol "<nothing>"))))))
+
 
     (define-key evil-normal-state-map (kbd "K") 'my-doc-at-point)
 
