@@ -2,6 +2,10 @@
 (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
 (add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)
 
+(when (not (display-graphic-p))
+  (setq eldoc-echo-area-prefer-doc-buffer t
+        eldoc-echo-area-use-multiline-p nil
+        eldoc-echo-area-prefer-doc-buffer t))
 (use-package slime
   :ensure slime)
 
