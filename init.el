@@ -2,18 +2,19 @@
 (add-to-list 'load-path (concat user-emacs-directory "elisp"))
 (add-to-list 'load-path (concat user-emacs-directory "config" "/eyecandy"))
 (add-to-list 'load-path (concat user-emacs-directory "config" "/languages"))
-(add-to-list 'load-path "/usr/share/emacs/site-lisp")
+;; (add-to-list 'load-path "/usr/share/emacs/site-lisp")
 
 ;; (setq package-archives '(("melpa" . "https://stable.melpa.org/packages/")
 ;;                          ("gnu" . "https://elpa.gnu.org/packages/")))
 
-(setq package-enable-at-startup nil)
 
-;; boostrap straight.el
 (defvar bootstrap-version)
 (let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 6))
+       (expand-file-name
+        "straight/repos/straight.el/bootstrap.el"
+        (or (bound-and-true-p straight-base-dir)
+            user-emacs-directory)))
+      (bootstrap-version 7))
   (unless (file-exists-p bootstrap-file)
     (with-current-buffer
         (url-retrieve-synchronously
@@ -22,9 +23,10 @@
       (goto-char (point-max))
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
-
 (setq straight-use-package-by-default :t)
 (straight-use-package 'use-package)
+
+(setq debug-on-quit t)
 
 (require 'my-env)
 (require 'my-core)
@@ -33,7 +35,8 @@
 (require 'my-keychain)
 (require 'my-dired)
 (require 'my-buffers)
-(require 'my-tmux-frames)
+  (when (getenv "TMUX")
+(require 'my-tmux-frames))
 (require 'my-elisp)
 (require 'my-tags)
 (require 'my-spelling)
@@ -41,14 +44,13 @@
 (require 'my-projects)
 (require 'my-ag)
 (require 'my-interaction)
-(require 'my-flycheck)
 (require 'my-comint)
 (require 'my-unbound-keys)
 (require 'my-keys)
 (require 'my-copy)
 (require 'my-gpt)
 (require 'my-languages)
-(require 'my-shell)
+;; (require 'my-shell)
 (require 'my-filetypes)
 (require 'my-term)
 (require 'my-magit)

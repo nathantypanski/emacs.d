@@ -43,5 +43,4 @@
   (rainbow-delimiters-mode-enable))
 
 (require 'my-modeline)
-
 (provide 'my-eyecandy)

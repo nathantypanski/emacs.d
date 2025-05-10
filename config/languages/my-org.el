@@ -46,10 +46,10 @@
     (setq org-src-fontify-natively t)
 
     (setq org-agenda-prefix-format
-      '((home  . "  %i %-12:c%?-12t% s")
-        (todo    . "  %i %-12:c [%e] %b ")
-        (tags    . "  %i %-12:c")
-        (search  . "  %i %-12:c")))
+          '((home  . "  %i %-12:c%?-12t% s")
+            (todo    . "  %i %-12:c [%e] %b ")
+            (tags    . "  %i %-12:c")
+            (search  . "  %i %-12:c")))
 
     ;; don't kill my windows
     (setq

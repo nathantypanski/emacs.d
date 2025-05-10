@@ -6,8 +6,7 @@
   :init
   (let ((api-key (getenv "OPENAI_API_KEY")))
     (if api-key
-        (setq gptel-api-key api-key)
-      (warn "OPENAI_API_KEY not set; gptel will not work without it.")))
+        (setq gptel-api-key api-key)))
   :config
   ;; Set default mode for gptel conversation
   (setq gptel-default-mode 'org-mode)

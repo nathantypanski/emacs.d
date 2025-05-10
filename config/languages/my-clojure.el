@@ -1,9 +1,7 @@
 (use-package clojure-mode
   :ensure clojure-mode
   :config
-  (progn
-    )
-)
+  (progn))
 
 (use-package cider
   :ensure cider
@@ -133,8 +131,5 @@
         (kbd "C-c M-t") 'cider-toggle-trace
         (kbd "C-c C-x") 'cider-refresh
         (kbd "C-x C-e") 'cider-eval-last-sexp
-        (kbd "C-c C-r") 'cider-eval-region
-        )
-    ))
-)
+        (kbd "C-c C-r") 'cider-eval-region))))
 (provide 'my-clojure)

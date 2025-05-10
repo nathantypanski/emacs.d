@@ -21,6 +21,15 @@
          ("M-y" . consult-yank-pop)
          ("C-x b" . consult-buffer)))
 
+;; Better commands
+(use-package consult-lsp
+  :ensure t
+  :after lsp-mode)
+
+;; (use-package consult-lsp
+;;   :ensure t
+;;   :after lsp-mode)
+
 ;; Context-sensitive actions (like Helm's TAB preview)
 (use-package embark
   :ensure embark

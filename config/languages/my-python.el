@@ -15,6 +15,7 @@
     (when (featurep 'python) (unload-feature 'python t))
     (autoload 'python-mode "python-mode" "Python editing mode." t)
     (use-package python-mode
+      :defer t
       :commands python-mode
       :mode "\\.py\\'"
       :init
