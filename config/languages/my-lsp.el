@@ -56,8 +56,11 @@
       (let ((completion-in-region-function #'completion--in-region))
         (funcall fn)))
     (defun my-lsp-doc-no-completion ()
-      "Show LSP docs without triggering completions."
+      "Show LSP docs in the help window *and* select that window."
       (interactive)
-      (my-with-suppressed-capf #'lsp-describe-thing-at-point))))
+      (my-with-suppressed-capf
+       (lambda ()
+         (let ((help-window-select t))
+           (lsp-describe-thing-at-point)))))))
 
 (provide 'my-lsp)
