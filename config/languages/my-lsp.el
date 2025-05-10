@@ -56,22 +56,4 @@
       (interactive)
       (my-with-suppressed-capf #'lsp-ui-doc-glance))))
 
-;; (use-package lsp-ui
-;;   :straight
-;;   (lsp-ui :type git :host github :repo "emacs-lsp/lsp-ui")
-;;   :hook (lsp-mode . lsp-ui-mode)
-;;   :ensure t
-;;   :config
-;;   (progn (setq
-;;    lsp-ui-sideline-enable t
-;;    lsp-ui-doc-enable t
-;; )))
-
-;; simple version of lsp
-;; (use-package eglot
-;;   :ensure t
-;;   :hook ((nix-mode go-mode rust-mode python-mode js-mode) . eglot-ensure)
-;;   :config
-;;   (setq eglot-extend-to-xref t)) ;; optional: better rename behavior
-
 (provide 'my-lsp)
