@@ -26,8 +26,6 @@
 (setq straight-use-package-by-default :t)
 (straight-use-package 'use-package)
 
-(setq debug-on-quit t)
-
 (require 'my-env)
 (require 'my-core)
 (require 'my-functions)
@@ -52,6 +50,7 @@
 (require 'my-languages)
 ;; (require 'my-shell)
 (require 'my-filetypes)
+(require 'my-flycheck)
 (require 'my-term)
 (require 'my-magit)
 (require 'my-android)

@@ -4,9 +4,6 @@
 
 (use-package flycheck
   :ensure flycheck
-  :init
-  (progn
-        (add-hook 'after-init-hook #'global-flycheck-mode))
   :config
   (progn
     (setq flycheck-check-syntax-automatically '(save mode-enabled))
@@ -15,6 +12,8 @@
     (setq flycheck-rust-cargo-executable "/usr/bin/cargo")
     (setq flycheck-go-vet-executable "/usr/bin/go vet")
     (setq flycheck-go-fmt-executable "/usr/bin/go fmt")
+    (setq flycheck-display-errors-function nil)
+    (add-hook 'after-init-hook #'global-flycheck-mode)
 
     (defun my-flycheck-list-errors ()
       "Jump to flycheck errors and switch to the errorlist buffer"

@@ -1,70 +1,72 @@
-
 (use-package vertico
   :ensure t
-  :init (vertico-mode))
+  :init
+  (vertico-mode))
 
 (use-package orderless
   :ensure t
   :custom
-  (completion-styles '(orderless flex)))
+  (completion-styles '(orderless flex))
+  (completion-category-defaults nil)
+  (completion-category-overrides '((file (styles partial-completion)))))
 
-;; Rich annotations
 (use-package marginalia
   :ensure t
   :init
-  (marginalia-mode))
+  (unless (not (display-graphic-p))  ; marginalia generally works in tty too
+    (marginalia-mode)))
 
-;; Better commands
 (use-package consult
   :ensure t
   :bind (("C-s" . consult-line)
          ("M-y" . consult-yank-pop)
          ("C-x b" . consult-buffer)))
 
-;; Better commands
 (use-package consult-lsp
   :ensure t
   :after lsp-mode)
 
-;; (use-package consult-lsp
-;;   :ensure t
-;;   :after lsp-mode)
-
-;; Context-sensitive actions (like Helm's TAB preview)
 (use-package embark
-  :ensure embark
+  :ensure t
   :bind (("C-." . embark-act)))
 
 (use-package corfu
   :ensure t
-  :config
-  ;; enable Corfu globally
-  (progn
-    (global-corfu-mode))
-  ;; TAB completes, fallback to indent
-  (setq tab-always-indent 'complete)
+  :init
+  (global-corfu-mode)
   :custom
-  ;; auto popup after delay
+  (tab-always-indent 'complete)
   (corfu-auto t)
   (corfu-auto-delay 0.1)
-  ;; wrap around candidates
   (corfu-cycle t)
-  ;; don’t preselect exact match
   (corfu-preselect-first nil)
   (corfu-quit-no-match 'separator)
-  ;; disable floating doc popup (bad in terminal)
-  (corfu-popupinfo-mode nil)
   :config
-  (progn
-    (global-set-key (kbd "M-TAB") #'corfu-complete)))
+  (when (display-graphic-p)
+    (corfu-popupinfo-mode -1))
+  (global-set-key (kbd "M-TAB") #'corfu-complete))
 
 (unless (display-graphic-p)
-  ;; in terminal frames, use corfu-terminal and echo fallback
   (use-package corfu-terminal
     :ensure t
     :after corfu
     :config
-    (corfu-terminal-mode +1))
-  (corfu-echo-mode +1))
+    (corfu-terminal-mode +1)
+    (setq corfu-count 5) ; reduce candidates to prevent overlap
+    (setq corfu-scroll-margin 0)
+    ;; disable inline echo to avoid overlap in echo area
+    (corfu-echo-mode -1)))
+
+(setq eldoc-echo-area-prefer-doc-buffer t)
+
+(use-package cape
+  :ensure t
+  :config
+  (progn
+    (after 'lsp-mode
+      (add-hook 'lsp-mode-hook
+                (lambda ()
+                  (setq-local completion-at-point-functions
+                              (list (cape-capf-buster #'lsp-completion-at-point))))))))
 
 (provide 'my-completion)
