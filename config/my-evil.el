@@ -352,6 +352,7 @@ whether to call indent-according-to-mode."
         (indent-for-tab-command)))
 
     (define-key evil-insert-state-map (kbd "TAB") #'my-evil-complete-or-indent)
+    (define-key evil-normal-state-map (kbd "K") 'my-lsp-doc-no-completion)
 
     ;; (define-key evil-insert-state-map (kbd "TAB") #'completion-at-point)
 )

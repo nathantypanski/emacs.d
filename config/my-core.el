@@ -272,6 +272,6 @@ This command only has an effect on graphical frames."
                 "/")
    (getenv "HOME")))
 
-(advice-add 'company-mode :override (lambda (&rest _) (message "❌ company-mode blocked")))
+;;(advice-add 'company-mode :override (lambda (&rest _) (message "❌ company-mode blocked")))
 
 (provide 'my-core)

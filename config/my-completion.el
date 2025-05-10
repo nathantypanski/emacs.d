@@ -53,4 +53,27 @@
   (semantic-mode -1))
 (setq completion-auto-help t)
 
+(use-package yasnippet
+  :ensure t
+  :init (yas-global-mode 1))
+
+(use-package company
+  :after yasnippet
+  :ensure t
+  :hook (after-init . global-company-mode)
+  :custom
+  (company-backends '(company-capf company-yasnippet))
+  (company-idle-delay 0.1)
+  (company-minimum-prefix-length 1)
+  (company-selection-wrap-around t)
+  (company-tooltip-align-annotations t)
+  (company-auto-commit nil)
+  (company-auto-commit-chars nil)
+  :config
+  (define-key company-active-map (kbd "TAB")   #'company-select-next)
+  (define-key company-active-map (kbd "<tab>") #'company-select-next)
+  (define-key company-active-map (kbd "S-TAB") #'company-select-previous)
+  (define-key company-active-map (kbd "<backtab>") #'company-select-previous)
+  (define-key company-active-map (kbd "RET")   #'company-complete-selection))
+
 (provide 'my-completion)
