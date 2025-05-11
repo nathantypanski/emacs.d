@@ -1,13 +1,16 @@
 
 (use-package zenburn-theme
-   :ensure zenburn-theme
-   :config
-   (progn
-     (unless noninteractive
-     (load-theme 'zenburn t))))
+  :ensure zenburn-theme
+  :config
+  (progn
+    (unless noninteractive
+      (load-theme 'zenburn t))))
 
 (global-hl-line-mode t)
-(set-face-background 'hl-line "#3e4446")
+
+;; Color derived from zenburn, but I want the current focus to be obvious.
+(set-face-background 'hl-line "#2a2e2e")
+;; GPT: any other similar customizations I might make? Like line number bg?
 
 ;; Show parentheses
 (show-paren-mode 1)
