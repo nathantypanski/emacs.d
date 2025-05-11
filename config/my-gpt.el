@@ -20,10 +20,4 @@
   ;; is this correct? I want to make sure my directive is default.
   (add-to-list 'gptel-directives (cons 'Inline my-gptel-system-prompt)))
 
-  ;; inside gptel-menu, if a region is selected and i hit - to let me customize an option, it always errors with the following:
-  ;;
-  ;;  M-[ < M-[ < is undefined
-  ;;
-  ;; this makes no sense to me.
-
 (provide 'my-gpt)
