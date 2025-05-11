@@ -57,13 +57,6 @@
   :ensure t
   :init (yas-global-mode 1))
 
-;; BUG: Hop to a new buffer, enter insert state, start typing ("k" was 2nd char in "ok")
-;;
-;; Debugger entered--Lisp error: (wrong-type-argument stringp nil)
-;;   company-insertion-on-trigger-p("k")
-;;   company--continue()
-;;   company--perform()
-;;   company-post-command()
 (use-package company
   :after yasnippet
   :ensure t
@@ -81,6 +74,40 @@
   (define-key company-active-map (kbd "<tab>") #'company-select-next)
   (define-key company-active-map (kbd "S-TAB") #'company-select-previous)
   (define-key company-active-map (kbd "<backtab>") #'company-select-previous)
-  (define-key company-active-map (kbd "RET")   #'company-complete-selection))
+  (define-key company-active-map (kbd "RET")   #'company-complete-selection)
+
+  ;; BUG: Hop to a new buffer, enter insert
+  ;;
+  ;;     (wrong-type-argument stringp nil)
+  ;;     company-insertion-on-trigger-p(")")
+  ;;     company--continue()
+  ;;     company--perform()
+  ;;     company-post-command()
+  ;;
+  ;; Constant headache (for `)`, but also real characters like `k`! Company:
+  ;;
+  ;; This is a known bug pattern in company-mode, often triggered by
+  ;; non-character input, manual typing after rejecting a completion, or certain
+  ;; backends misbehaving (especially when returning nil or incomplete data
+  ;; during post-command processing).
+  ;;
+  ;; The key part of the trace:
+  ;;
+  ;;     company-insertion-on-trigger-p(")")
+  ;;
+  ;; suggests it's trying to check whether `)` is a trigger character — but
+  ;; something inside company-insertion-on-trigger-p is still trying to handle a
+  ;; nil somewhere (most likely `company--prefix` or backend-provided data is
+  ;; nil).
+  ;;
+  ;; Fix: Patch company-insertion-on-trigger-p to guard nil
+  ;;
+  ;; This is the cleanest and safest workaround for now:
+  ;;
+  (advice-add 'company-insertion-on-trigger-p :around
+            (lambda (orig char)
+              (when (and char (stringp char))
+                (funcall orig char))))
+)
 
 (provide 'my-completion)
