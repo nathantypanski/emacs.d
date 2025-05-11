@@ -57,6 +57,13 @@
   :ensure t
   :init (yas-global-mode 1))
 
+;; BUG: Hop to a new buffer, enter insert state, start typing ("k" was 2nd char in "ok")
+;;
+;; Debugger entered--Lisp error: (wrong-type-argument stringp nil)
+;;   company-insertion-on-trigger-p("k")
+;;   company--continue()
+;;   company--perform()
+;;   company-post-command()
 (use-package company
   :after yasnippet
   :ensure t
