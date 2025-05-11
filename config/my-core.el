@@ -272,6 +272,11 @@ This command only has an effect on graphical frames."
                 "/")
    (getenv "HOME")))
 
-;;(advice-add 'company-mode :override (lambda (&rest _) (message "❌ company-mode blocked")))
+;; Set undo-limit to a large value (e.g., 100 MB of changes)
+(setq undo-limit 100000000) ; 100,000,000 characters
+
+;; Set undo-outer-limit to an even larger value (e.g., 500 MB of changes)
+;; This acts as a hard cap. Make it large enough for your needs.
+(setq undo-outer-limit 500000000) ; 500,000,000 characters
 
 (provide 'my-core)
