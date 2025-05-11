@@ -5,11 +5,11 @@
   (vertico-mode)
   :config
   (defun my-vertico-toggle-capf ()
-  "Use `consult-completion-in-region` when Vertico is on, else default."
-  (setq-local completion-in-region-function
-              (if vertico-mode
-                  #'consult-completion-in-region
-                #'completion--in-region)))
+    "Use `consult-completion-in-region` when Vertico is on, else default."
+    (setq-local completion-in-region-function
+                (if vertico-mode
+                    #'consult-completion-in-region
+                  #'completion--in-region)))
 
   (setq vertioc-cycle t))
 
@@ -53,22 +53,17 @@
   (semantic-mode -1))
 (setq completion-auto-help t)
 
-(use-package yasnippet
-  :ensure t
-  :init (yas-global-mode 1))
-
 (use-package company
-  :after yasnippet
   :ensure t
-  :hook (after-init . global-company-mode)
+  :hook ((prog-mode . company-mode))
   :custom
-  (company-backends '(company-capf company-yasnippet))
-  (company-idle-delay 0.1)
+  (company-backends '(company-capf))
+  (company-idle-delay 0.8)
   (company-minimum-prefix-length 1)
   (company-selection-wrap-around t)
   (company-tooltip-align-annotations t)
-  (company-auto-commit nil)
-  (company-auto-commit-chars nil)
+  ;; (company-auto-commit nil)
+  ;; (company-auto-commit-chars nil)
   :config
   (define-key company-active-map (kbd "TAB")   #'company-select-next)
   (define-key company-active-map (kbd "<tab>") #'company-select-next)
@@ -100,14 +95,25 @@
   ;; nil somewhere (most likely `company--prefix` or backend-provided data is
   ;; nil).
   ;;
-  ;; Fix: Patch company-insertion-on-trigger-p to guard nil
+  ;; HACK Fix: Patch company-insertion-on-trigger-p to guard nil
   ;;
   ;; This is the cleanest and safest workaround for now:
   ;;
-  (advice-add 'company-insertion-on-trigger-p :around
-            (lambda (orig char)
-              (when (and char (stringp char))
-                (funcall orig char))))
-)
+  ;; (advice-add 'company-insertion-on-trigger-p :around
+  ;;             (lambda (orig char)
+  ;;               (when (and char (stringp char))
+  ;;                 (funcall orig char))))
+
+  ;; Disable company autopopup for completions if point is in a comment.
+  (defun my-company-inhibit-in-comments (fun &rest args)
+    "Inhibit company idle completion in comments."
+    (if (nth 4 (syntax-ppss))
+        ;; If inside a comment, require manual completion
+        (let ((company-idle-delay nil))
+          (apply fun args))
+      ;; Else, follow normal behavior
+      (apply fun args)))
+
+  (advice-add 'company-idle-begin :around #'my-company-inhibit-in-comments))
 
 (provide 'my-completion)

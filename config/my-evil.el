@@ -343,33 +343,33 @@ whether to call indent-according-to-mode."
     (define-key evil-insert-state-map (kbd "C-SPC") #'completion-at-point)
 
     (after 'lsp-mode
-    (defun my-lsp-doc-no-completion (&optional pos)
-      "Show LSP docs in the help window *and* select that window.
+      (defun my-lsp-doc-no-completion (&optional pos)
+        "Show LSP docs in the help window *and* select that window.
 With a prefix argument, prompt for a buffer position to describe.
 If LSP isn’t active here, signal a user‑friendly error."
-      (interactive
-       (list (if current-prefix-arg
-                 (read-number "Describe at buffer position: " (point))
+        (interactive
+         (list (if current-prefix-arg
+                   (read-number "Describe at buffer position: " (point))
                  (point))))
-      (my-with-suppressed-capf
-       (lambda ()
-         (let ((help-window-select t))
-           (save-excursion
-             (goto-char pos)
-             (if (and (fboundp #'lsp-describe-thing-at-point)
-                      (bound-and-true-p lsp-mode))
-                 (lsp-describe-thing-at-point)
+        (my-with-suppressed-capf
+         (lambda ()
+           (let ((help-window-select t))
+             (save-excursion
+               (goto-char pos)
+               (if (and (fboundp #'lsp-describe-thing-at-point)
+                        (bound-and-true-p lsp-mode))
+                   (lsp-describe-thing-at-point)
                  (user-error "No LSP available to describe here"))))))))
 
-    (defun my-evil-complete-or-indent ()
-      "Try `completion-at-point`; otherwise indent."
-      (interactive)
-      (if (and (bound-and-true-p completion-in-region-function)
-               (completion-at-point))
-          t
-        (indent-for-tab-command)))
+    ;; (defun my-evil-complete-or-indent ()
+    ;;   "Try `completion-at-point`; otherwise indent."
+    ;;   (interactive)
+    ;;   (if (and (bound-and-true-p completion-in-region-function)
+    ;;            (completion-at-point))
+    ;;       t
+    ;;     (indent-for-tab-command)))
 
-    (define-key evil-insert-state-map (kbd "TAB") #'my-evil-complete-or-indent)
+    ;; (define-key evil-insert-state-map (kbd "TAB") #'my-evil-complete-or-indent)
 
     (defun my-with-suppressed-capf (fn)
       "Temporarily restore the raw CAPF handler around FN."

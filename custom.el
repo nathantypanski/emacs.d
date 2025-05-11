@@ -29,8 +29,6 @@
  '(ansi-term-color-vector
    [unspecified "#14191f" "#d15120" "#81af34" "#deae3e" "#7e9fc9" "#a878b5"
                 "#7e9fc9" "#dcdddd"] t)
- '(company-auto-complete t)
- '(company-insertion-on-trigger t)
  '(custom-safe-themes
    '("fc1275617f9c8d1c8351df9667d750a8e3da2658077cfdda2ca281a2ebc914e0"
      "3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa"
