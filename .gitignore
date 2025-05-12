@@ -31,3 +31,4 @@ transient/
 straight/
 bookmarks
 smex-items
+.lsp-session*
