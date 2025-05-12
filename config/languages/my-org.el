@@ -112,4 +112,8 @@
         (kbd "o a")       #'org-agenda)
       )))
 
+(use-package org-roam
+  :after org
+  :ensure t)
+
 (provide 'my-org)
