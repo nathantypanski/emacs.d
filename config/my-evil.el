@@ -5,9 +5,11 @@
 
 ;; In order to work properly, we need to load evil-leader-mode before we load
 ;; evil-mode.
+(setq evil-want-keybinding nil)
 (use-package evil-leader
   :commands (evil-leader-mode global-evil-leader-mode)
   :ensure evil-leader
+  :after evil
   :demand evil-leader
   :init (setq evil-want-integration t
               ;; https://github.com/emacs-evil/evil-collection/issues/60
@@ -17,11 +19,15 @@
     (evil-leader/set-leader ",")
     (global-evil-leader-mode t)))
 
+  ;; evil-collection requires this set before loading evil
+  (setq evil-want-keybinding nil)
 ;; Here's what we've all been waiting for.
 ;; Recreate Vim inside Emacs.
 (use-package evil
   :ensure evil
   :init
+  ;; evil-collection requires this set before loading evil
+  (setq evil-want-keybinding nil)
   :config
   (progn
 
@@ -288,15 +294,6 @@ whether to call indent-according-to-mode."
     (evil-ex-define-cmd "Qa" 'evil-quit-all)
     (evil-ex-define-cmd "QA" 'evil-quit-all)
 
-    (evil-define-key 'motion python-mode-map "]]" 'python-nav-forward-block)
-    (evil-define-key 'motion python-mode-map "][" 'python-nav-end-of-block)
-    (evil-define-key 'motion python-mode-map "[[" 'python-nav-backward-block)
-    (evil-define-key 'motion python-mode-map "[]" 'my-python-nav-backward-end-of-block)
-    (evil-define-key 'motion python-mode-map "[(" 'evil-previous-open-paren)
-    (evil-define-key 'motion python-mode-map "])" 'evil-next-close-paren)
-    (evil-define-key 'motion python-mode-map "[{" 'evil-previous-open-brace)
-    (evil-define-key 'motion python-mode-map "]}" 'evil-next-close-brace)
-
     ;; depends on my-copy
     (defun my-wl-copy-operator (beg end &optional _type)
       "Copy region to clipboard using wl-copy. Works with Evil and M-x."
@@ -420,9 +417,14 @@ With `C-u` prefix, prompt for a position; otherwise use point."
     ;; (define-key evil-insert-state-map (kbd "TAB") #'completion-at-point)
 )
 
+(use-package evil-paredit
+  :ensure evil-paredit
+  :after evil paredit)
+
 (use-package evil-collection
   :ensure evil-collection
-  :config (progn
-    (evil-collection-init)))
+  :after evil
+  :config
+  (evil-collection-init))
 
 (provide 'my-evil)

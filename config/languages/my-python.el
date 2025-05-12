@@ -91,9 +91,19 @@
         (defun py-help-at-point (&optional debug)
           "Print help on symbol at point.
 
-If symbol is defined in current buffer, jump to it's definition
-Optional \\[universal-argument] used for debugging, will prevent deletion of temp file. "
+If symbol is defined in current buff "
           (interactive "P")
-          ())))))
+          ())
+
+        (after 'evil
+
+          (evil-define-key 'motion python-mode-map "]]" 'python-nav-forward-block)
+          (evil-define-key 'motion python-mode-map "][" 'python-nav-end-of-block)
+          (evil-define-key 'motion python-mode-map "[[" 'python-nav-backward-block)
+          (evil-define-key 'motion python-mode-map "[]" 'my-python-nav-backward-end-of-block)
+          (evil-define-key 'motion python-mode-map "[(" 'evil-previous-open-paren)
+          (evil-define-key 'motion python-mode-map "])" 'evil-next-close-paren)
+          (evil-define-key 'motion python-mode-map "[{" 'evil-previous-open-brace)
+          (evil-define-key 'motion python-mode-map "]}" 'evil-next-close-brace))))))
 
 (provide 'my-python)

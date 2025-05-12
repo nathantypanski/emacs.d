@@ -14,9 +14,6 @@
     ((eq system-type 'gnu/linux) "Terminus 16"))
   "Font used for graphical editing sessions.")
 
-;; evil-collection requires this set before loading evil
-(setq evil-want-keybinding nil)
-
 ;; Don't show those horrible buttons
 (tool-bar-mode -1)
 
@@ -255,9 +252,12 @@ This command only has an effect on graphical frames."
   "Enable line numbers in a smart way."
   (interactive)
   (unless (or (minibufferp)
-              (member major-mode '(org-mode eshell-mode
-                                            shell-mode term-mode
-                                            vterm-mode eshell-mode)))
+              (member major-mode '(org-mode
+                                   eshell-mode
+                                   shell-mode
+                                   term-mode
+                                   vterm-mode
+                                   eshell-mode)))
     (display-line-numbers-mode)))
 
 (add-hook 'prog-mode-hook #'my-enable-line-numbers)

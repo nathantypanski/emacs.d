@@ -5,11 +5,11 @@
 ;; This file is required by my-eyecandy.el
 
 (use-package powerline
-  :ensure powerline
-  :init
-  (progn
-    (use-package powerline-evil
+  :ensure powerline)
+
+(use-package powerline-evil
       :ensure powerline-evil
+      :after evil powerline
       :init
       (progn
         (setq powerline-arrow-shape 'arrow14)
@@ -96,6 +96,6 @@
                             (powerline-render lhs)
                             (powerline-fill mode-line
                                             (powerline-width rhs))
-                            (powerline-render rhs))))))))))
+                            (powerline-render rhs))))))))
 
 (provide 'my-modeline)
