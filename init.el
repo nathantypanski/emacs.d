@@ -47,6 +47,7 @@
 (require 'my-keys)
 (require 'my-copy)
 (require 'my-gpt)
+(require 'my-age)
 (require 'my-languages)
 ;; (require 'my-shell)
 (require 'my-filetypes)
