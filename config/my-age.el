@@ -1,6 +1,8 @@
 (use-package age
   :ensure t
   :demand t
+  :commands age-encryption-mode age-start-decrypt age-encrypt-file
+            age-find-file-hook age-file-enable
   ;; :init
   ;; :custom
   :custom
