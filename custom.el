@@ -82,7 +82,7 @@
  '(ido-everywhere t)
  '(large-file-warning-threshold nil)
  '(latex-run-command "pdflatex")
- '(org-agenda-files '("~/org/agenda.org"))
+ '(org-agenda-files nil)
  '(org-columns-ellipses "…")
  '(org-ellipsis "…")
  '(org-footnote-auto-adjust t)
