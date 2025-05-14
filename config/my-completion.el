@@ -34,19 +34,15 @@
   :bind
   (("C-s" . consult-line)
    ("M-y" . consult-yank-pop)
-   ("C-x b" . consult-buffer)
-   )
-  :init
-  (progn)
-  :config
-  (progn))
+   ("C-x b" . consult-buffer)))
 
 (use-package consult-lsp
   :ensure t
-  :after lsp-mode)
+  :after (consult lsp-mode))
 
 (use-package embark-consult
   :ensure t
+  :after (consult)
   :bind (("C-." . embark-act)))
 
 (when (bound-and-true-p semantic-mode)
@@ -54,11 +50,13 @@
 (setq completion-auto-help t)
 
 (use-package company
+  :straight nil
   :ensure t
-  :hook ((prog-mode) . company-mode)
+  :demand t
+  :hook (prog-mode elisp-mode)
   :custom
   (company-backends '(company-capf))
-  (company-idle-delay 0.8)
+  (company-idle-delay 1.0)
   (company-minimum-prefix-length 1)
   (company-selection-wrap-around t)
   (company-tooltip-align-annotations t)
