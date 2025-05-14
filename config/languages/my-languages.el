@@ -11,7 +11,6 @@
 (require 'my-scss)
 (require 'my-haskell)
 (require 'my-markdown)
-(require 'my-org)
 (require 'my-javascript)
 (require 'my-jade)
 (require 'my-yaml)
