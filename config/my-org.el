@@ -1,7 +1,6 @@
 (use-package org
   :commands (org-mode org-capture org-agenda orgtbl-mode)
   :ensure t
-  :after age
   :init
   (progn
     (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
@@ -113,7 +112,54 @@
       )))
 
 (use-package org-roam
-  :after org
+  :after (org age)
   :ensure t)
+
+(use-package org-crypt
+  ;;  builtin
+  :straight nil
+  :after (org)
+  :demand t
+  :custom
+  (org-crypt-key nil)
+  ;; tag entries with “crypt” to auto‐encrypt them
+  (org-crypt-tag-matcher "crypt")
+  ;; don’t leave an unencrypted copy on disk
+  (org-crypt-disable-auto-save t)
+  :init
+  ;; hook in before-save so that tagged entries auto‐encrypt
+  ;; (org-crypt-use-before-save-magic)
+  :config
+
+  (defun my-org-crypt-encrypt-entry (&rest _)
+    (interactive)
+    (let ((beg (point-at-bol))
+          (end (save-excursion (org-end-of-subtree t))))
+      (age-encrypt-region beg end)))
+
+  (defun my-org-crypt-decrypt-entry (&rest _)
+    (interactive)
+    (let ((beg (point-at-bol))
+          (end (save-excursion
+                 (search-forward "-----END AGE ENCRYPTED")
+                 (point))))
+      (age-decrypt-region beg end)))
+
+  ;;;; override the GPG calls to use age.el instead:
+  ;;(defun my/org-crypt-encrypt-entry (&rest _args)
+  ;;  "Encrypt current subtree with age.el."
+  ;;  (let ((beg (point-at-bol))
+  ;;        (end (save-excursion (org-end-of-subtree t))))
+  ;;    (age-encrypt-region beg end)))
+  ;;(defun my/org-crypt-decrypt-entry (&rest _args)
+  ;;  "Decrypt an age-encrypted block at point."
+  ;;  (let ((beg (point-at-bol))
+  ;;        (end (save-excursion
+  ;;               (search-forward "-----END AGE ENCRYPTED")
+  ;;               (point))))
+      ;; (age-decrypt-region beg end)))
+  (advice-add 'org-crypt-encrypt-entry :override #'my-org-crypt-encrypt-entry)
+
+  (advice-add 'org-crypt-decrypt-entry :override #'my-org-crypt-decrypt-entry))
 
 (provide 'my-org)
