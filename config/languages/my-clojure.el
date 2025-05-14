@@ -1,10 +1,13 @@
 (use-package clojure-mode
   :ensure clojure-mode
-  :config
-  (progn))
+  :defer t
+  :commands clojure-mode clojure-mode-men)
 
 (use-package cider
   :ensure cider
+  :after clojure-mode
+  :defer t
+  :commands clojure-mode cider cider-run cider-doc
   :config
   (progn
     ;; always eldoc in cider mode
