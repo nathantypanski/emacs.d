@@ -6,10 +6,13 @@
   (setq eldoc-echo-area-prefer-doc-buffer t
         eldoc-echo-area-use-multiline-p nil
         eldoc-echo-area-prefer-doc-buffer t))
+
 (use-package slime
+  :straight nil
   :ensure slime)
 
 (use-package elisp-slime-nav
+  :after slime
   :ensure elisp-slime-nav
   :commands my-jump-to-elisp-docs
   :diminish elisp-slime-nav-mode
@@ -51,5 +54,12 @@
 (after 'evil
   (evil-define-key 'insert emacs-lisp-mode-map ";" 'my-electric-lisp-comment)
   (evil-define-key 'normal emacs-lisp-mode-map "\C-c\C-c" 'eval-defun))
+
+(use-package slime-company
+  :straight t
+  :after (slime company)
+  :config (setq slime-company-completion 'fuzzy
+                slime-company-after-completion 'slime-company-just-one-space))
+
 
 (provide 'my-elisp)

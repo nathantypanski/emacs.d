@@ -55,7 +55,7 @@
 
 (use-package company
   :ensure t
-  :hook ((prog-mode . company-mode))
+  :hook ((prog-mode) . company-mode)
   :custom
   (company-backends '(company-capf))
   (company-idle-delay 0.8)
