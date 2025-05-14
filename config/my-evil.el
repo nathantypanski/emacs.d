@@ -5,71 +5,32 @@
 
 ;; In order to work properly, we need to load evil-leader-mode before we load
 ;; evil-mode.
-(setq evil-want-keybinding nil)
-(use-package evil-leader
-  :commands (evil-leader-mode global-evil-leader-mode)
-  :ensure evil-leader
-  :after evil
-  :demand evil-leader
-  :init (setq evil-want-integration t
-              ;; https://github.com/emacs-evil/evil-collection/issues/60
-              evil-want-keybinding nil) ; let us load evil-collection separately
-  :config
-  (progn
-    (evil-leader/set-leader ",")
-    (global-evil-leader-mode t)))
 
-  ;; evil-collection requires this set before loading evil
-  (setq evil-want-keybinding nil)
+;; evil-collection requires this set before loading evil
+(setq evil-want-keybinding nil)
 ;; Here's what we've all been waiting for.
 ;; Recreate Vim inside Emacs.
 (use-package evil
   :ensure evil
   :init
+  :custom
   ;; evil-collection requires this set before loading evil
-  (setq evil-want-keybinding nil)
+  (evil-want-C-u-scroll t)
+  (evil-want-C-u-delete nil)
+  (evil-want-C-w-in-emacs-state t)
+  (evil-want-keybinding nil)
+  (evil-magic 'very-magic)
+  (evil-search-module 'isearch)
+  (evil-want-fine-undo t)
+  (evil-want-change-word-to-end t)
   :config
+  (evil-mode 1)
   (progn
-
-    (evil-mode 1)
-    (setq evil-want-C-u-scroll t)
-    (setq evil-want-C-u-delete nil)
-    (setq evil-want-C-w-in-emacs-state t)
-    (setq evil-search-module        'isearch)
-    (setq evil-magic                'very-magic)
+    (evil-set-undo-system 'undo-redo)
     (setq evil-emacs-state-cursor   '("#dfaf8f" box))
     (setq evil-normal-state-cursor  '("#f8f893" box))
     (setq evil-insert-state-cursor  '("#f8f893" bar))
     (setq evil-replace-state-cursor '("#cc9393" box))
-    (setq evil-want-fine-undo t)
-    (setq evil-want-change-word-to-end t)
-
-    (evil-set-undo-system 'undo-redo)
-
-    (use-package evil-nerd-commenter
-      :ensure evil-nerd-commenter
-      :commands (evilnc-comment-or-uncomment-lines))
-
-    (use-package evil-matchit
-      :ensure evil-matchit
-      :commands evilmi-jump-items
-      :init
-      (progn
-        (setq global-evil-matchit-mode t)
-        (define-key evil-normal-state-map "%" 'evilmi-jump-items)))
-
-    (use-package evil-surround
-      :ensure evil-surround
-      :config
-      (progn
-        (global-evil-surround-mode 1)))
-
-    (use-package evil-collection
-      :ensure evil-collection
-      :after evil
-      :demand t
-      :config (progn
-                (evil-collection-init)))
 
     (evil-set-initial-state 'flycheck-error-list-mode 'normal)
     (evil-set-initial-state 'git-commit-mode 'insert)
@@ -417,14 +378,46 @@ With `C-u` prefix, prompt for a position; otherwise use point."
     ;; (define-key evil-insert-state-map (kbd "TAB") #'completion-at-point)
 )
 
-(use-package evil-paredit
-  :ensure evil-paredit
-  :after evil paredit)
+(use-package evil-leader
+  :commands (evil-leader-mode global-evil-leader-mode)
+  :ensure evil-leader
+  :demand evil-leader
+  :after (evil)
+  :custom (evil-want-integration t
+              ;; https://github.com/emacs-evil/evil-collection/issues/60
+              evil-want-keybinding nil) ; let us load evil-collection separately
+  :config
+  (progn
+    (evil-leader/set-leader ",")
+    (global-evil-leader-mode t)))
+
+(use-package evil-nerd-commenter
+  :ensure evil-nerd-commenter
+  :commands (evilnc-comment-or-uncomment-lines))
+
+(use-package evil-matchit
+  :ensure evil-matchit
+  :commands evilmi-jump-items
+  :init
+  (progn
+    (setq global-evil-matchit-mode t)
+    (define-key evil-normal-state-map "%" 'evilmi-jump-items)))
+
+(use-package evil-surround
+  :ensure evil-surround
+  :config
+  (progn
+    (global-evil-surround-mode 1)))
 
 (use-package evil-collection
   :ensure evil-collection
-  :after evil
+  :after (evil)
+  :demand t
   :config
   (evil-collection-init))
+
+(use-package evil-paredit
+  :ensure evil-paredit
+  :after (evil paredit))
 
 (provide 'my-evil)
