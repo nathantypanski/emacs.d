@@ -58,8 +58,9 @@
 (use-package slime-company
   :straight t
   :after (slime company)
-  :config (setq slime-company-completion 'fuzzy
-                slime-company-after-completion 'slime-company-just-one-space))
+  :custom
+  (slime-company-completion 'fuzzy)
+  (slime-company-after-completion 'slime-company-just-one-space))
 
 
 (provide 'my-elisp)
