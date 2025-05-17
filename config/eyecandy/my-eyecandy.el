@@ -45,5 +45,4 @@
   "Eyecandy specific to programming text editing modes."
   (rainbow-delimiters-mode-enable))
 
-(require 'my-modeline)
 (provide 'my-eyecandy)
