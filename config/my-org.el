@@ -113,7 +113,9 @@
 
 (use-package org-roam
   :after (org age)
-  :ensure t)
+  :ensure t
+  :config
+  (add-to-list 'auto-mode-alist '("\\.org\\.age" . org-mode)))
 
 (use-package org-crypt
   ;;  builtin
