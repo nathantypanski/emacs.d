@@ -375,7 +375,7 @@ With `C-u` prefix, prompt for a position; otherwise use point."
 
     (define-key evil-normal-state-map (kbd "K") 'my-doc-at-point)
 
-    ;; (define-key evil-insert-state-map (kbd "TAB") #'completion-at-point)
+    (define-key evil-insert-state-map (kbd "TAB") #'completion-at-point)
 )
 
 (use-package evil-leader
@@ -415,6 +415,10 @@ With `C-u` prefix, prompt for a position; otherwise use point."
   :demand t
   :config
   (evil-collection-init))
+
+(use-package paredit
+  :straight nil
+  :ensure paredit)
 
 (use-package evil-paredit
   :ensure evil-paredit

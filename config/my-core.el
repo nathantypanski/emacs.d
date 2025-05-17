@@ -83,8 +83,8 @@
 ;; Disable vertical scrollbars in all frames.
 (when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 
-;; Disable menu bar for all (trying this out)
-(menu-bar-mode -1)
+;; show the menu bar
+(menu-bar-mode 1)
 
 ;; Disable the menu bar in console emacs.
 (unless (display-graphic-p) (menu-bar-mode -1))

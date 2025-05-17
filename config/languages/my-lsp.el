@@ -37,6 +37,14 @@
      lsp-prefer-flymake nil
      lsp-modeline-diagnostics-enable t
      lsp-gopls-server-path "/home/ndt/.nix-profile/bin/gopls")
+
+    (let* ((session (lsp-session))
+           (blk     (lsp-session-folders-blocklist session))
+           (folder  (my-home-path "src/github.com/nathantypanski/dotfiles/.emacs.d")))
+      (unless (member folder blk)
+        (setf (lsp-session-folders-blocklist session)
+              (cons folder blk))))
+
     (advice-add
      'lsp-lens--make
      :filter-return
@@ -53,8 +61,6 @@
   (lsp-ui-doc-show-with-mouse nil)
   (lsp-ui-doc-delay 2)
   (lsp-ui-doc-position 'top)
-  (lsp-ui-doc-side 'left)
-  :config
-  (progn))
+  (lsp-ui-doc-side 'left))
 
 (provide 'my-lsp)

@@ -1,12 +1,7 @@
 (use-package age
-  :after (org)
+  :after org
   :ensure t
   :demand t
-  :commands age-encryption-mode age-start-decrypt age-encrypt-file
-            age-find-file-hook age-file-enable age-encrypt-region
-            age-decrypt-region
-  :init
-
   :custom
   ;; you should customize these and not just setq them
   ;; while it won't break anything, age.el checks for
@@ -16,6 +11,7 @@
   ;; ensure that age-program is actually what is used
   ;; as opposed to the first found compatible version
   ;; of a supported Age client
+  (age-debug t)
   (age-program "rage")
   (age-default-identity
    (my-home-path
@@ -25,7 +21,13 @@
    (my-home-path
       (string-join
        (list ".age/" "recipients"))))
+  (age-file-select-keys 0)
   :config
   (age-file-enable))
+
+;;;; fails to load
+;; (use-package passage
+;;   :straight t
+;;   :after age)
 
 (provide 'my-age)
