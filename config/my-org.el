@@ -111,8 +111,13 @@
         (kbd "o a")       #'org-agenda)
       )))
 
+(org-roam-mode)
+
+
 (use-package org-roam
   :after (org age)
+  :straight (org-roam :type git :host github :repo "org-roam/org-roam"
+                      :files (:defaults "extensions/*"))
   :ensure t
   :config
   (add-to-list 'auto-mode-alist '("\\.org\\.age" . org-mode)))

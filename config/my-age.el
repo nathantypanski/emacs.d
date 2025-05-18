@@ -1,5 +1,5 @@
 (use-package age
-  :after org
+  :straight (age :type git :host github :repo "anticomputer/age.el")
   :ensure t
   :demand t
   :custom
@@ -12,7 +12,7 @@
   ;; as opposed to the first found compatible version
   ;; of a supported Age client
   (age-debug t)
-  (age-program "rage")
+  (age-program "age-wrapper")
   (age-default-identity
    (my-home-path
     (string-join
@@ -25,9 +25,19 @@
   :config
   (age-file-enable))
 
+(use-package passage
+  :after age
+  :straight (passage :type git :host github :repo "anticomputer/passage.el")
+  :ensure t
+  :demand t
+  ;;:custom
+)
+
 ;;;; fails to load
 ;; (use-package passage
 ;;   :straight t
 ;;   :after age)
 
+(setq age-pinentry-mode 'loopback)
+(setq epa-pinentry-mode 'loopback)
 (provide 'my-age)
