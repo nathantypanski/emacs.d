@@ -252,8 +252,6 @@ whether to call indent-according-to-mode."
   (define-key evil-visual-state-map (kbd "C-y") #'my-wl-copy-evil-operator)
   (define-key evil-normal-state-map (kbd "C-p") #'my-wl-paste-evil)
   (define-key evil-insert-state-map (kbd "C-p") #'my-wl-paste-evil)
-  (define-key evil-insert-state-map (kbd "C-SPC") #'completion-at-point)
-
 
   (after 'lsp-mode
     (defun my-lsp-doc-no-completion (&optional pos)
