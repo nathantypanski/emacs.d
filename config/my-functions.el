@@ -24,6 +24,20 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
                            (buffer-substring (region-beginning) (region-end))
                          (read-string "Search Google: "))))))
 
+(defun my-sensible-to-indent-p ()
+  "Return t if `indent-according-to-mode` would move point forward.
+This temporarily indents, checks if point advanced past its original
+position, then undoes the indent so neither buffer nor point is left modified."
+  (let* ((handle (prepare-change-group (current-buffer)))
+         (orig   (point))
+         moved)
+    (activate-change-group handle)
+    (unwind-protect
+        (progn
+          (indent-according-to-mode)
+          (setq moved (> (point) orig)))
+      (cancel-change-group handle))
+    moved))
 
 (defun my-eval-and-replace ()
   "Replace the preceding sexp with its value."
@@ -176,5 +190,17 @@ Require `font-lock'."
   (cl-dolist (elem a)
     (setq a (delete elem a))))
 
+(defun my-what-line ()
+  "Get the line, without printing the word 'line' before it."
+  (1+ (count-lines 1 (point))))
+
+(defun my-where-beginning-of-visual-line ()
+  "Calculate the difference between the beginning
+of the current visual line and point."
+  (interactive)
+  (let ((old-point (point))
+        (bovl (save-excursion (beginning-of-visual-line)
+                              (point))))
+    (- old-point bovl)))
 
 (provide 'my-functions)

@@ -1,5 +1,6 @@
 (use-package vertico
   :ensure t
+  :demand t
   :after consult
   :init
   (vertico-mode)
@@ -31,10 +32,15 @@
 
 (use-package consult
   :ensure t
+  :demand t
   :bind
   (("C-s" . consult-line)
    ("M-y" . consult-yank-pop)
-   ("C-x b" . consult-buffer)))
+   ("C-x b" . consult-buffer))
+  :config
+  (after 'evil
+    (define-key evil-normal-state-map (kbd "P") 'consult-yank-from-kill-ring)
+    (define-key evil-normal-state-map (kbd "SPC `") 'consult-mark)))
 
 (use-package consult-lsp
   :ensure t

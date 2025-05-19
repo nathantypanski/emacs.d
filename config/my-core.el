@@ -25,14 +25,6 @@
 
 ;; bar cursor
 (setq cursor-type 'bar)
-;; cursor-shape control for foot
-(defun my/tty-cursor-update ()
-  "Block cursor by default; beam cursor in Evil Insert state."
-  (when (not (display-graphic-p))              ; TTY frames only
-    (send-string-to-terminal
-     (if (evil-insert-state-p)
-         "\e[6 q"   ;; Ps = 6  → steady beam (vertical bar)
-       "\e[2 q")))) ;; Ps = 2  → steady block
 
 ;; also tabs are evil
 (setq-default indent-tabs-mode nil)
@@ -278,5 +270,8 @@ This command only has an effect on graphical frames."
 ;; Set undo-outer-limit to an even larger value (e.g., 500 MB of changes)
 ;; This acts as a hard cap. Make it large enough for your needs.
 (setq undo-outer-limit 500000000) ; 500,000,000 characters
+
+;; tell indent-for-tab-command to complete when indent has no effect
+(setq tab-always-indent 'complete)
 
 (provide 'my-core)
