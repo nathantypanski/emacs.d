@@ -111,9 +111,6 @@
         (kbd "o a")       #'org-agenda)
       )))
 
-(org-roam-mode)
-
-
 (use-package org-roam
   :after (org age)
   :straight (org-roam :type git :host github :repo "org-roam/org-roam"
