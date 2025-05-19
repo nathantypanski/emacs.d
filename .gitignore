@@ -32,3 +32,5 @@ straight/
 bookmarks
 smex-items
 .lsp-session*
+var/
+org-roam.db
