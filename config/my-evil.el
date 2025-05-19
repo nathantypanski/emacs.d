@@ -72,8 +72,6 @@ Not buffer-local, so it really is per frame.")
   (add-hook 'after-make-frame-functions (lambda (_f) (my-tty-cursor-update)))
   (add-hook 'focus-in-hook              #'my-tty-cursor-update)
 
-  (my-tty-cursor-update)
-
   (evil-set-initial-state 'flycheck-error-list-mode 'normal)
   (evil-set-initial-state 'git-commit-mode 'insert)
   (evil-set-initial-state 'shell-mode 'normal)

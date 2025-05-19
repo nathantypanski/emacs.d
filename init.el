@@ -65,4 +65,6 @@
 (require 'my-sessions)
 (require 'my-leader-keys)
 
+(after 'evil (my-tty-cursor-update))
+
 (provide 'init)
