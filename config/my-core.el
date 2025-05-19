@@ -78,18 +78,23 @@
 ;; show the menu bar
 (menu-bar-mode 1)
 
-;; Disable the menu bar in console emacs.
-(unless (display-graphic-p) (menu-bar-mode -1))
-
 ;; Ediff with horizontal splits.
 (setq ediff-split-window-function 'split-window-horizontally)
 
-;; I know what I'm doing; don't litter my fscking tree!
+(defun my-home-path (&rest components)
+  "Join COMPONENTS relative to `user-home-directory`, even if some start with '/'."
+  (expand-file-name
+   (string-join (seq-remove #'string-empty-p
+                            (mapcar (lambda (s) (string-remove-prefix "/" s))
+                                    components))
+                "/")
+   (getenv "HOME")))
 
-(defvar my-auto-save-folder "~/.emacs.d/.saves/"
+
+(defvar my-auto-save-folder (my-home-path "/.emacs.d/.saves/")
   "Directory used for Emacs backups.")
 
-(setq backup-directory-alist `(("." . "~/.emacs.d/.saves")))
+(setq backup-directory-alist `(("." . (my-home-path "/.emacs.d/.saves"))))
 (setq auto-save-file-name-transforms
       `((".*" ,my-auto-save-folder t)))
 
@@ -133,14 +138,17 @@
 
 ;; Thanks
 ;; http://www.jesshamrick.com/2013/03/31/macs-and-emacs/
-;; for the my-system-is-x functions below.
 (defun my-system-is-mac ()
+  "t when systm is a mac, else nil."
   (interactive)
   (string-equal system-type "darwin"))
 
 (defun my-system-is-linux ()
+  "t when systm is linux, else nil."
   (interactive)
-  (string-equal system-type "gnu/linux"))
+  (cond
+   (or (string-equal system-type "gnu/linux")
+       (string-equal system-type "linux"))))
 
 ;; Repurposed from
 ;; <https://github.com/bling/dotemacs/blob/master/config/init-core.el>
@@ -220,8 +228,9 @@ This command only has an effect on graphical frames."
   (when window-system
     (my-set-window-font my-graphical-font)))
 
-(add-hook 'after-make-frame-functions 'my-use-default-font)
-(my-use-default-font)
+(when (display-graphic-p)
+    (add-hook 'after-make-frame-functions 'my-use-default-font)
+    (my-use-default-font))
 
 (global-set-key (kbd "C-x C-b") 'ibuffer)
 (global-set-key (kbd "C-x C-k") 'kill-this-buffer)
@@ -238,8 +247,6 @@ This command only has an effect on graphical frames."
   (require 'ls-lisp)
   (setq ls-lisp-use-insert-directory-program nil))
 
-
-;; (global-linum-mode 1)
 (defun my-enable-line-numbers ()
   "Enable line numbers in a smart way."
   (interactive)
@@ -254,15 +261,6 @@ This command only has an effect on graphical frames."
 
 (add-hook 'prog-mode-hook #'my-enable-line-numbers)
 (add-hook 'text-mode-hook #'my-enable-line-numbers)
-
-(defun my-home-path (&rest components)
-  "Join COMPONENTS relative to `user-home-directory`, even if some start with '/'."
-  (expand-file-name
-   (string-join (seq-remove #'string-empty-p
-                            (mapcar (lambda (s) (string-remove-prefix "/" s))
-                                    components))
-                "/")
-   (getenv "HOME")))
 
 ;; Set undo-limit to a large value (e.g., 100 MB of changes)
 (setq undo-limit 100000000) ; 100,000,000 characters
