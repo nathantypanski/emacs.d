@@ -66,13 +66,13 @@
   :demand t
   :hook (prog-mode elisp-mode slime-mode)
   :custom
-  ;; (company-backends '(company-capf))
-  (company-idle-delay 1.0)
+  (company-backends '(company-capf))
+  (company-idle-delay 0.0)
   (company-minimum-prefix-length 1)
   (company-selection-wrap-around t)
   (company-tooltip-align-annotations t)
-  ;; (company-auto-commit nil)
-  ;; (company-auto-commit-chars nil)
+  (company-auto-commit nil)
+  (company-auto-commit-chars nil)
   :config
   (define-key company-active-map (kbd "TAB")   #'company-select-next)
   (define-key company-active-map (kbd "<tab>") #'company-select-next)
