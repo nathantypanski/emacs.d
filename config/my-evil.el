@@ -93,6 +93,7 @@ indentation from the last insert state.
 
 A potential future improvement is to (rather than blindly indenting according
 to mode, which is a potshot) indent intelligently to the saved state of point."
+      (interactive)
       (and (> my-last-insertion-distance 0)
                (my-current-line-is-empty)))
 
@@ -154,14 +155,12 @@ of the current visual line and point."
                                   (point))))
         (- old-point bovl)))
 
-
     (defun my-current-line-is-empty ()
       "Returns t when the current line is empty or contains only whitespace."
       (interactive)
       (save-excursion
         (beginning-of-line)
         (looking-at "^\s*$")))
-
 
     (defun my-electric-append-with-indent (count &optional vcount)
       "Indent the current line if it is empty.
@@ -319,15 +318,14 @@ If LSP isn’t active here, signal a user‑friendly error."
                    (lsp-describe-thing-at-point)
                  (user-error "No LSP available to describe here"))))))))
 
-    ;; (defun my-evil-complete-or-indent ()
-    ;;   "Try `completion-at-point`; otherwise indent."
-    ;;   (interactive)
-    ;;   (if (and (bound-and-true-p completion-in-region-function)
-    ;;            (completion-at-point))
-    ;;       t
-    ;;     (indent-for-tab-command)))
+    (defun my-evil-complete-or-indent ()
+      "Try `completion-at-point`; otherwise indent."
+      (interactive)
+      (if (my-sensible-to-indent-p)
+            (indent-according-to-mode)
+        (completion-at-point)))
 
-    ;; (define-key evil-insert-state-map (kbd "TAB") #'my-evil-complete-or-indent)
+    (define-key evil-insert-state-map (kbd "TAB") #'my-evil-complete-or-indent)
 
     (defun my-with-suppressed-capf (fn)
       "Temporarily restore the raw CAPF handler around FN."
@@ -373,10 +371,7 @@ With `C-u` prefix, prompt for a position; otherwise use point."
                        (or symbol "<nothing>"))))))
 
 
-    (define-key evil-normal-state-map (kbd "K") 'my-doc-at-point)
-
-    (define-key evil-insert-state-map (kbd "TAB") #'completion-at-point)
-)
+    (define-key evil-normal-state-map (kbd "K") 'my-doc-at-point))
 
 (use-package evil-leader
   :commands (evil-leader-mode global-evil-leader-mode)
