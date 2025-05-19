@@ -22,7 +22,7 @@
 (use-package orderless
   :ensure t
   :custom
-  (completion-styles '(flex orderless))
+  (completion-styles '(orderless flex))
   (completion-category-defaults nil)
   (completion-category-overrides '((file (styles partial-completion)))))
 
