@@ -127,11 +127,15 @@ Require `font-lock'."
 
 
 (defun my-is-this-line-empty ()
-  "Returns t if the current line is empty. Otherwise nil."
+  "Returns t when the current line is empty or contains only whitespace."
   (interactive)
   (save-excursion
     (beginning-of-line)
+    ;;;; old regex:
+    ;; (looking-at "^\s*$")
     (looking-at "^[ \t]*$")))
+
+(defalias 'my-current-line-is-empty #'my-is-this-line-empty)
 
 
 (defun my-is-before-point-empty ()

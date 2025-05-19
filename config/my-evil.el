@@ -40,12 +40,6 @@
     (evil-set-initial-state 'term-mode 'emacs)
     (evil-set-initial-state 'multi-term-mode 'emacs)
 
-    (use-package key-chord
-      :ensure key-chord
-      :config
-      (progn
-        (key-chord-mode 1)))
-
     (evil-define-text-object my-evil-next-match (count &optional beg end type)
       "Select next match."
       (evil-ex-search-previous 1)
@@ -70,20 +64,26 @@
             (end   (line-end-position)))
         (delete-trailing-whitespace begin end)))
 
-    (defvar my-last-insertion-end 0
+    (defvar my-evil-last-insertion-end 0
 "The distance between point at the time of insert and beginning of line.
 
 This tracks the saved value of the last insertion so we can figure out whether
 to indent for it.")
 
-    (defvar my-last-insertion-distance 0
+    (defvar my-evil-last-insertion-distance 0
 "The distance between point at the time of insert and beginning of line.
 
 This tracks the saved value of the last insertion so we can figure out whether
 to indent for it.")
 
-    (defun my-sensible-to-indent-p ()
-      "Determine whether it's sensible to indent the current line automagically.
+    (evil-define-motion my-append-and-indent (count)
+      "Moves to end of line, enters insert mode, and also indents the line."
+      (evil-append-line count)
+      (when (my-sensible-to-indent-p)
+          (indent-according-to-mode)))
+
+(defun my-sensible-to-indent-p ()
+  "Determine whether it's sensible to indent the current line automagically.
 
 Using the data stored from my-exit-insert-state, this function determines
 whether or not it makes sense to indent the following line. The point of this
@@ -93,42 +93,36 @@ indentation from the last insert state.
 
 A potential future improvement is to (rather than blindly indenting according
 to mode, which is a potshot) indent intelligently to the saved state of point."
-      (interactive)
-      (and (> my-last-insertion-distance 0)
-               (my-current-line-is-empty)))
-
-    (evil-define-motion my-append-and-indent (count)
-      "Moves to end of line, enters insert mode, and also indents the line."
-      (evil-append-line count)
-      (when (my-sensible-to-indent-p)
-          (indent-according-to-mode)))
+  (interactive)
+  (and (> my-evil-last-insertion-distance 0)
+       (my-current-line-is-empty)))
 
     (defun my-save-insert-state-state ()
       "Save information about the state of insert state.
 
 This does the following:
 
-- Sets my-last-insertion-end to the character position at the end of the last
+- Sets my-evil-last-insertion-end to the character position at the end of the last
   insert state.
-- Sets my-last-insertion-line to the position at the beginning of the line from
+- Sets my-evil-last-insertion-line to the position at the beginning of the line from
   the last insert state.
-- Sets my-last-insertion-distance to the distance between those two points.
+- Sets my-evil-last-insertion-distance to the distance between those two points.
 - Deletes trailing whitespace to the left of point.
 
 The intent of this is to save the state of the insertion environment, so we can
 make smart decisions based on it later."
       (interactive)
-      (setq my-last-insertion-end
+      (setq my-evil-last-insertion-end
             (save-excursion
               (if (not (my-current-line-is-empty))
                   (beginning-of-line-text))
               (point)))
-      (setq my-last-insertion-line
+      (setq my-evil-last-insertion-line
             (save-excursion
-              (goto-char my-last-insertion-end)
+              (goto-char my-evil-last-insertion-end)
               (line-beginning-position)))
-      (setq my-last-insertion-distance
-            (- my-last-insertion-end my-last-insertion-line)))
+      (setq my-evil-last-insertion-distance
+            (- my-evil-last-insertion-end my-evil-last-insertion-line)))
 
     (evil-define-motion my-ret-and-indent (count)
       "Move the cursor COUNT lines down.
@@ -145,7 +139,6 @@ In Insert state, insert a newline and indent."
       "Get the line, without printing the word 'line' before it."
       (1+ (count-lines 1 (point))))
 
-
     (defun my-where-beginning-of-visual-line ()
       "Calculate the difference between the beginning
 of the current visual line and point."
@@ -154,13 +147,6 @@ of the current visual line and point."
             (bovl (save-excursion (beginning-of-visual-line)
                                   (point))))
         (- old-point bovl)))
-
-    (defun my-current-line-is-empty ()
-      "Returns t when the current line is empty or contains only whitespace."
-      (interactive)
-      (save-excursion
-        (beginning-of-line)
-        (looking-at "^\s*$")))
 
     (defun my-electric-append-with-indent (count &optional vcount)
       "Indent the current line if it is empty.
@@ -296,7 +282,6 @@ whether to call indent-according-to-mode."
     (define-key evil-visual-state-map (kbd "C-y") #'my-wl-copy-evil-operator)
     (define-key evil-normal-state-map (kbd "C-p") #'my-wl-paste-evil)
     (define-key evil-insert-state-map (kbd "C-p") #'my-wl-paste-evil)
-
     (define-key evil-insert-state-map (kbd "C-SPC") #'completion-at-point)
 
     (after 'lsp-mode

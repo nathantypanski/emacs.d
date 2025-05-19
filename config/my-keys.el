@@ -3,4 +3,10 @@
   :ensure which-key
   :config (which-key-mode))
 
+(use-package key-chord
+  :ensure key-chord
+  :config
+  (progn
+    (key-chord-mode 1)))
+
 (provide 'my-keys)
