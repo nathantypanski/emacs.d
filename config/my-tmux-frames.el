@@ -2,6 +2,11 @@
 
 (require 'server)
 
+(use-package emamux
+  :straight t
+  :demand
+  :ensure)
+
 (setq server-name
       (if (getenv "TMUX")
           (format "tmux-%s"
