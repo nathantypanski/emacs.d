@@ -1,4 +1,4 @@
-;; my-leader-keys.eljGk
+;;; my-leader-keys.el    -*- lexical-binding:t; -*-
 ;;
 ;; <leader> keybindings for evil-leader
 
@@ -23,7 +23,7 @@
   "/"          'evilnc-comment-or-uncomment-lines
   "jf"         'ffap
   "jb"         'ace-jump-buffer
-  "cl"         'flycheck-list-errors
+  "cl"         'my-flycheck-list-errors
   "w"          'save-buffer
   "p"          'projectile-find-file
   "P"          'projectile-switch-project
@@ -46,8 +46,7 @@
   "o T"        'org-todo-list
   "o p"        'org-priority
   "o c"        'org-capture
-  "o l"        'org-store-link
-  )
+  "o l"        'org-store-link)
 
 (evil-leader/set-key-for-mode 'git-commit-mode "qq" 'git-commit-abort)
 (evil-leader/set-key-for-mode 'git-commit-mode "C" 'with-editor-finish)

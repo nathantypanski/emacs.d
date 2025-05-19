@@ -2,7 +2,6 @@
 ;;
 ;; Helper functions that don't fit nicely anywhere else.
 
-
 (defun my-minibuffer-keyboard-quit ()
   "Abort recursive edit.
 In Delete Selection mode, if the mark is active, just deactivate it;
@@ -12,7 +11,6 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
       (setq deactivate-mark t)
     (when (get-buffer "*Completions*") (delete-windows-on "*Completions*"))
     (abort-recursive-edit)))
-
 
 (defun my-google ()
   "Google the selected region if any, display a query prompt otherwise."
@@ -25,19 +23,19 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
                          (read-string "Search Google: "))))))
 
 (defun my-sensible-to-indent-p ()
-  "Return t if `indent-according-to-mode` would move point forward.
-This temporarily indents, checks if point advanced past its original
-position, then undoes the indent so neither buffer nor point is left modified."
-  (let* ((handle (prepare-change-group (current-buffer)))
-         (orig   (point))
-         moved)
-    (activate-change-group handle)
-    (unwind-protect
-        (progn
-          (indent-according-to-mode)
-          (setq moved (> (point) orig)))
-      (cancel-change-group handle))
-    moved))
+  "Non-nil only if indentation would meaningfully move point *and*
+we’re in a programming-language buffer (`prog-mode' derivative)."
+  (when (derived-mode-p 'prog-mode)               ; ← run only in code buffers
+    (let* ((handle (prepare-change-group (current-buffer)))
+           (orig   (point))
+           moved)
+      (activate-change-group handle)
+      (unwind-protect
+          (progn
+            (indent-according-to-mode)
+            (setq moved (> (point) orig)))
+        (cancel-change-group handle))
+      moved)))
 
 (defun my-eval-and-replace ()
   "Replace the preceding sexp with its value."
@@ -49,7 +47,6 @@ position, then undoes the indent so neither buffer nor point is left modified."
     (error (message "Invalid expression")
            (insert (current-kill 0)))))
 
-
 (defun my-terminal-config (&optional frame)
   "Establish settings for the current terminal."
   (if (not frame) ;; The initial call.
@@ -59,17 +56,14 @@ position, then undoes the indent so neither buffer nor point is left modified."
         ;; Re-initialise the mode in case of a new terminal.
         (xterm-mouse-mode 1))))
 
-
 ;; Evaluate both now (for non-daemon emacs) and upon frame creation
 ;; (for new terminals via emacsclient).
 (my-terminal-config)
 (add-hook 'after-make-frame-functions 'my-terminal-config)
 
-
 ;; Place custom settings in their own file.
 (setq custom-file (concat user-emacs-directory "custom.el"))
 (when (file-exists-p custom-file) (load custom-file))
-
 
 ;; From <http://en.wikipedia.org/wiki/User:Gwern/.emacs>, who took it from
 ;; Shan-leung Maverick:

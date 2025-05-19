@@ -1,4 +1,4 @@
-;; my-evil.el
+;; my-evil.el   -*- lexical-binding:t; -*-
 ;;
 ;; Settings for ostracizing me from both the Emacs and Vim communities.
 ;; a.k.a. evil-mode
@@ -204,7 +204,6 @@ whether to call indent-according-to-mode."
   (define-key evil-motion-state-map "0"           'evil-beginning-of-line)
 
   (define-key evil-normal-state-map "/"           'evil-search-forward)
-  (define-key evil-normal-state-map (kbd "SPC /") 'helm-swoop)
   (define-key evil-motion-state-map "/"           'evil-search-forward)
   (define-key evil-normal-state-map (kbd "Y") (kbd "y$"))
   (define-key evil-normal-state-map (kbd "P") 'consult-yank-from-kill-ring)
@@ -277,16 +276,6 @@ If LSP isn’t active here, signal a user‑friendly error."
                  (lsp-describe-thing-at-point)
                (user-error "No LSP available to describe here"))))))))
 
-  ;; (defun my-evil-complete-or-indent ()
-  ;;   "Try `completion-at-point`; otherwise indent."
-  ;;   (interactive)
-  ;;   (if (my-sensible-to-indent-p)
-  ;;         (indent-according-to-mode)
-  ;;     (completion-at-point)))
-
-  ;; (define-key evil-insert-state-map (kbd "TAB") #'my-evil-complete-or-indent)
-
-  ;; make sure TAB in insert state calls indent-for-tab-command
   (define-key evil-insert-state-map (kbd "TAB") #'indent-for-tab-command)
 
   (defun my-with-suppressed-capf (fn)

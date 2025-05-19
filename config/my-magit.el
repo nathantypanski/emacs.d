@@ -1,4 +1,4 @@
-;; my-magit.el
+;; my-magit.el    -*- lexical-binding:t; -*-
 ;;
 ;; Magit is an Emacs mode for Git.
 ;; <https://github.com/magit/magit>
@@ -7,10 +7,7 @@
 
 (use-package magit
   :ensure magit
-  :config
-  (progn
-    (setq magit-auto-revert-mode nil)
-    ;; tell magit not to complain about auto-revert-mode being a new setting
-    (setq magit-last-seen-setup-instructions "1.4.0")))
+  :custom
+  (magit-auto-revert-mode nil))
 
 (provide 'my-magit)

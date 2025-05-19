@@ -1,3 +1,5 @@
+;; my-buffers.el   -*- lexical-binding:t; -*-
+;;
 ;; From the docs:
 ;;
 ;; Narrowing means focusing in on some portion of the buffer, making

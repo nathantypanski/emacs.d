@@ -1,3 +1,5 @@
+;; my-copy.el   -*- lexical-binding:t; -*-
+
 (when (getenv "WAYLAND_DISPLAY")
   ;; General-purpose clipboard copy function
   (defun my-wl-copy-region (start end)

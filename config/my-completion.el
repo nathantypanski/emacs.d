@@ -1,3 +1,8 @@
+;;; my-completion.el --- flycheck customization -*- lexical-binding:t; -*-
+;;; Commentary:
+;;
+;;; Code:
+
 (use-package vertico
   :ensure t
   :demand t
@@ -12,12 +17,12 @@
                     #'consult-completion-in-region
                   #'completion--in-region)))
 
-  (setq vertioc-cycle t))
+  (setq vertico-cycle t))
 
 (use-package orderless
   :ensure t
   :custom
-  (completion-styles '(orderless flex))
+  (completion-styles '(flex orderless))
   (completion-category-defaults nil)
   (completion-category-overrides '((file (styles partial-completion)))))
 
@@ -75,39 +80,6 @@
   (define-key company-active-map (kbd "<backtab>") #'company-select-previous)
   (define-key company-active-map (kbd "RET")   #'company-complete-selection)
 
-  ;; BUG: Hop to a new buffer, enter insert
-  ;;
-  ;;     (wrong-type-argument stringp nil)
-  ;;     company-insertion-on-trigger-p(")")
-  ;;     company--continue()
-  ;;     company--perform()
-  ;;     company-post-command()
-  ;;
-  ;; Constant headache (for `)`, but also real characters like `k`! Company:
-  ;;
-  ;; This is a known bug pattern in company-mode, often triggered by
-  ;; non-character input, manual typing after rejecting a completion, or certain
-  ;; backends misbehaving (especially when returning nil or incomplete data
-  ;; during post-command processing).
-  ;;
-  ;; The key part of the trace:
-  ;;
-  ;;     company-insertion-on-trigger-p(")")
-  ;;
-  ;; suggests it's trying to check whether `)` is a trigger character — but
-  ;; something inside company-insertion-on-trigger-p is still trying to handle a
-  ;; nil somewhere (most likely `company--prefix` or backend-provided data is
-  ;; nil).
-  ;;
-  ;; HACK Fix: Patch company-insertion-on-trigger-p to guard nil
-  ;;
-  ;; This is the cleanest and safest workaround for now:
-  ;;
-  ;; (advice-add 'company-insertion-on-trigger-p :around
-  ;;             (lambda (orig char)
-  ;;               (when (and char (stringp char))
-  ;;                 (funcall orig char))))
-
   ;; Disable company autopopup for completions if point is in a comment.
   (defun my-company-inhibit-in-comments (fun &rest args)
     "Inhibit company idle completion in comments."
@@ -121,3 +93,4 @@
   (advice-add 'company-idle-begin :around #'my-company-inhibit-in-comments))
 
 (provide 'my-completion)
+;;; my-completion.el ends here

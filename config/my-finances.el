@@ -1,4 +1,4 @@
-;; my-ledger.el
+;; my-ledger.el  -*- lexical-binding:t; -*-
 ;;
 ;; ledger-cli emacs mode + other finance nonsense
 

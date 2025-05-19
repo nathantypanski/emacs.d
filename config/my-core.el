@@ -1,4 +1,4 @@
-;; my-core.el
+;; my-core.el   -*- lexical-binding:t; -*-
 ;;
 ;; The big, beating heart of my little corner of Emacs.
 ;; General, mostly-plugin-independent settings go here.

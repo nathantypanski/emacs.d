@@ -1,3 +1,5 @@
+;; my-dired.el   -*- lexical-binding:t; -*-
+
 (put 'dired-find-alternate-file 'disabled nil)
 
 (setq my-default-dired-switches "-akBhl")

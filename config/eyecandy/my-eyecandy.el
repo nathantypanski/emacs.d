@@ -10,15 +10,17 @@
 
 ;; Color derived from zenburn, but I want the current focus to be obvious.
 (set-face-background 'hl-line "#2a2e2e")
+
 ;; GPT: any other similar customizations I might make? Like line number bg?
+
+;; highlight entire expression when matching paren is not visible;
+;; otherwise just highlight matching paren
+(set-variable show-paren-style 'mixed)
 
 ;; Show parentheses
 (show-paren-mode 1)
 
-;; highlight entire expression when matching paren is not visible;
-;; otherwise just highlight matching paren
-(setq show-paren-style 'mixed)
-
+(require 'whitespace)
 (setq whitespace-style '(trailing))
 (global-whitespace-mode 1)
 
@@ -28,8 +30,7 @@
   (progn
     (setq sml/theme 'dark)
     (setq sml/mode-width 30)
-    (sml/setup)
-    ))
+    (sml/setup)))
 
 (use-package rainbow-mode
   :ensure rainbow-mode)
