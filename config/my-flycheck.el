@@ -13,6 +13,7 @@
   (flycheck-display-errors-function nil)
   (flycheck-wrap-around t)
   :config
+  (setq-default flycheck-indication-mode 'left-margin)
   (add-hook 'after-init-hook #'global-flycheck-mode)
   ;; remove elisp checkdoc
   (setq flycheck-checkers (delq 'emacs-lisp-checkdoc flycheck-checkers))

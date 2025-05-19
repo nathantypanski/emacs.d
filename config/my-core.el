@@ -272,4 +272,8 @@ This command only has an effect on graphical frames."
 ;; tell indent-for-tab-command to complete when indent has no effect
 (setq tab-always-indent 'complete)
 
+;; 1. Ensure margins exist
+(setq-default left-margin-width  1
+              right-margin-width 1)
+
 (provide 'my-core)
