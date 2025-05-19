@@ -62,14 +62,14 @@
   `(eval-after-load ,feature
      '(progn ,@body)))
 
-;; make sure $PATH is set correctly
-(use-package exec-path-from-shell
-  :ensure exec-path-from-shell
-  :config
-  (progn
-    (exec-path-from-shell-copy-env "PATH")
-    (exec-path-from-shell-copy-env "PYTHONPATH")
-))
+;; ;; make sure $PATH is set correctly
+;; (use-package exec-path-from-shell
+;;   :ensure exec-path-from-shell
+;;   :config
+;;   (progn
+;;     (exec-path-from-shell-copy-env "PATH")
+;;     (exec-path-from-shell-copy-env "PYTHONPATH")
+;; ))
 
 (ignore-errors ;; windows
   (exec-path-from-shell-initialize))
