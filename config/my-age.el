@@ -21,7 +21,7 @@
   ;; of a supported Age client
   (age-debug t)
   (age-pinentry-mode "pinentry-emacs")
-  (age-program "rage")
+  (age-program "rage-emacs")
   (age-default-identity
    (my-home-path
     (string-join
