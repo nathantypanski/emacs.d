@@ -1,5 +1,13 @@
+(use-package pinentry
+  :ensure t
+  :demand t
+  :config
+  (setenv "PINENTRY_PROGRAM" "pinentry-emacs")
+  (pinentry-start))
+
 (use-package age
   :straight (age :type git :host github :repo "anticomputer/age.el")
+  :after pinentry
   :ensure t
   :demand t
   :custom
@@ -12,7 +20,8 @@
   ;; as opposed to the first found compatible version
   ;; of a supported Age client
   (age-debug t)
-  (age-program "age-wrapper")
+  (age-pinentry-mode "pinentry-emacs")
+  (age-program "rage")
   (age-default-identity
    (my-home-path
     (string-join
@@ -21,7 +30,7 @@
    (my-home-path
       (string-join
        (list ".age/" "recipients"))))
-  (age-file-select-keys 0)
+  (age-file-select-keys t)
   :config
   (age-file-enable))
 
@@ -38,6 +47,5 @@
 ;;   :straight t
 ;;   :after age)
 
-(setq age-pinentry-mode 'loopback)
-(setq epa-pinentry-mode 'loopback)
+;; (setq epa-pinentry-mode 'loopback)
 (provide 'my-age)
