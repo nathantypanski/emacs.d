@@ -64,9 +64,9 @@
   :straight nil
   :ensure t
   :demand t
-  :hook (prog-mode elisp-mode)
+  :hook (prog-mode elisp-mode slime-mode)
   :custom
-  (company-backends '(company-capf))
+  ;; (company-backends '(company-capf))
   (company-idle-delay 1.0)
   (company-minimum-prefix-length 1)
   (company-selection-wrap-around t)
@@ -89,8 +89,17 @@
           (apply fun args))
       ;; Else, follow normal behavior
       (apply fun args)))
-
   (advice-add 'company-idle-begin :around #'my-company-inhibit-in-comments))
+
+;; better sorting for both minibuffer & company
+(use-package prescient
+  :straight t
+  :config (prescient-persist-mode 1))
+
+(use-package company-prescient
+  :straight t
+  :after (company prescient)
+  :config (company-prescient-mode 1))
 
 (provide 'my-completion)
 ;;; my-completion.el ends here
