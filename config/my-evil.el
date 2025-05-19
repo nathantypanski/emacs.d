@@ -34,7 +34,7 @@
 
     (evil-set-initial-state 'flycheck-error-list-mode 'normal)
     (evil-set-initial-state 'git-commit-mode 'insert)
-    (evil-set-initial-state 'shell-mode 'emacs)
+    (evil-set-initial-state 'shell-mode 'normal)
     (evil-set-initial-state 'esup-mode 'emacs)
     (evil-set-initial-state 'diff-mode 'emacs)
     (evil-set-initial-state 'term-mode 'emacs)
