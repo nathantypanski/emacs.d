@@ -63,6 +63,11 @@ Otherwise, returns nil."
   :hook (dired-mode . diredfl-mode))
 
 (add-hook 'dired-mode-hook 'hl-line-mode)
+
+(add-hook 'dired-mode-hook
+          (lambda ()
+            (setq truncate-lines nil)))
+
 (setq dired-use-ls-dired t)
 
 ;; TODO: make this work

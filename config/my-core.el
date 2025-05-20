@@ -266,7 +266,6 @@ This command only has an effect on graphical frames."
               right-margin-width 1)
 
 (setq fill-column 80)
-(global-visual-line-mode)
 (global-display-fill-column-indicator-mode)
 
 (provide 'my-core)

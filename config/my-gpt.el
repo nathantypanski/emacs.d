@@ -10,6 +10,7 @@
   :straight (gptel :type git :host github :repo "karthink/gptel")
   :defer t
   :commands (gptel gptel-menu gptel-send gptel-request)
+  :hook (gptel-mode . visual-line-mode)
   :init
   (let ((api-key (getenv "OPENAI_API_KEY")))
     (if api-key
