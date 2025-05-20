@@ -32,6 +32,8 @@
   "gs"         'magit-status
   "gl"         'magit-log
   "gd"         'magit-diff
+  "Ga"         'gptel-add
+  "GA"         'gptel-add-file
   "Gm"         'gptel-menu
   "Gs"         'gptel-send
   "l"          'consult-imenu
