@@ -8,6 +8,12 @@
 
 ;; evil-collection requires this set before loading evil
 (setq evil-want-keybinding nil)
+
+(use-package undo-tree
+  :ensure t
+  :config
+  (global-undo-tree-mode))
+
 ;; Here's what we've all been waiting for.
 ;; Recreate Vim inside Emacs.
 (use-package evil
@@ -28,7 +34,7 @@
   :config
   (evil-mode 1)
 
-  (evil-set-undo-system 'undo-redo)
+  (evil-set-undo-system 'undo-tree)
 
   (setq evil-emacs-state-cursor   '("#dfaf8f" box)
         evil-normal-state-cursor  '("#f8f893" box)
