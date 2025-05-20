@@ -331,14 +331,18 @@ With `C-u` prefix, prompt for a position; otherwise use point."
    "0" 'evil-beginning-of-line
    "/" 'evil-search-forward)
 
-  ;; do I need both :states and :keymap here?
   (general-define-key
    :states '(normal)
    "K" 'my-doc-at-point)
 
   (general-define-key
    :states '(insert)
-   "M-/" 'company-complete))
+   "M-/" 'company-complete)
+
+  ;; TODO: figure out how to make these load in =my-org.el=
+
+  ;; Bind <TAB> to org-tempo-expand in Evil insert mode
+  )
 
 (use-package evil-leader
   :ensure t
