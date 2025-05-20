@@ -67,8 +67,8 @@
   :hook (prog-mode elisp-mode slime-mode)
   :custom
   (company-backends '(company-capf))
-  (company-idle-delay 0.0)
-  (company-minimum-prefix-length 1)
+  (company-idle-delay nil)
+  (company-minimum-prefix-length 1) ; keyboard-triggered
   (company-selection-wrap-around t)
   (company-tooltip-align-annotations t)
   (company-auto-commit nil)
