@@ -84,9 +84,8 @@
 (defvar my-auto-save-folder (my-home-path "/.emacs.d/.saves/")
   "Directory used for Emacs backups.")
 
-(setq backup-directory-alist `(("." . (my-home-path "/.emacs.d/.saves"))))
-(setq auto-save-file-name-transforms
-      `((".*" ,my-auto-save-folder t)))
+(setq backup-directory-alist `(("." . ,my-auto-save-folder)))
+(setq auto-save-file-name-transforms `((".*" ,(expand-file-name my-auto-save-folder) t)))
 
 ;; Only scroll one line when near the bottom of the screen, instead
 ;; of jumping the screen around.
