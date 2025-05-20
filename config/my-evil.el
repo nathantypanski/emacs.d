@@ -341,9 +341,8 @@ With `C-u` prefix, prompt for a position; otherwise use point."
    "M-/" 'company-complete))
 
 (use-package evil-leader
-  :commands (evil-leader-mode global-evil-leader-mode)
-  :ensure evil-leader
-  :demand evil-leader
+  :ensure t
+  :demand t
   :after (evil)
   :custom (evil-want-integration t
                                  ;; https://github.com/emacs-evil/evil-collection/issues/60
@@ -359,7 +358,7 @@ With `C-u` prefix, prompt for a position; otherwise use point."
 
 (use-package evil-matchit
   :after evil
-  :ensure evil-matchit
+  :ensure t
   :commands evilmi-jump-items
   :init
   (progn
@@ -368,13 +367,14 @@ With `C-u` prefix, prompt for a position; otherwise use point."
 
 (use-package evil-surround
   :ensure evil-surround
+  :after evil
   :config
   (progn
     (global-evil-surround-mode 1)))
 
 (use-package evil-collection
   :ensure evil-collection
-  :after (evil)
+  :after evil
   :demand t
   :config
   (evil-collection-init))
