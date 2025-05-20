@@ -2,6 +2,12 @@
 ;;
 ;; Customizations for org-mode.
 
+
+;; TODO: root cause this:
+;;
+;; Error (wrong-number-of-arguments #<subr org-persist--find-index>
+;; 2); continue? (y or n)
+
 (use-package org
   :commands (org-mode org-capture org-agenda orgtbl-mode)
   :ensure t
@@ -12,6 +18,18 @@
     (global-set-key (kbd "C-c c") 'org-capture)
     (global-set-key (kbd "C-c a") 'org-agenda))
   :custom
+  (org-auto-align-tags nil)
+  (org-tags-column 0)
+  (org-catch-invisible-edits 'show-and-error)
+  (org-special-ctrl-a/e t)
+  (org-insert-heading-respect-content t)
+
+  ;; Org styling, hide markup etc.
+  (org-hide-emphasis-markers t)
+  (org-pretty-entities t)
+  (org-agenda-tags-column 0)
+  (org-ellipsis "…")
+
   (org-startup-folded nil)
   (org-src-fontify-natively t)
   (org-default-notes-file (concat (getenv "HOME") "/notes/notes.org"))
@@ -73,7 +91,7 @@
      'org-babel-load-languages
      '((R . t)
        (emacs-lisp . t)
-       (python . t))))
+       (python . t)))
 
   (require 'org-tempo)
 
@@ -109,6 +127,7 @@
      :states '(normal)
      :keymaps 'org-mode-map
      "o" '(:ignore t :which-key "org") ; Define o as a prefix
+     "o c" '(:ignore t :which-key "org") ; Define o as a prefix
      "o ["           #'org-metaup
      "o ]"           #'org-metadown
      "[ ["           #'org-previous-visible-heading
@@ -129,15 +148,15 @@
      "o o"           #'org-toggle-ordered-property
      "o b"           #'org-toggle-checkbox
      "o r"           #'org-refile
-     "o c i"         #'org-clock-in
-     "o c o"         #'org-clock-out
-     "o c r"         #'org-clock-report
+     "o C i"         #'org-clock-in
+     "o C o"         #'org-clock-out
+     "o C r"         #'org-clock-report
      "o v t"         #'org-tags-expand
      "m-<ret>"       #'org-insert-heading-respect-content
      "o i"           #'org-insert-todo-heading-respect-content
      "o a"           #'org-agenda
      "o t"           #'org-todo-list
-     "o c"           #'org-capture))
+     "o c"           #'org-capture)))
 
 (use-package org-roam
   :after (org age)
@@ -158,5 +177,11 @@
   (org-crypt-tag-matcher "crypt")
   ;; don’t leave an unencrypted copy on disk
   (org-crypt-disable-auto-save t))
+
+(use-package org-modern
+  :ensure t
+  :straight (org-modern :type git :host github :repo "minad/org-modern")
+  :config
+  (global-org-modern-mode))
 
 (provide 'my-org)
