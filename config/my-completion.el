@@ -101,5 +101,7 @@
   :after (company prescient)
   :config (company-prescient-mode 1))
 
+(require 'tempo)
+
 (provide 'my-completion)
 ;;; my-completion.el ends here

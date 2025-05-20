@@ -9,4 +9,8 @@
   (progn
     (key-chord-mode 1)))
 
+(use-package general
+  :ensure t
+  :demand t)
+
 (provide 'my-keys)

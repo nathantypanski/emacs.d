@@ -12,6 +12,7 @@
     (global-set-key (kbd "C-c a") 'org-agenda))
   :custom
   (org-startup-folded nil)
+  (org-src-fontify-natively t)
   (org-default-notes-file (concat (getenv "HOME") "/notes/notes.org"))
   (org-log-done t)
   (org-agenda-files
@@ -72,7 +73,76 @@
      'org-babel-load-languages
      '((R . t)
        (emacs-lisp . t)
-       (python . t)))))
+       (python . t))))
+
+  (defun my-org-tab-action ()
+  "Indent or expand org-tempo template based on context."
+  (interactive)
+  (if (org-at-table-p)
+      ;; If point is at a table, move to the next cell
+      (org-table-next-field)
+    ;; Else, try to expand a tempo template or indent
+    (let ((pos (point)))
+      (tempo-complete-tag)
+      (when (= pos (point))
+        (indent-for-tab-command)))))
+
+  ;; Bind the function to TAB in Org mode
+  (add-hook 'org-mode-hook
+            (lambda ()
+              (local-set-key (kbd "TAB") 'my-org-tab-action)))
+
+  (require 'org-tempo)
+
+  (tempo-define-template "org-src-block"
+                         '((tempo-template-org-src))
+                         "<ss"
+                         "Insert a source code block in Org mode")
+
+
+  (add-to-list 'org-structure-template-alist
+               '("ss" . "src"))
+
+  ;; Bind <TAB> to org-tempo-expand in Evil insert mode
+  (general-define-key
+   :states '(insert)
+   :keymaps 'org-mode-map
+   "TAB" 'tempo-complete-tag)
+
+  (general-define-key
+   :states '(normal)
+   :keymaps 'org-mode-map
+   "<TAB>"     #'org-cycle
+   "o ["       #'org-metaup
+   "o ]"       #'org-metadown
+   "[ ["       #'org-previous-visible-heading
+   "] ]"       #'org-next-visible-heading
+   "o h"       #'org-insert-heading
+   "o s"       #'org-insert-subheading
+   "o <RET>"   #'org-insert-heading-after-current
+   "o }"       #'org-do-demote
+   "o {"       #'org-do-promote
+   "o d"       #'org-deadline
+   "o s"       #'org-schedule
+   "o p"       #'org-priority
+   "o z"       #'org-add-note
+   "o t"       #'org-set-tags-command
+   "o q"       #'org-todo
+   "o g"       #'org-open-at-point
+   "o e"       #'org-set-effort
+   "o O"       #'org-toggle-ordered-property
+   "o B"       #'org-toggle-checkbox
+   "o r"       #'org-refile
+   "o C i"     #'org-clock-in
+   "o C o"     #'org-clock-out
+   "o C r"     #'org-clock-report
+   "o v t"     #'org-tags-expand
+   "M-<RET>"   #'org-insert-heading-respect-content
+   "o i"       #'org-insert-todo-heading-respect-content
+   "o a"       #'org-agenda
+   "o T"       #'org-todo-list
+   "o c"       #'org-capture)
+)
 
 (use-package org-roam
   :after (org age)
@@ -93,6 +163,5 @@
   (org-crypt-tag-matcher "crypt")
   ;; don’t leave an unencrypted copy on disk
   (org-crypt-disable-auto-save t))
-
 
 (provide 'my-org)

@@ -33,7 +33,7 @@
   "gl"         'magit-log
   "gd"         'magit-diff
   "Gm"         'gptel-menu
-  "Gs"         'gptel-menu
+  "Gs"         'gptel-send
   "l"          'consult-imenu
   "f"          'find-file
   "k"          'kill-buffer

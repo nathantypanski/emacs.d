@@ -19,7 +19,7 @@
 (use-package evil
   :ensure evil
   :demand t
-  :after (consult key-chord)
+  :after (consult key-chord general)
   :init
   :custom
   ;; evil-collection requires this set before loading evil
@@ -98,10 +98,12 @@ Not buffer-local, so it really is per frame.")
     (evil-ex-search-previous count)
     (list evil-ex-search-match-beg evil-ex-search-match-end))
 
-  (define-key minibuffer-local-map [escape] 'my-minibuffer-keyboard-quit)
-  (define-key minibuffer-local-ns-map [escape] 'my-minibuffer-keyboard-quit)
-  (define-key minibuffer-local-completion-map [escape] 'my-minibuffer-keyboard-quit)
-  (define-key minibuffer-local-must-match-map [escape] 'my-minibuffer-keyboard-quit)
+  (general-define-key
+   :keymaps '(minibuffer-local-map
+              minibuffer-local-ns-map
+              minibuffer-local-completion-map
+              minibuffer-local-must-match-map)
+   [escape] 'my-minibuffer-keyboard-quit)
 
   (defun my-delete-trailing-whitespace-at-line ()
     "Delete trailing whitespace on the current line only."
@@ -172,45 +174,6 @@ whether to call indent-according-to-mode."
   (add-hook 'evil-insert-state-exit-hook 'my-exit-insert-state)
   (add-hook 'evil-insert-state-entry-hook 'my-enter-insert-state)
 
-  (define-key evil-normal-state-map (kbd "RET") 'my-electric-append-with-indent)
-  (define-key evil-normal-state-map (kbd "<S-return>") 'my-append-and-indent)
-  (define-key evil-normal-state-map (kbd "C-w }") 'evil-window-rotate-downwards)
-  (define-key evil-normal-state-map (kbd "C-w {") 'evil-window-rotate-upwards)
-  (define-key evil-insert-state-map (kbd "RET") 'my-ret-and-indent)
-  (define-key evil-insert-state-map (kbd "<S-backspace>")
-              'backward-delete-char-untabify)
-  (define-key evil-insert-state-map (kbd "<S-return>")
-              'electric-indent-just-newline)
-  (define-key evil-normal-state-map (kbd "<S-return>")
-              'electric-indent-just-newline)
-
-  (define-key evil-normal-state-map (kbd "SPC a") 'ag)
-  (define-key evil-normal-state-map (kbd "SPC SPC") 'execute-extended-command)
-
-  (define-key evil-normal-state-map (kbd "C-q")   'universal-argument)
-
-  (define-key evil-normal-state-map (kbd "C-h")   'evil-window-left)
-  (define-key evil-normal-state-map (kbd "C-j")   'evil-window-down)
-  (define-key evil-normal-state-map (kbd "C-k")   'evil-window-up)
-  (define-key evil-normal-state-map (kbd "C-l")   'evil-window-right)
-  (define-key evil-normal-state-map (kbd "-") (kbd "dd"))
-
-  (define-key evil-normal-state-map "a"           'evil-append)
-  (define-key evil-normal-state-map "A"           'my-electric-append-with-indent)
-  (define-key evil-normal-state-map "$"           'my-smart-end)
-  (define-key evil-normal-state-map "0"           'my-smart-home)
-
-  (define-key evil-motion-state-map "h"           'evil-backward-char)
-  (define-key evil-motion-state-map "j"           'evil-next-visual-line)
-  (define-key evil-motion-state-map "k"           'evil-previous-visual-line)
-  (define-key evil-motion-state-map "l"           'evil-forward-char)
-  (define-key evil-motion-state-map "$"           'evil-end-of-line)
-  (define-key evil-motion-state-map "0"           'evil-beginning-of-line)
-
-  (define-key evil-normal-state-map "/"           'evil-search-forward)
-  (define-key evil-motion-state-map "/"           'evil-search-forward)
-  (define-key evil-normal-state-map (kbd "Y") (kbd "y$"))
-  (define-key evil-normal-state-map (kbd "P") 'consult-yank-from-kill-ring)
 
   (evil-ex-define-cmd "Q"  'evil-quit)
   (evil-ex-define-cmd "Qa" 'evil-quit-all)
@@ -255,9 +218,13 @@ whether to call indent-according-to-mode."
           ;; Fallback (e.g. insert or emacs state)
           (insert text))))))
 
-  (define-key evil-visual-state-map (kbd "C-y") #'my-wl-copy-evil-operator)
-  (define-key evil-normal-state-map (kbd "C-p") #'my-wl-paste-evil)
-  (define-key evil-insert-state-map (kbd "C-p") #'my-wl-paste-evil)
+  (general-define-key
+   :states '(visual)
+   "C-y" #'my-wl-copy-evil-operator)
+
+  (general-define-key
+   :states '(normal insert)
+   "C-p" #'my-wl-paste-evil)
 
   (after 'lsp-mode
     (defun my-lsp-doc-no-completion (&optional pos)
@@ -278,7 +245,10 @@ If LSP isn’t active here, signal a user‑friendly error."
                  (lsp-describe-thing-at-point)
                (user-error "No LSP available to describe here"))))))))
 
-  (define-key evil-insert-state-map (kbd "TAB") #'indent-for-tab-command)
+  (general-define-key
+   :states '(insert)
+   :keymaps 'evil-insert-state-map
+   "TAB" #'indent-for-tab-command)
 
   (defun my-with-suppressed-capf (fn)
     "Temporarily restore the raw CAPF handler around FN."
@@ -323,46 +293,52 @@ With `C-u` prefix, prompt for a position; otherwise use point."
         (user-error "No documentation available for %s"
                     (or symbol "<nothing>"))))))
 
+  (general-define-key
+   :states 'normal
+   "RET" 'my-electric-append-with-indent
+   "<S-return>" 'my-append-and-indent
+   "C-w }" 'evil-window-rotate-downwards
+   "C-w {" 'evil-window-rotate-upwards
+   "SPC a" 'ag
+   "SPC SPC" 'execute-extended-command
+   "C-q" 'universal-argument
+   "C-h" 'evil-window-left
+   "C-j" 'evil-window-down
+   "C-k" 'evil-window-up
+   "C-l" 'evil-window-right
+   "-" "dd"
+   "a" 'evil-append
+   "A" 'my-electric-append-with-indent
+   "$" 'my-smart-end
+   "0" 'my-smart-home
+   "/" 'evil-search-forward
+   "Y" "y$"
+   "P" 'consult-yank-from-kill-ring)
 
-  (define-key evil-normal-state-map (kbd "K") 'my-doc-at-point)
+  (general-define-key
+   :states 'insert
+   "RET" 'my-ret-and-indent
+   "<S-backspace>" 'backward-delete-char-untabify
+   "<S-return>" 'electric-indent-just-newline)
 
-  (define-key evil-insert-state-map (kbd "M-/") 'company-complete)
+  (general-define-key
+   :states 'motion
+   "h" 'evil-backward-char
+   "j" 'evil-next-visual-line
+   "k" 'evil-previous-visual-line
+   "l" 'evil-forward-char
+   "$" 'evil-end-of-line
+   "0" 'evil-beginning-of-line
+   "/" 'evil-search-forward)
 
-  ;; Insert more debug prompts if there's fall-through
-  ;; such as checking if `org-mode-map` exists
-  (evil-define-key 'normal org-mode-map
-    (kbd "<TAB>")     #'org-cycle
-    (kbd "o [")       #'org-metaup
-    (kbd "o ]")       #'org-metadown
-    (kbd "[ [")       #'org-previous-visible-heading
-    (kbd "] ]")       #'org-next-visible-heading
-    (kbd "o h")       #'org-insert-heading
-    (kbd "o s")       #'org-insert-subheading
-    (kbd "o <RET>")   #'org-insert-heading-after-current
-    (kbd "o }")       #'org-do-demote
-    (kbd "o {")       #'org-do-promote
-    (kbd "o d")       #'org-deadline
-    (kbd "o s")       #'org-schedule
-    (kbd "o p")       #'org-priority
-    (kbd "o z")       #'org-add-note
-    (kbd "o t")       #'org-set-tags-command
-    (kbd "o q")       #'org-todo
-    (kbd "o g")       #'org-open-at-point
-    (kbd "o e")       #'org-set-effort
-    (kbd "o O")       #'org-toggle-ordered-property
-    (kbd "o B")       #'org-toggle-checkbox
-    (kbd "o r")       #'org-refile
-    (kbd "o C i")     #'org-clock-in
-    (kbd "o C o")     #'org-clock-out
-    (kbd "o C r")     #'org-clock-report
-    (kbd "o v t")     #'org-tags-expand
-    (kbd "M-<RET>")   #'org-insert-heading-respect-content
-    (kbd "o i")       #'org-insert-todo-heading-respect-content
-    ;; the following should mirror leader keys
-    (kbd "o a")       #'org-agenda
-    (kbd "o T")       #'org-todo-list
-    (kbd "o c")       #'org-capture
-    (kbd "o a")       #'org-agenda))
+  ;; do I need both :states and :keymap here?
+  (general-define-key
+   :states '(normal)
+   "K" 'my-doc-at-point)
+
+  (general-define-key
+   :states '(insert)
+   "M-/" 'company-complete))
 
 (use-package evil-leader
   :commands (evil-leader-mode global-evil-leader-mode)
