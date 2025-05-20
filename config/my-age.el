@@ -38,14 +38,6 @@
   :after age
   :straight (passage :type git :host github :repo "anticomputer/passage.el")
   :ensure t
-  :demand t
-  ;;:custom
-)
+  :demand t)
 
-;;;; fails to load
-;; (use-package passage
-;;   :straight t
-;;   :after age)
-
-;; (setq epa-pinentry-mode 'loopback)
 (provide 'my-age)

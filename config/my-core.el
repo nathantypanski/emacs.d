@@ -47,21 +47,11 @@
 ;; Disable toolbars and splash screens.
 (when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 
-;; from <https://github.com/bling/dotemacs/>
 (defmacro after (feature &rest body)
   "After FEATURE is loaded, evaluate BODY."
   (declare (indent defun))
-  `(eval-after-load ,feature
-     '(progn ,@body)))
-
-;; ;; make sure $PATH is set correctly
-;; (use-package exec-path-from-shell
-;;   :ensure exec-path-from-shell
-;;   :config
-;;   (progn
-;;     (exec-path-from-shell-copy-env "PATH")
-;;     (exec-path-from-shell-copy-env "PYTHONPATH")
-;; ))
+  `(with-eval-after-load ,feature
+     ,@body))
 
 (ignore-errors ;; windows
   (exec-path-from-shell-initialize))
@@ -275,5 +265,9 @@ This command only has an effect on graphical frames."
 ;; 1. Ensure margins exist
 (setq-default left-margin-width  1
               right-margin-width 1)
+
+(setq fill-column 80)
+(global-visual-line-mode)
+(global-display-fill-column-indicator-mode)
 
 (provide 'my-core)

@@ -13,7 +13,7 @@
 (use-package evil
   :ensure evil
   :demand t
-  :after consult
+  :after (consult key-chord)
   :init
   :custom
   ;; evil-collection requires this set before loading evil
@@ -318,7 +318,45 @@ With `C-u` prefix, prompt for a position; otherwise use point."
                     (or symbol "<nothing>"))))))
 
 
-  (define-key evil-normal-state-map (kbd "K") 'my-doc-at-point))
+  (define-key evil-normal-state-map (kbd "K") 'my-doc-at-point)
+
+  (define-key evil-insert-state-map (kbd "M-/") 'company-complete)
+
+  ;; Insert more debug prompts if there's fall-through
+  ;; such as checking if `org-mode-map` exists
+  (evil-define-key 'normal org-mode-map
+    (kbd "<TAB>")     #'org-cycle
+    (kbd "o [")       #'org-metaup
+    (kbd "o ]")       #'org-metadown
+    (kbd "[ [")       #'org-previous-visible-heading
+    (kbd "] ]")       #'org-next-visible-heading
+    (kbd "o h")       #'org-insert-heading
+    (kbd "o s")       #'org-insert-subheading
+    (kbd "o <RET>")   #'org-insert-heading-after-current
+    (kbd "o }")       #'org-do-demote
+    (kbd "o {")       #'org-do-promote
+    (kbd "o d")       #'org-deadline
+    (kbd "o s")       #'org-schedule
+    (kbd "o p")       #'org-priority
+    (kbd "o z")       #'org-add-note
+    (kbd "o t")       #'org-set-tags-command
+    (kbd "o q")       #'org-todo
+    (kbd "o g")       #'org-open-at-point
+    (kbd "o e")       #'org-set-effort
+    (kbd "o O")       #'org-toggle-ordered-property
+    (kbd "o B")       #'org-toggle-checkbox
+    (kbd "o r")       #'org-refile
+    (kbd "o C i")     #'org-clock-in
+    (kbd "o C o")     #'org-clock-out
+    (kbd "o C r")     #'org-clock-report
+    (kbd "o v t")     #'org-tags-expand
+    (kbd "M-<RET>")   #'org-insert-heading-respect-content
+    (kbd "o i")       #'org-insert-todo-heading-respect-content
+    ;; the following should mirror leader keys
+    (kbd "o a")       #'org-agenda
+    (kbd "o T")       #'org-todo-list
+    (kbd "o c")       #'org-capture
+    (kbd "o a")       #'org-agenda))
 
 (use-package evil-leader
   :commands (evil-leader-mode global-evil-leader-mode)
