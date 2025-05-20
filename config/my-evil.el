@@ -14,12 +14,17 @@
   :config
   (global-undo-tree-mode))
 
+(use-package smartparens
+  :demand t
+  :ensure t
+  :straight t)
+
 ;; Here's what we've all been waiting for.
 ;; Recreate Vim inside Emacs.
 (use-package evil
   :ensure evil
   :demand t
-  :after (consult key-chord general)
+  :after (consult key-chord general smartparens)
   :init
   :custom
   ;; evil-collection requires this set before loading evil
