@@ -1,15 +1,14 @@
-
 (use-package zenburn-theme
   :ensure zenburn-theme
   :config
-  (progn
     (unless noninteractive
-      (load-theme 'zenburn t))))
+      (load-theme 'zenburn t))
+  )
 
 (global-hl-line-mode t)
 
 ;; Color derived from zenburn, but I want the current focus to be obvious.
-(set-face-background 'hl-line "#2a2e2e")
+(set-face-background 'hl-line "#444444")
 
 ;; GPT: any other similar customizations I might make? Like line number bg?
 
@@ -26,11 +25,12 @@
 
 (use-package smart-mode-line
   :ensure smart-mode-line
+  :custom
+  (sml/theme 'automatic)
+  (sml/mode-width 10)
   :config
-  (progn
-    (setq sml/theme 'dark)
-    (setq sml/mode-width 30)
-    (sml/setup)))
+    (sml/setup)
+    (smart-mode-line-enable))
 
 (use-package rainbow-mode
   :ensure rainbow-mode)
@@ -39,8 +39,7 @@
   :ensure rainbow-delimiters
   :init
   (progn
-    (rainbow-delimiters-mode-enable)
-    ))
+    (rainbow-delimiters-mode-enable)))
 
 (defun my-coding-mode-eyecandy ()
   "Eyecandy specific to programming text editing modes."

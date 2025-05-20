@@ -28,12 +28,7 @@
     (defun my-jump-to-elisp-docs (sym-name)
       "Jump to a pane and do elisp-slime-nav-describe-elisp-thing-at-point"
       (interactive (list (elisp-slime-nav--read-symbol-at-point)))
-      (help-xref-interned (intern sym-name))))
-  :config
-  (progn
-    (after 'evil
-      ;; (evil-define-key 'normal emacs-lisp-mode-map (kbd "K") 'my-jump-to-elisp-docs)
-      )))
+      (help-xref-interned (intern sym-name)))))
 
 (defun my-setup-elisp-mode ()
   "Commands to be run at the start of Emacs Lisp mode."
@@ -61,6 +56,5 @@
   :custom
   (slime-company-completion 'fuzzy)
   (slime-company-after-completion 'slime-company-just-one-space))
-
 
 (provide 'my-elisp)
