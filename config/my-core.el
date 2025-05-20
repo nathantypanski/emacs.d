@@ -268,4 +268,11 @@ This command only has an effect on graphical frames."
 (setq fill-column 80)
 (global-display-fill-column-indicator-mode)
 
+;; Buffer encoding
+(prefer-coding-system       'utf-8)
+(set-default-coding-systems 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+(set-language-environment   'utf-8)
+
 (provide 'my-core)
