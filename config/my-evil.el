@@ -383,8 +383,4 @@ With `C-u` prefix, prompt for a position; otherwise use point."
   :straight nil
   :ensure paredit)
 
-(use-package evil-paredit
-  :ensure evil-paredit
-  :after (evil paredit))
-
 (provide 'my-evil)
