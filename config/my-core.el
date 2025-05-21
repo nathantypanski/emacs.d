@@ -275,4 +275,6 @@ This command only has an effect on graphical frames."
 (set-keyboard-coding-system 'utf-8)
 (set-language-environment   'utf-8)
 
+(setq-default scroll-margin 5)
+
 (provide 'my-core)
