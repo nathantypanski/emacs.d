@@ -209,19 +209,19 @@ This command only has an effect on graphical frames."
 
 (when (display-graphic-p)
     (add-hook 'after-make-frame-functions 'my-use-default-font)
-    (setq pop-up-frames t)
+    (setq pop-up-frames nil)
+    (setq display-buffer-alist ()
+          ;;'(("\\*Help\\*" display-buffer-pop-up-frame)
+          ;;  ("\\*Completions\\*" display-buffer-pop-up-frame)
+            ;; Add more rules as desired
+            )
+
     (my-use-default-font))
 
 (global-set-key (kbd "C-x C-b") 'ibuffer)
 (global-set-key (kbd "C-x C-k") 'kill-this-buffer)
 (global-set-key (kbd "C-x g") 'my-google)
 (global-set-key (kbd "C-c e") 'my-eval-and-replace)
-
-(defun my-setup-help-mode ()
-  "Setup help mode the way I like it."
-  (set-fill-column 70))
-
-(add-hook 'help-mode-hook 'my-setup-help-mode)
 
 (when (my-system-is-mac)
   (require 'ls-lisp)
