@@ -9,6 +9,9 @@
 ;;                          ("gnu" . "https://elpa.gnu.org/packages/")))
 
 
+;; Prevent straight from cloning org.
+(setq straight-built-in-pseudo-packages '(org))
+
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name
