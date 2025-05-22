@@ -11,12 +11,13 @@
 (use-package org
   :commands (org-mode org-capture org-agenda orgtbl-mode)
   :straight nil
-  :hook (org-mode . my-org-setup-keybindings)
+  :hook ((org-mode . my-org-setup-keybindings)
+         (org-mode . my-org-setup-electric-pair))
   :init
   (progn
     (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
-    (global-set-key (kbd "C-c c") 'org-capture)
-    (global-set-key (kbd "C-c a") 'org-agenda))
+    (global-set-key (kbd "C-c c") #'org-capture)
+    (global-set-key (kbd "C-c a") #'org-agenda))
   :custom
   (org-auto-align-tags nil)
   (org-tags-column 0)
@@ -148,7 +149,20 @@
      "o i"           #'org-insert-todo-heading-respect-content
      "o a"           #'org-agenda
      "o t"           #'org-todo-list
-     "o c"           #'org-capture)))
+     "o c"           #'org-capture))
+(defun my-org-electric-pair-inhibit-angle (char)
+  "In org-mode, inhibit pairing for <."
+  (and (eq major-mode 'org-mode)
+       (eq char ?<)))
+
+(defun my-org-setup-electric-pair ()
+  "Set buffer-local electric-pair inhibit predicate for org."
+  (setq-local electric-pair-inhibit-predicate
+              (lambda (char)
+                (or (my-org-electric-pair-inhibit-angle char)
+                    (when (boundp 'electric-pair-skip-self) ; fallback
+                      (funcall (default-value 'electric-pair-inhibit-predicate) char)))))))
+
 
 (use-package org-roam
   :after (org age)
