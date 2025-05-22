@@ -19,9 +19,9 @@
 ;; Show parentheses
 (show-paren-mode 1)
 
+;; show whitespace
 (require 'whitespace)
-(setq whitespace-style '(trailing missing-newline-at-eof face))
-
+(setq whitespace-style '(trailing))
 (global-whitespace-mode 1)
 
 (use-package smart-mode-line
