@@ -116,5 +116,17 @@
 
 (require 'tempo)
 
+(use-package corfu
+  :straight t
+  :custom
+  (corfu-auto t)           ; Enable auto popup
+  (corfu-cycle t)          ; Enable cycling for completions
+  (corfu-quit-at-boundary nil)
+  (corfu-quit-no-match 'separator)
+  (corfu-preview-current nil)
+  :config
+  (corfu-terminal-mode)
+  (global-corfu-mode))
+
 (provide 'my-completion)
 ;;; my-completion.el ends here

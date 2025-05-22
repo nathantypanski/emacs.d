@@ -40,6 +40,8 @@
   "s s"        'consult-line
   "n"          'neotree-toggle
 
+  "gz"         'eglot-inlay-hints-mode
+
   ;; gptel
   "Ga"         'gptel-add
   "GA"         'gptel-add-file

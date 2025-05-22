@@ -10,7 +10,7 @@
 
 
 ;; Prevent straight from cloning org.
-(setq straight-built-in-pseudo-packages '(org))
+(setq straight-built-in-pseudo-packages '(org eglot eldoc))
 
 (defvar bootstrap-version)
 (let ((bootstrap-file
