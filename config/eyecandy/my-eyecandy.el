@@ -31,7 +31,7 @@
   (sml/show-frame-identification t)
   (sml/show-client t)
   (sml/use-projectile-p t)
-  (sml/mode-width 1)
+  (sml/mode-width 'right)
   (sml/shorten-modes t)
   (sml/shorten-directory t)
   (sml/hidden-modes '(".*"))
@@ -40,6 +40,7 @@
                    (my/evil-state-indicator)))
          mode-line-format))
   :config
+
   (after 'evil
     (defun my/evil-state-indicator ()
       (propertize
