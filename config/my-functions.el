@@ -77,12 +77,15 @@ we’re in a programming-language buffer (`prog-mode' derivative)."
 ;; cursor to the beginning of the *absolute* line. Most of the time
 ;; this won't matter or even be noticeable, but when it does (in
 ;; comments, for example) it will be quite convenient.
+
 (defun my-smart-home ()
-  "Odd home to beginning of line, even home to beginning of text/code."
+  "Toggle between bol and indentation, ALWAYS go to column 0
+regardless of horizontal scroll."
   (interactive)
-  (if (bolp)
-      (beginning-of-line-text)
-    (beginning-of-line)))
+  (let ((orig (point)))
+    (goto-char (line-beginning-position))
+    (when (= (point) orig)
+      (back-to-indentation))))
 
 (defun my-smart-end ()
   "Odd end to end of line, even end to begin of text/code."
