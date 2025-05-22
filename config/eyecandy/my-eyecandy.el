@@ -48,14 +48,14 @@
        'face
        (cond
         ((eq evil-state 'normal)
-         '(:foreground "green" :weight bold :height 1.5))
+         '(:foreground "green" :weight bold))
         ((eq evil-state 'insert)
-         '(:foreground "orange" :weight bold :height 1.5))
+         '(:foreground "orange" :weight bold))
         ((eq evil-state 'visual)
-         '(:foreground "magenta" :weight bold :height 1.5))
+         '(:foreground "magenta" :weight bold))
         ((eq evil-state 'emacs)
-         '(:foreground "cyan" :weight bold :height 1.5))
-        (t '(:foreground "red" :weight bold :height 1.5))))))
+         '(:foreground "cyan" :weight bold))
+        (t '(:foreground "red" :weight bold))))))
   (sml/setup))
 
 (use-package rainbow-mode

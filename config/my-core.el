@@ -9,14 +9,16 @@
 (defvar my-graphical-font
   (cond
     ((eq system-type 'darwin) "Terminus 10")
-    ((eq system-type 'gnu/linux) "Terminus 16"))
+    ((eq system-type 'gnu/linux) "Terminus (TTF):pixelsize=12"))
   "Font used for graphical editing sessions.")
 
 ;; Don't show those horrible buttons
 (tool-bar-mode -1)
 
-;; break long lines at word boundaries
-(visual-line-mode 1)
+;; don't break long lines at word boundaries
+(visual-line-mode nil)
+;; split at end of buffer in programming mode buffers
+(add-hook 'prog-mode-hook (lambda () (setq truncate-lines t)))
 
 ;; lockfiles are evil.
 (setq create-lockfiles nil)
@@ -64,7 +66,7 @@
 (when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 
 ;; show the menu bar
-(menu-bar-mode 1)
+(menu-bar-mode -1)
 
 ;; Ediff with horizontal splits.
 (after 'ediff
@@ -188,8 +190,12 @@ name of the buffer."
 FONT is the name of a xft font, like `Monospace-10'."
   (interactive "sFont: ")
   ;; (set-face-attribute 'default nil :height 125 :family "Fira Mono"))
-    (set-face-attribute 'default nil :height 120 :font font)
-    (set-frame-font font nil t))
+  (set-face-attribute 'fixed-pitch nil :font font)
+  (set-face-attribute 'variable-pitch nil :font font)
+  (set-face-attribute 'default nil :font font)
+  (set-face-attribute 'variable-pitch nil :font font)
+  (set-frame-font font nil t))
+
 
 (defun my-use-default-font (&optional frame)
   "Set the frame font to the font name in the variable my-graphical-font.
