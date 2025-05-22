@@ -209,6 +209,7 @@ This command only has an effect on graphical frames."
 
 (when (display-graphic-p)
     (add-hook 'after-make-frame-functions 'my-use-default-font)
+    (setq pop-up-frames t)
     (my-use-default-font))
 
 (global-set-key (kbd "C-x C-b") 'ibuffer)
