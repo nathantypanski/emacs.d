@@ -9,7 +9,19 @@
   :after consult
   :init
   (vertico-mode)
+  :custom
+  ;; cycle from next to prev in vertico
+  (vertico-cycle t)
   :config
+  (general-define-key
+   :keymaps 'vertico-map
+   "TAB"      #'vertico-next
+   "<tab>"    #'vertico-next
+   "<backtab>"#'vertico-previous
+   "RET"      #'vertico-exit
+   "C-j"      #'vertico-exit-input
+   "S-TAB"    #'vertico-previous))
+
   (defun my-vertico-toggle-capf ()
     "Use `consult-completion-in-region` when Vertico is on, else default."
     (setq-local completion-in-region-function
@@ -17,14 +29,14 @@
                     #'consult-completion-in-region
                   #'completion--in-region)))
 
-  (setq vertico-cycle t))
 
 (use-package orderless
   :ensure t
   :custom
   (completion-styles '(orderless flex))
-  (completion-category-defaults nil)
-  (completion-category-overrides '((file (styles partial-completion)))))
+  (completion-category-overrides '((file (styles partial-completion))))
+  :config
+  (setq completion-category-defaults nil))
 
 ;; annotate completion candidates, e.g. in M-x
 (use-package marginalia
@@ -32,8 +44,7 @@
   :init
   (setq completion-in-region-function #'consult-completion-in-region)
   :config
-  (progn
-    (marginalia-mode)))
+  (marginalia-mode))
 
 (use-package consult
   :ensure t
@@ -42,6 +53,8 @@
   (("C-s" . consult-line)
    ("M-y" . consult-yank-pop)
    ("C-x b" . consult-buffer))
+  :custom
+  (consult-async-min-input 0)
   :config
   (after 'evil
     (define-key evil-normal-state-map (kbd "P") 'consult-yank-from-kill-ring)
