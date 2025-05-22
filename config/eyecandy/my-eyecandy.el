@@ -2,8 +2,7 @@
   :ensure zenburn-theme
   :config
     (unless noninteractive
-      (load-theme 'zenburn t))
-  )
+      (load-theme 'zenburn t)))
 
 (global-hl-line-mode t)
 
@@ -20,7 +19,8 @@
 (show-paren-mode 1)
 
 (require 'whitespace)
-(setq whitespace-style '(trailing))
+(setq whitespace-style '(trailing missing-newline-at-eof face))
+
 (global-whitespace-mode 1)
 
 (use-package smart-mode-line
