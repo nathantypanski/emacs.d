@@ -2,8 +2,8 @@
 (use-package zenburn-theme
   :ensure zenburn-theme
   :config
-    (unless noninteractive
-      (load-theme 'zenburn t)))
+  (unless noninteractive
+    (load-theme 'zenburn t)))
 
 (global-hl-line-mode t)
 
@@ -28,10 +28,34 @@
   :ensure smart-mode-line
   :custom
   (sml/theme 'automatic)
-  (sml/mode-width 10)
+  (sml/show-frame-identification t)
+  (sml/show-client t)
+  (sml/use-projectile-p t)
+  (sml/mode-width 1)
+  (sml/shorten-modes t)
+  (sml/shorten-directory t)
+  (sml/hidden-modes '(".*"))
+  (mode-line-format
+   (cons '(:eval (when (bound-and-true-p evil-local-mode)
+                   (my/evil-state-indicator)))
+         mode-line-format))
   :config
-    (sml/setup)
-    (smart-mode-line-enable))
+  (after 'evil
+    (defun my/evil-state-indicator ()
+      (propertize
+       (concat "[" (upcase (symbol-name evil-state)) "]")
+       'face
+       (cond
+        ((eq evil-state 'normal)
+         '(:foreground "green" :weight bold :height 1.5))
+        ((eq evil-state 'insert)
+         '(:foreground "orange" :weight bold :height 1.5))
+        ((eq evil-state 'visual)
+         '(:foreground "magenta" :weight bold :height 1.5))
+        ((eq evil-state 'emacs)
+         '(:foreground "cyan" :weight bold :height 1.5))
+        (t '(:foreground "red" :weight bold :height 1.5))))))
+  (sml/setup))
 
 (use-package rainbow-mode
   :ensure rainbow-mode)
