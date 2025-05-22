@@ -21,7 +21,9 @@
 (use-package smartparens
   :demand t
   :ensure t
+  :hook ((prog-mode . electric-pair-mode))
   :straight t)
+
 
 ;; Here's what we've all been waiting for.
 ;; Recreate Vim inside Emacs.
