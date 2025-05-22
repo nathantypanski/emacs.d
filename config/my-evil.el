@@ -70,6 +70,7 @@ Not buffer-local, so it really is per frame.")
 
   (defun my-tty-cursor-update (&rest _)
     "Apply correct DECSCUSR escape in TTY frames after every command."
+    (interactive)
     (when (and (not (display-graphic-p)) (bound-and-true-p evil-local-mode))
       (let ((shape (my-evil--shape)))
         ;; 1. Let Emacs know (covers 28+ which translate cursor-type themselves)
@@ -82,6 +83,7 @@ Not buffer-local, so it really is per frame.")
 
   ;; Run AFTER every command – guarantees we always win the last cursor race
   (add-hook 'post-command-hook #'my-tty-cursor-update)
+  (my-tty-cursor-update)
 
   ;; New TTY frames and focus changes can reset the hardware cursor
   (add-hook 'after-make-frame-functions (lambda (_f) (my-tty-cursor-update)))
