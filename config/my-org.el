@@ -95,15 +95,6 @@
 
   (require 'org-tempo)
 
-  (tempo-define-template "org-src-block"
-                         '((tempo-template-org-src))
-                         "<ss"
-                         "Insert a source code block in Org mode")
-
-
-  (add-to-list 'org-structure-template-alist
-               '("ss" . "src"))
-
   (defun my-org-tab-action ()
   "Indent or expand org-tempo template based on context."
   (interactive)
