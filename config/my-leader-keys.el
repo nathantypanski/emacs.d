@@ -12,7 +12,8 @@
   ">"          'find-file-at-point
   "\\"         'split-window-horizontally
   "-"          'split-window-vertically
-  "e"          'pp-eval-expression
+  "e"          'pp-eval-last-sexp
+  "E"          'eval-last-sexp
   "TAB"        'my-hop-around-buffers
   "RET"        'my-spawn-terminal-here
   "<SPC>RET"   'my-tmux-new-frame
@@ -23,20 +24,37 @@
   "jb"         'find-buffer
   "cl"         'my-flycheck-list-errors
   "w"          'save-buffer
-  "p"          'projectile-find-file
   "P"          'projectile-switch-project
   "`"          'visit-term-buffer
   "cc"         'projectile-compile-project
   "gs"         'magit-status
   "gl"         'magit-log
   "gd"         'magit-diff
-  "l"          'consult-imenu
   "f"          'find-file
   "k"          'kill-buffer
   "x"          'execute-extended-command
   "s r"        'ag-regexp
+  "b"          'consult-buffer
+  "l"          'consult-imenu
   "s s"        'consult-line
+  "r"          'consult-register
   "n"          'neotree-toggle
+
+  "pf"         'projectile-find-file
+  "ps"         'projectile-ag
+  "pp"         'projectile-commander
+  "ps"         'projectile-switch
+  "pv"         'projectile-vc
+  "pb"         'projectile-switch-to-buffer
+  "pT"         'projectile-find-test-file
+  "pd"         'projectile-find-dir
+  "pe"         'projectile-recentf
+  "pj"         'projectile-find-tag
+  "pr"         'projectile-replace
+  "pR"         'projectile-regenerate-tags
+  "pD"         'projectile-dired
+  "pk"         'projectile-kill-buffers
+  "pV"         'projectile-browse-dirty-projects
 
   "gz"         'eglot-inlay-hints-mode
 
@@ -53,6 +71,7 @@
   "o p"        'org-priority
   "o c"        'org-capture
   "o l"        'org-store-link)
+
 
 (evil-leader/set-key-for-mode 'git-commit-mode "qq" 'git-commit-abort)
 (evil-leader/set-key-for-mode 'git-commit-mode "C" 'with-editor-finish)
