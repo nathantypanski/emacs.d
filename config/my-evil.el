@@ -12,6 +12,10 @@
 (use-package undo-tree
   :ensure t
   :config
+   (setq undo-tree-history-directory-alist
+         '(("." . "~/.emacs.d/undo-tree-history")))
+   (setq undo-tree-auto-save-history nil)
+
   (global-undo-tree-mode))
 
 (use-package smartparens
