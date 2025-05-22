@@ -22,7 +22,7 @@
   ","          'other-window
   "/"          'evilnc-comment-or-uncomment-lines
   "jf"         'ffap
-  "jb"         'ace-jump-buffer
+  "jb"         'find-buffer
   "cl"         'my-flycheck-list-errors
   "w"          'save-buffer
   "p"          'projectile-find-file
@@ -32,10 +32,6 @@
   "gs"         'magit-status
   "gl"         'magit-log
   "gd"         'magit-diff
-  "Ga"         'gptel-add
-  "GA"         'gptel-add-file
-  "Gm"         'gptel-menu
-  "Gs"         'gptel-send
   "l"          'consult-imenu
   "f"          'find-file
   "k"          'kill-buffer
@@ -43,6 +39,14 @@
   "s r"        'ag-regexp
   "s s"        'consult-line
   "n"          'neotree-toggle
+
+  ;; gptel
+  "Ga"         'gptel-add
+  "GA"         'gptel-add-file
+  "Gm"         'gptel-menu
+  "Gs"         'gptel-send
+  "GG"         'gptel
+
   ;; org bindings
   "o a"        'org-agenda
   "o T"        'org-todo-list
