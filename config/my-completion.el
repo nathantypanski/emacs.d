@@ -12,22 +12,22 @@
   :custom
   ;; cycle from next to prev in vertico
   (vertico-cycle t)
-  :config
-  (general-define-key
-   :keymaps 'vertico-map
-   "TAB"      #'vertico-next
+  (general-define-key :keymaps 'vertico-map
+   "<TAB>"    #'vertico-next
    "<tab>"    #'vertico-next
    "<backtab>"#'vertico-previous
-   "RET"      #'vertico-exit
+   "<RET>"    #'vertico-exit
+   "C-<RET>"  #'vertico-exit-input
    "C-j"      #'vertico-exit-input
-   "S-TAB"    #'vertico-previous))
-
+   "S-<TAB>"  #'vertico-previous
+   "<ESC>"    #'vertico-exit-input)
+  :config
   (defun my-vertico-toggle-capf ()
     "Use `consult-completion-in-region` when Vertico is on, else default."
     (setq-local completion-in-region-function
                 (if vertico-mode
                     #'consult-completion-in-region
-                  #'completion--in-region)))
+                  #'completion--in-region))))
 
 
 (use-package orderless
