@@ -1,4 +1,4 @@
-;; Which-key: discoverable keybindings
+;; Which-key: discoverable keybindings -*- lexical-binding: t; -*-
 (use-package which-key
   :ensure which-key
   :config (which-key-mode))

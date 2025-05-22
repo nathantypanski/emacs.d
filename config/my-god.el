@@ -1,4 +1,4 @@
-;; my-god.el
+;; my-god.el -*- lexical-binding: t; -*-
 ;;
 ;; God mode bindings for emacs.
 ;;

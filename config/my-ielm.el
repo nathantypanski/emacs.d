@@ -1,4 +1,4 @@
-;; my-ielm.el
+;; my-ielm.el -*- lexical-binding: t; -*-
 ;;
 ;; elisp interpreter shell settings
 

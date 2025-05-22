@@ -1,4 +1,4 @@
-;; travis.el
+;; travis.el -*- lexical-binding: t; -*-
 ;;
 ;; Test my emacs configuration using Travis-CI.
 

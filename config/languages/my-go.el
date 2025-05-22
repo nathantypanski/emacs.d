@@ -1,4 +1,4 @@
-;; my-go.el
+;; my-go.el -*- lexical-binding: t; -*-
 ;;
 ;; Settings for the Go programming language.
 

@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (use-package workgroups2
   :disabled t
   :ensure workgroups2

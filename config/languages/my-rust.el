@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (use-package rust-mode
   :ensure rust-mode
   :commands rust-mode

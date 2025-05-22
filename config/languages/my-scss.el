@@ -1,4 +1,4 @@
-;; my-scss.el
+;; my-scss.el -*- lexical-binding: t; -*-
 ;;
 ;; for things related to scss
 

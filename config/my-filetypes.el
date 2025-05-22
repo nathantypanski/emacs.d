@@ -1,4 +1,4 @@
-;; my-filetypes.el
+;; my-filetypes.el -*- lexical-binding: t; -*-
 ;;
 ;; This is for filetype-specific mode settings that don't belong anywhere
 ;; else. In the case of language-specific settings that already have sufficient

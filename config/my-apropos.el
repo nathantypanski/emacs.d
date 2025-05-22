@@ -1,4 +1,4 @@
-;; # my-apropos.el
+;; # my-apropos.el -*- lexical-binding: t; -*-
 ;;
 ;; Apropos customizations for Evil.
 ;;

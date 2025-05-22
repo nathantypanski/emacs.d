@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (use-package clojure-mode
   :ensure clojure-mode
   :defer t

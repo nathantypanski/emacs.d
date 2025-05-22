@@ -1,4 +1,4 @@
-;; my-help.el
+;; my-help.el -*- lexical-binding: t; -*-
 ;;
 ;; Make help-mode more convenient to work with inside of Evil.
 ;; Give it Vimmy keybindings, but retain conveniences like "q to quit".

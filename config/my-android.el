@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (use-package android-mode
   :ensure android-mode
   :commands (android-create-project

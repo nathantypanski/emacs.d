@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (require 'my-lsp)
 (require 'my-tree-sitter)
 

@@ -1,4 +1,4 @@
-;; my-functions.el
+;; my-functions.el -*- lexical-binding: t; -*-
 ;;
 ;; Helper functions that don't fit nicely anywhere else.
 

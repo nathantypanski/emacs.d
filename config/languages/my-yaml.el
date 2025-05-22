@@ -1,4 +1,4 @@
-;; my-yaml.el
+;; my-yaml.el -*- lexical-binding: t; -*-
 ;;
 ;; Yaml editing.
 

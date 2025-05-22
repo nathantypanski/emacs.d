@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (use-package ag
   :ensure ag
   :commands (ag ag-mode ag-files ag-regexp)

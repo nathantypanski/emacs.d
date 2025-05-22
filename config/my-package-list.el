@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (after 'evil
   (defun my-package-list-get-q-key ()
     "Lookup the current meaning of `q` key in the active package-menu-mode"

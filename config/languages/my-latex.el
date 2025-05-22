@@ -1,9 +1,8 @@
+;;  -*- lexical-binding: t; -*-
 ;; (eval-after-load "tex"
 ;;   '(remove-from-list 'TeX-command-list
 ;; 		'("Latex Make" "latexmk %(-pdf) %t" TeX-run-TeX) t)
 ;;   )
-
-
 ;; (use-package auctex
 ;;   :ensure auctex
 ;;   :config

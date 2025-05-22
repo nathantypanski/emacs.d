@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (use-package tree-sitter
   :commands tree-sitter
   :ensure tree-sitter

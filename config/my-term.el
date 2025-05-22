@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (defun visit-term-buffer ()
   "Create or visit a terminal buffer."
   (interactive)

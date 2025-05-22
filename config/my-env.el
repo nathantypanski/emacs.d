@@ -1,4 +1,4 @@
-;; my-env.el
+;; my-env.el -*- lexical-binding: t; -*-
 ;;
 ;; Environment variables settings.
 

@@ -1,4 +1,4 @@
-;; https://www.emacswiki.org/emacs/unbound.el
+;; https://www.emacswiki.org/emacs/unbound.el -*- lexical-binding: t; -*-
 
 ;; Quiet the byte compiler
 (defvar unbound-keys nil

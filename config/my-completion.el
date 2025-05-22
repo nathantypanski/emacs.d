@@ -6,7 +6,7 @@
 (use-package vertico
   :ensure t
   :demand t
-  :after consult
+  :after (consult general)
   :init
   (vertico-mode)
   :custom

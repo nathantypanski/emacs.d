@@ -1,4 +1,4 @@
-;; my-jade.el
+;; my-jade.el -*- lexical-binding: t; -*-
 ;;
 ;; Jade (HTML templating) editing.
 

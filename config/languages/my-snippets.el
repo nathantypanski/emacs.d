@@ -1,4 +1,4 @@
-;; my-snippets.el
+;; my-snippets.el -*- lexical-binding: t; -*-
 ;;
 ;; Code snippets for speedy snipping.
 

@@ -1,4 +1,4 @@
-;; my-interaction.el
+;; my-interaction.el -*- lexical-binding: t; -*-
 ;;
 ;; smart emacs navigation, etc.
 

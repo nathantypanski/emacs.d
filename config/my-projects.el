@@ -1,4 +1,4 @@
-;; my-projects.el
+;; my-projects.el -*- lexical-binding: t; -*-
 ;;
 ;; Stuff related to maintaining and navigating around projects.
 ;; projectile, etc.

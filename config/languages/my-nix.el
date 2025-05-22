@@ -1,4 +1,4 @@
-;; my-nix.el
+;; my-nix.el -*- lexical-binding: t; -*-
 ;;
 ;; Settings for the Nix programming language.
 

@@ -1,4 +1,4 @@
-;; my-keychain.el
+;; my-keychain.el -*- lexical-binding: t; -*-
 ;;
 ;; Load GPG/SSH keys automatically with keychain.
 

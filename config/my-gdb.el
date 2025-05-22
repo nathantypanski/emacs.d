@@ -1,4 +1,4 @@
-;; my-gdb.el
+;; my-gdb.el -*- lexical-binding: t; -*-
 ;;
 ;; GDB settings for my Emacs config.
 

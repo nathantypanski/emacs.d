@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (after 'evil
   (defun my-comint-evil-insert ()
     "If the comint prompt is before point, enter insert state. Otherwise, insert after the prompt"

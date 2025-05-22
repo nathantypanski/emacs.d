@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (use-package dockerfile-mode
   :commands dockerfile-mode
   :ensure dockerfile-mode

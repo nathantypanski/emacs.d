@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 
 ;; The package is python" but the mode is "python-mode":
 

@@ -1,4 +1,4 @@
-;; generic language server protocol
+;; generic language server protocol -*- lexical-binding: t; -*-
 
 ;; (use-package exec-path-from-shell
 ;;   :ensure t

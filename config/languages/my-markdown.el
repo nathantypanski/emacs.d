@@ -1,4 +1,4 @@
-;; my-markdown.el
+;; my-markdown.el -*- lexical-binding: t; -*-
 ;;
 ;; Settings for editing Markdown files.
 

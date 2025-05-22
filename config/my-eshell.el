@@ -1,4 +1,4 @@
-;; my-eshell.el
+;; my-eshell.el -*- lexical-binding: t; -*-
 ;;
 ;; Configure Eshell nicely for Evil.
 

@@ -1,4 +1,4 @@
-;; my-haskell.el
+;; my-haskell.el -*- lexical-binding: t; -*-
 ;;
 ;; Haskell packages, etc.
 

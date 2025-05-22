@@ -1,4 +1,4 @@
-;; Always eldoc in lispy modes.
+;; Always eldoc in lispy modes. -*- lexical-binding: t; -*-
 (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
 (add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)
 

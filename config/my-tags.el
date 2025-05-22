@@ -1,4 +1,4 @@
-;; my-tags.el
+;; my-tags.el -*- lexical-binding: t; -*-
 ;;
 ;; A perhaps-better-than-ctags tagger for Emacs.
 ;;

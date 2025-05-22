@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (use-package zenburn-theme
   :ensure zenburn-theme
   :config
