@@ -3,8 +3,6 @@
 ;; The big, beating heart of my little corner of Emacs.
 ;; General, mostly-plugin-independent settings go here.
 
-(eval-when-compile (require 'cl-lib))
-
 (defvar my-terminal-emulator "foot"
   "Terminal emulator to be spawned with my-spawn-terminal-here.")
 
@@ -24,7 +22,7 @@
 (setq create-lockfiles nil)
 
 ;; bar cursor
-(setq cursor-type 'bar)
+(setq cursor-type 'box)
 
 ;; also tabs are evil
 (setq-default indent-tabs-mode nil)
@@ -36,7 +34,7 @@
 (setq require-final-newline t)
 
 ;; I never look at right-side fringes. Do you?
-(if (fboundp 'set-fringe-style) (set-fringe-style '(8 . 0)))
+;; (if (fboundp 'set-fringe-style) (set-fringe-style '(8 . 0)))
 
 ;; don't put intitial text in scratch buffer
 (setq initial-scratch-message nil)
@@ -69,7 +67,8 @@
 (menu-bar-mode 1)
 
 ;; Ediff with horizontal splits.
-(setq ediff-split-window-function 'split-window-horizontally)
+(after 'ediff
+  (setq ediff-split-window-function 'split-window-horizontally))
 
 (defun my-home-path (&rest components)
   "Join COMPONENTS relative to `user-home-directory`, even if some start with '/'."
@@ -99,12 +98,6 @@
 ;; Enable the mouse in terminal mode.
 (xterm-mouse-mode 1)
 
-;; UTF-8 everything!
-(set-terminal-coding-system 'utf-8)
-(set-keyboard-coding-system 'utf-8)
-(set-selection-coding-system 'utf-8)
-(prefer-coding-system 'utf-8)
-
 ;; This isn't a typewriter (even if it is a terminal); one space after sentences,
 ;; please.
 (setq sentence-end-double-space nil)
@@ -122,9 +115,6 @@
 ;; Display the current function name in the modeline.
 (which-function-mode 0)
 
-;; Show me the new saved file if the contents change on disk when editing.
-(global-auto-revert-mode 1)
-
 ;; Thanks
 ;; http://www.jesshamrick.com/2013/03/31/macs-and-emacs/
 (defun my-system-is-mac ()
@@ -135,9 +125,8 @@
 (defun my-system-is-linux ()
   "t when systm is linux, else nil."
   (interactive)
-  (cond
    (or (string-equal system-type "gnu/linux")
-       (string-equal system-type "linux"))))
+       (string-equal system-type "linux")))
 
 ;; Repurposed from
 ;; <https://github.com/bling/dotemacs/blob/master/config/init-core.el>
@@ -194,11 +183,6 @@ name of the buffer."
   (interactive)
   (start-process my-terminal-emulator nil my-terminal-emulator))
 
-;; (defun my-spawn-emacs-in-terminal-here ()
-;;   "" (interactive)
-;;   (start-process "foot-emacsclient" nil "foot" "-e" "sh" "-c" "emacsclient -nw -c -a \"\""))
-
-
 (defun my-set-window-font (font)
   "Set the frame font to FONT.
 FONT is the name of a xft font, like `Monospace-10'."
@@ -228,7 +212,7 @@ This command only has an effect on graphical frames."
 
 (defun my-setup-help-mode ()
   "Setup help mode the way I like it."
-  (set-fill-column 80))
+  (set-fill-column 70))
 
 (add-hook 'help-mode-hook 'my-setup-help-mode)
 
@@ -276,5 +260,12 @@ This command only has an effect on graphical frames."
 (set-language-environment   'utf-8)
 
 (setq-default scroll-margin 5)
+;;;; try to make scrolling smooth in terminal
+;; (setq scroll-preserve-screen-position t)
+;; (setq inhibit-double-buffering t)
+;; (setq redisplay-dont-pause t)
+;; (setq line-move-visual t)
+
+(set-fringe-mode 0)  ; Removes fringe, which can cause flickering
 
 (provide 'my-core)
