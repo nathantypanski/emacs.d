@@ -8,16 +8,14 @@
   "qw"         'evil-window-delete
   "qo"         'my-kill-other-buffer
   "Q"          'kill-buffer-and-window
-  "e"          'pp-eval-last-sexp
   "h"          'dired-jump
   ">"          'find-file-at-point
   "\\"         'split-window-horizontally
   "-"          'split-window-vertically
-  "e"          'pp-eval-last-sexp
+  "e"          'pp-eval-expression
   "TAB"        'my-hop-around-buffers
   "RET"        'my-spawn-terminal-here
   "<SPC>RET"   'my-tmux-new-frame
-  "b"          'consult-buffer
   "B"          'my-ibuffer-raise-other-window
   ","          'other-window
   "/"          'evilnc-comment-or-uncomment-lines
