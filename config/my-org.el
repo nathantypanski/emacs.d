@@ -117,6 +117,7 @@
         (indent-for-tab-command)))))
 
   (defun my-org-setup-keybindings ()
+    "setup my keybindings for org-mode"
     (interactive)
     (general-define-key
      :states '(insert)
