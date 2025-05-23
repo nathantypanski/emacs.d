@@ -1,6 +1,3 @@
-[submodule "elisp/vendor/python-mode"]
-	path = elisp/vendor/python-mode
-	url = https://github.com/emacsmirror/python-mode.git
 [submodule "vendor/python-mode"]
 	path = vendor/python-mode
 	url = https://github.com/emacsmirror/python-mode.git
