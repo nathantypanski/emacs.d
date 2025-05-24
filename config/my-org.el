@@ -49,12 +49,12 @@
           (search  . "  %i %-12:c")))
 
   (org-capture-templates
-   `(("t" "Tasks" entry
-      (file+headline (my-home-path "notes/todo/todo.org") "Tasks")
-      "* TODO %?\n  %U\n  %a")
-     ("h" "Home Tasks" entry
-      (file+headline (my-home-path "notes/todo/home.org") "Home Tasks")
-      "* TODO %?\n  %u")))
+        `(("t" "Tasks" entry
+           (file+headline ,(my-home-path "notes/todo/todo.org") "Tasks")
+           "* TODO %?\n  %U\n  %a")
+          ("h" "Home Tasks" entry
+           (file+headline ,(my-home-path "notes/todo/home.org") "Home Tasks")
+           "* TODO %?\n  %u")))
 
    ;; Agenda views
   (org-agenda-window-setup       'current-window)
