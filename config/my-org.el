@@ -12,7 +12,8 @@
   :commands (org-mode org-capture org-agenda orgtbl-mode)
   :straight nil
   :hook ((org-mode . my-org-setup-keybindings)
-         (org-mode . my-org-setup-electric-pair))
+         (org-mode . my-org-setup-electric-pair)
+         (org-mode . visual-line-mode))
   :init
   (progn
     (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
@@ -114,7 +115,7 @@
     (general-define-key
      :states '(insert)
      :keymaps 'org-mode-map
-     (kbd "<tab>")   #'my-org-tab-action)
+     (kbd "<tab>")   #'my-org-tab-action))
 
     (general-define-key
      :states '(normal)
@@ -149,7 +150,7 @@
      "o i"           #'org-insert-todo-heading-respect-content
      "o a"           #'org-agenda
      "o t"           #'org-todo-list
-     "o c"           #'org-capture))
+     "o c"           #'org-capture)
 (defun my-org-electric-pair-inhibit-angle (char)
   "In org-mode, inhibit pairing for <."
   (and (eq major-mode 'org-mode)
