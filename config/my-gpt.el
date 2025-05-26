@@ -71,8 +71,7 @@ request in the context."
                                      gptel-directives)))
           (append my-gptel-directives filtered)))
 
-  (evil-collection-gptel-setup)
-  )
+  (evil-collection-gptel-setup))
 
 
 (provide 'my-gpt)
