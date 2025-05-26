@@ -4,6 +4,8 @@
 
 (use-package emamux
   :straight t
+  :commands
+  (my-tmux-new-frame emamux:tmux-run-command emamux:new_window)
   :demand
   :ensure
   :config
