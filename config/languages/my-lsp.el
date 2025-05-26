@@ -9,6 +9,7 @@
   (eglot-send-changes-idle-time 0.1)
   ;; shut down unused servers
   (eglot-autoshutdown t)
+  (eglot-code-action-indicator "*")
   :config
   ;; Explicitly set pylsp as the server (if necessary)
   (add-to-list 'eglot-server-programs
