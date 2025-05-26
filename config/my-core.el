@@ -17,6 +17,7 @@
 
 ;; don't break long lines at word boundaries
 (visual-line-mode nil)
+
 ;; split at end of buffer in programming mode buffers
 (add-hook 'prog-mode-hook (lambda () (setq truncate-lines t)))
 
@@ -194,6 +195,7 @@ FONT is the name of a xft font, like `Monospace-10'."
   (set-face-attribute 'variable-pitch nil :font font)
   (set-face-attribute 'default nil :font font)
   (set-face-attribute 'variable-pitch nil :font font)
+  (set-face-attribute 'fringe nil :family "Terminus")
   (set-frame-font font nil t))
 
 
@@ -253,8 +255,8 @@ This command only has an effect on graphical frames."
 (setq tab-always-indent 'complete)
 
 ;; 1. Ensure margins exist
-(setq-default left-margin-width  1
-              right-margin-width 1)
+(setq-default left-margin-width  0
+              right-margin-width 0)
 
 (setq fill-column 80)
 (global-display-fill-column-indicator-mode)
@@ -267,11 +269,9 @@ This command only has an effect on graphical frames."
 (set-language-environment   'utf-8)
 
 (setq-default scroll-margin 5)
-;;;; try to make scrolling smooth in terminal
-;; (setq scroll-preserve-screen-position t)
-;; (setq inhibit-double-buffering t)
-;; (setq redisplay-dont-pause t)
-;; (setq line-move-visual t)
+
+;; try to make scrolling smooth in terminal
+(setq scroll-preserve-screen-position t)
 
 (set-fringe-mode 0)  ; Removes fringe, which can cause flickering
 
