@@ -60,10 +60,6 @@
     (define-key evil-normal-state-map (kbd "P") 'consult-yank-from-kill-ring)
     (define-key evil-normal-state-map (kbd "SPC `") 'consult-mark)))
 
-(use-package consult-lsp
-  :ensure t
-  :after (consult lsp-mode))
-
 (use-package embark-consult
   :ensure t
   :after (consult)
