@@ -9,16 +9,6 @@
 ;;                          ("gnu" . "https://elpa.gnu.org/packages/")))
 
 
-;; Silence the following lexical binding warning on package load at
-;; startup:
-;;
-;; ■  Warning (files): Missing ‘lexical-binding’ cookie in "~/.emacs.d/elpa/paredit-26/paredit.el".
-(defun my-ignore-lexical-binding-warning (orig-fun type message &rest args)
-  (unless (and (eq type 'emacs)
-               (string-match-p "not specify lexical-binding" message))
-    (apply orig-fun type message args)))
-
-(advice-add 'display-warning :around #'my-ignore-lexical-binding-warning)
 
 ;; Prevent straight from cloning org.
 (setq straight-built-in-pseudo-packages '(org eglot eldoc))
