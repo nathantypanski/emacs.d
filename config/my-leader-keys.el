@@ -60,7 +60,7 @@
 
   ;; gptel
   "Ga"         'gptel-add
-  "GA"         'gptel-add-file
+  "Gf"         'gptel-add-file
   "Gm"         'gptel-menu
   "Gs"         'gptel-send
   "GG"         'gptel
