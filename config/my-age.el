@@ -35,10 +35,4 @@
   :config
   (age-file-enable))
 
-(use-package passage
-  :after age
-  :straight (passage :type git :host github :repo "anticomputer/passage.el")
-  :ensure t
-  :demand t)
-
 (provide 'my-age)
