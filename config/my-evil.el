@@ -126,23 +126,19 @@ Not buffer-local, so it really is per frame.")
       (delete-trailing-whitespace begin end)))
 
   (evil-define-command my-ret-and-indent (count)
-    "Like RET+indent in insert state, or click a widget/button if on one."
-    (interactive "p")
-    (let ((w (widget-at (point)))
-          (b (button-at (point))))
-      (cond
-       (w (widget-button-press (point)))
-       (b (push-button (point)))
-       (t
-        (my-delete-trailing-whitespace-at-line)
-        (evil-ret-gen count nil)
-        (when (my-sensible-to-indent-p)
-          (indent-according-to-mode))))))
+  "Like RET+indent in insert state, or click a button if on one."
+  (interactive "p")
+  (let ((b (button-at (point))))
+    (cond
+     (b (push-button (point)))
+     (t
+      (my-delete-trailing-whitespace-at-line)
+      (evil-ret-gen count nil)
+      (when (my-sensible-to-indent-p)
+        (indent-according-to-mode))))))
 
   (defun my-electric-append-with-indent (count &optional vcount)
-    "Indent the current line if it is empty.
-
-Otherwise, just do a normal append-line."
+    "Indent the current line if it is empty. Otherwise, just do a normal append-line."
     (interactive "p")
     (if (and (= (point) (line-beginning-position))
              (my-is-this-line-empty))
