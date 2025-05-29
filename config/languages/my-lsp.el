@@ -27,17 +27,14 @@
   :custom
   (eldoc-echo-area-use-multiline-p t)
   (eldoc-echo-area-max-lines 8)
-  :config)
-
-(use-package eldoc-box
-  :after (eldoc eglot)
-  :demand t
-  :ensure t
-  :straight t
+  (eldoc-display-functions '(eldoc-display-in-echo-area
+                             eldoc-display-in-buffer))
+  (eldoc-documentation-strategy #'eldoc-documentation-none)
   :config
   (general-define-key
    :states 'normal
    :keymaps 'eglot-managed-mode-map
-   "K"      #'eldoc-box-help-at-point))
+   "K"      #'eglot-help-at-point)
+  (global-eldoc-mode -1))
 
 (provide 'my-lsp)
