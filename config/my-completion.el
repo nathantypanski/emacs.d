@@ -121,7 +121,6 @@
   (corfu-quit-no-match 'separator)
   (corfu-preview-current nil)
   :config
-  (corfu-terminal-mode)
   (global-corfu-mode))
 
 (provide 'my-completion)
