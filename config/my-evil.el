@@ -211,7 +211,7 @@ whether to call indent-according-to-mode."
   (defun my-wl-paste-evil ()
     "Paste clipboard contents at point using wl-paste, Evil-style."
     (interactive)
-    (let ((text (string-trim (shell-command-to-string "wl-paste -n"))))
+    (let ((text (string-trim (shell-command-to-string my-paste-command))))
       (evil-with-undo
         (cond
          ((evil-visual-state-p)
