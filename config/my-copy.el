@@ -20,7 +20,7 @@
     (with-temp-buffer
       (insert text)
       (call-process-region (point-min) (point-max) my-copy-command))
-    (message "Copied to clipboard via 'my-copy-command'" my-copy-command)))
+    (message "%s" "Copied to clipboard via 'my-copy-command'")))
 
 ;; General-purpose paste function
 (defun my-wl-paste-insert ()

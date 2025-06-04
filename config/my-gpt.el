@@ -65,8 +65,8 @@ request in the context."
   ;; Set default mode for gptel conversation
   (setq gptel-default-mode 'org-mode)
 
-  ;; scroll automatically
-  (add-hook 'gptel-post-stream-hook 'gptel-auto-scroll)
+  ;;;; scroll automatically
+  ;; (add-hook 'gptel-post-stream-hook 'gptel-auto-scroll)
 
   (setq gptel-model 'gpt-4.1)
   ;; is this correct? I want to make sure my directive is default.

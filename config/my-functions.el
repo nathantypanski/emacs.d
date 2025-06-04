@@ -2,6 +2,8 @@
 ;;
 ;; Helper functions that don't fit nicely anywhere else.
 
+(require 's)
+
 (defun my-minibuffer-keyboard-quit ()
   "Abort recursive edit.
 In Delete Selection mode, if the mark is active, just deactivate it;
@@ -100,9 +102,9 @@ Require `font-lock'."
   (interactive)
   (end-of-line)
   (let ((bol (line-beginning-position)))
-    (unless (eq font-lock-comment-face (get-text-property bol 'face))
+    (unless (eq 'font-lock-comment-face (get-text-property bol 'face))
       (while (and (/= bol (point))
-                  (eq font-lock-comment-face
+                  (eq 'font-lock-comment-face
                       (get-text-property (point) 'face)))
         (backward-char 1))
       (unless (= (point) bol)
@@ -175,20 +177,14 @@ Require `font-lock'."
   "Set the directory for Emacs source code from building."
   (interactive)
   (let* ((directory (if directory directory my-default-source-directory))
-         (expanded (directory-file-name (expand-file-name directory)))
-	 (try expanded) new)
+         (expanded (directory-file-name (expand-file-name directory))))
     (if (file-exists-p expanded)
         (setq source-directory directory))))
 
 (my-set-source-directory)
 
-(defun my-list-bind-difference (a b)
-  "Remove B from A."
-  (cl-dolist (elem a)
-    (setq a (delete elem a))))
-
 (defun my-what-line ()
-  "Get the line, without printing the word 'line' before it."
+  "Get the line, without printing the word =line= before it."
   (1+ (count-lines 1 (point))))
 
 (defun my-where-beginning-of-visual-line ()

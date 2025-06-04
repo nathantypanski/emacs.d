@@ -29,7 +29,7 @@
   (eldoc-echo-area-max-lines 8)
   (eldoc-display-functions '(eldoc-display-in-echo-area
                              eldoc-display-in-buffer))
-  (eldoc-documentation-strategy #'eldoc-documentation-none)
+  (eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
   :config
   (general-define-key
    :states 'normal
