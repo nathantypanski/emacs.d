@@ -9,11 +9,11 @@
 (defvar my-graphical-font
   (cond
     ((eq system-type 'darwin) "Terminus 10")
-    ((eq system-type 'gnu/linux) "Terminus (TTF):pixelsize=12"))
+    ((eq system-type 'gnu/linux) "Terminus (TTF)-10"))
   "Font used for graphical editing sessions.")
 
-;; Don't show those horrible buttons
 (tool-bar-mode -1)
+(menu-bar-mode -1)
 
 ;; don't break long lines at word boundaries
 (visual-line-mode nil)
@@ -65,9 +65,6 @@
 ;; Line numbers!
 ;; Disable vertical scrollbars in all frames.
 (when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
-
-;; show the menu bar
-(menu-bar-mode -1)
 
 ;; Ediff with horizontal splits.
 (after 'ediff
@@ -192,10 +189,9 @@ FONT is the name of a xft font, like `Monospace-10'."
   (interactive "sFont: ")
   ;; (set-face-attribute 'default nil :height 125 :family "Fira Mono"))
   (set-face-attribute 'fixed-pitch nil :font font)
-  (set-face-attribute 'variable-pitch nil :font font)
   (set-face-attribute 'default nil :font font)
-  (set-face-attribute 'variable-pitch nil :font font)
-  (set-face-attribute 'fringe nil :family "Terminus")
+  ;; (set-face-attribute 'variable-pitch nil :font font)
+  ;; (set-face-attribute 'fringe nil :family "Terminus")
   (set-frame-font font nil t))
 
 
