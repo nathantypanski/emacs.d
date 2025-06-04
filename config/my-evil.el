@@ -32,7 +32,18 @@
   :demand t
   :after (consult key-chord general smartparens)
   :init
-  :custom
+  (setq evil-emacs-state-cursor   '("#dfaf8f" box)
+        evil-normal-state-cursor  '("#f8f893" box)
+        evil-insert-state-cursor  '("#f8f893" bar)
+        evil-replace-state-cursor '("#cc9393" hbar))
+  :hook
+  ((evil-mode . my-tty-cursor-update)
+   (evil-local-mode . my-tty-cursor-update)
+   ;; Run AFTER every command – guarantees we always win the last cursor race
+   (post-command-hook . my-tty-cursor-update)
+   (after-make-frame-functions . my-tty-cursor-update)
+   (focus-in-hook . my-tty-cursor-update))
+   :custom
   ;; evil-collection requires this set before loading evil
   (evil-want-C-u-scroll t)
   (evil-want-C-u-delete nil)
@@ -46,11 +57,6 @@
   (evil-mode 1)
 
   (evil-set-undo-system 'undo-tree)
-
-  (setq evil-emacs-state-cursor   '("#dfaf8f" box)
-        evil-normal-state-cursor  '("#f8f893" box)
-        evil-insert-state-cursor  '("#f8f893" bar)
-        evil-replace-state-cursor '("#cc9393" hbar))
 
   ;; DECSCUSR escapes  (CSI Ps SP q)  → block 2, underline 4, bar 6
   (defconst my-tty-cursor-escape-table
@@ -82,14 +88,6 @@ Not buffer-local, so it really is per frame.")
           (setq my-tty--frame-shape shape)
           (when-let ((esc (cdr (assq shape my-tty-cursor-escape-table))))
             (send-string-to-terminal esc))))))
-
-  ;; Run AFTER every command – guarantees we always win the last cursor race
-  (add-hook 'post-command-hook #'my-tty-cursor-update)
-  (my-tty-cursor-update)
-
-  ;; New TTY frames and focus changes can reset the hardware cursor
-  (add-hook 'after-make-frame-functions (lambda (_f) (my-tty-cursor-update)))
-  (add-hook 'focus-in-hook              #'my-tty-cursor-update)
 
   (evil-set-initial-state 'flycheck-error-list-mode 'normal)
   (evil-set-initial-state 'git-commit-mode 'insert)
@@ -186,7 +184,6 @@ whether to call indent-according-to-mode."
   ;; exiting insert mode -> delete trailing whitespace
   (add-hook 'evil-insert-state-exit-hook 'my-exit-insert-state)
   (add-hook 'evil-insert-state-entry-hook 'my-enter-insert-state)
-
 
   (evil-ex-define-cmd "Q"  'evil-quit)
   (evil-ex-define-cmd "Qa" 'evil-quit-all)
