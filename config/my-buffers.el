@@ -69,4 +69,16 @@ according to the values of `my-ibuffer-use-vc-groups' and
 
     (defalias 'my-ibuffer-raise-other-window #'my/ibuffer-raise-other-window)))
 
+(setq display-buffer-alist
+      '(("\\*Help\\*"
+         (display-buffer-reuse-window display-buffer-pop-up-window)
+         (inhibit-same-window . t)
+         (side . right)
+         (window-width . 0.4)
+         (reusable-frames . visible))
+        ("\\*Completions\\*"
+         (display-buffer-at-bottom))
+        ;; (add more rules as needed)
+       ))
+
 (provide 'my-buffers)
