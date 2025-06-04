@@ -26,4 +26,15 @@
    :keymaps 'eglot-managed-mode-map
    "K"      #'eldoc-box-help-at-point))
 
+;; Shows eldoc popups in a child frame/box, makes multiline docstrings
+;; readable.
+(use-package eldoc-box
+    :after (eldoc general)
+    :custom
+    (eldoc-echo-area-use-multiline-p t)
+    :config
+    (general-define-key
+     :keymaps 'prog-mode-map
+     "C-c d" #'eldoc-doc-buffer))
+
 (provide 'my-lsp)
