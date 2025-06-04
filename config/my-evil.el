@@ -38,11 +38,7 @@
         evil-replace-state-cursor '("#cc9393" hbar))
   :hook
   ((evil-mode . my-tty-cursor-update)
-   (evil-local-mode . my-tty-cursor-update)
-   ;; Run AFTER every command – guarantees we always win the last cursor race
-   (post-command-hook . my-tty-cursor-update)
-   (after-make-frame-functions . my-tty-cursor-update)
-   (focus-in-hook . my-tty-cursor-update))
+   (evil-local-mode . my-tty-cursor-update))
    :custom
   ;; evil-collection requires this set before loading evil
   (evil-want-C-u-scroll t)
@@ -88,6 +84,12 @@ Not buffer-local, so it really is per frame.")
           (setq my-tty--frame-shape shape)
           (when-let ((esc (cdr (assq shape my-tty-cursor-escape-table))))
             (send-string-to-terminal esc))))))
+
+  (add-hook 'evil-mode-hook #'my-tty-cursor-update)
+  (add-hook 'evil-local-mode-hook #'my-tty-cursor-update)
+  (add-hook 'post-command-hook #'my-tty-cursor-update)
+  (add-hook 'after-make-frame-functions #'my-tty-cursor-update)
+  (add-hook 'focus-in-hook #'my-tty-cursor-update)
 
   (evil-set-initial-state 'flycheck-error-list-mode 'normal)
   (evil-set-initial-state 'git-commit-mode 'insert)
