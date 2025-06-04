@@ -1,9 +1,13 @@
 ;; -*- lexical-binding: t; -*-
+
 (use-package zenburn-theme
   :ensure zenburn-theme
   :config
   (unless noninteractive
     (load-theme 'zenburn t)))
+
+;; I never look at right-side fringes. Do you?
+(if (fboundp 'set-fringe-style) (set-fringe-style '(8 . 0)))
 
 (global-hl-line-mode t)
 

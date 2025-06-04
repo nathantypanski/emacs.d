@@ -36,9 +36,6 @@
 ;; require a trailing newline
 (setq require-final-newline t)
 
-;; I never look at right-side fringes. Do you?
-;; (if (fboundp 'set-fringe-style) (set-fringe-style '(8 . 0)))
-
 ;; don't put intitial text in scratch buffer
 (setq initial-scratch-message nil)
 
@@ -268,7 +265,5 @@ This command only has an effect on graphical frames."
 
 ;; try to make scrolling smooth in terminal
 (setq scroll-preserve-screen-position t)
-
-(set-fringe-mode 0)  ; Removes fringe, which can cause flickering
 
 (provide 'my-core)
