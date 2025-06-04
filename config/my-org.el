@@ -114,10 +114,21 @@
   (defun my-org-setup-keybindings ()
     "setup my keybindings for org-mode"
     (interactive)
+
     (general-define-key
      :states '(insert)
      :keymaps 'org-mode-map
-     (kbd "<tab>")   #'my-org-tab-action))
+     (kbd "<tab>")   #'my-org-tab-action
+     (kbd "<RET>")   #'org-return)
+
+    (general-define-key
+     :states '(insert)
+     :keymaps 'local
+     "RET"             #'org-return
+     (kbd "RET")       #'org-return
+     (kbd "<return>")  #'org-return
+     [return]          #'org-return
+     ))
 
     (general-define-key
      :states '(normal)
