@@ -73,5 +73,19 @@ request in the context."
 
   (evil-collection-gptel-setup))
 
+(use-package mcp
+  :straight
+ (:type git
+       :host github
+       :repo "lizqwerscott/mcp.el"
+       :files ("*.el")))
+(use-package mcp
+  :straight (:type git :host github :repo "lizqwerscott/mcp.el" :files ("*.el"))
+  ;; Auto-start all MCP servers after initialization
+  ;; :hook (after-init . mcp-hub-start-all-server))
+  :after gptel
+  :config
+  ;; Configure MCP servers
+  )
 
 (provide 'my-gpt)
