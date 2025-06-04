@@ -38,8 +38,7 @@
   (org-log-done t)
   (org-agenda-files
    (mapcar (apply-partially #'my-home-path "notes")
-           '("agenda.org"
-             "todo/todo.org"
+           '("todo/todo.org"
              "todo/home.org")))
   (org-src-fontify-natively t)
 
