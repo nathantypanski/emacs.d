@@ -8,6 +8,8 @@
   :defer t
   :commands (gptel gptel-menu gptel-send gptel-request)
   :hook (gptel-mode . visual-line-mode)
+  :custom
+  (gptel-context-as 'user)
   :init
   (defvar my-gptel-system-prompt
     "You are a LLM running inside Emacs. Your responses are inserted literally into the buffer where the prompt is sent - usually code in the language being discussed. Do not use markdown or org to structure your comments. Instead, structure in alignment with the surrounding text. Put your commentary in comments (e.g., `;;` for elisp, `//` for go, ...)."
@@ -63,6 +65,9 @@ request in the context."
   ;; Set default mode for gptel conversation
   (setq gptel-default-mode 'org-mode)
 
+  ;; scroll automatically
+  (add-hook 'gptel-post-stream-hook 'gptel-auto-scroll)
+
   (setq gptel-model 'gpt-4.1)
   ;; is this correct? I want to make sure my directive is default.
 
@@ -72,6 +77,8 @@ request in the context."
                                        (memq (car item) my-keywords))
                                      gptel-directives)))
           (append my-gptel-directives filtered)))
+
+  (require 'gptel-integrations)
 
   (evil-collection-gptel-setup))
 
