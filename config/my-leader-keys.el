@@ -43,7 +43,6 @@
   "pf"         'projectile-find-file
   "ps"         'projectile-ag
   "pp"         'projectile-commander
-  "ps"         'projectile-switch
   "pv"         'projectile-vc
   "pb"         'projectile-switch-to-buffer
   "pT"         'projectile-find-test-file
