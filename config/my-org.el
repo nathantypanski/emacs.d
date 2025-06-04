@@ -15,10 +15,26 @@
          (org-mode . my-org-setup-electric-pair)
          (org-mode . visual-line-mode))
   :init
-  (progn
-    (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
-    (global-set-key (kbd "C-c c") #'org-capture)
-    (global-set-key (kbd "C-c a") #'org-agenda))
+  (global-set-key (kbd "C-c c") #'org-capture)
+  (global-set-key (kbd "C-c a") #'org-agenda)
+
+  (let* ((todo-file  (my-home-path "notes/todo/todo.org"))
+       (home-file  (my-home-path "notes/todo/home.org"))
+       (agenda-files (list todo-file home-file))
+       (notes-file (concat (getenv "HOME") "/notes/notes.org")))
+  (when (and (file-exists-p todo-file)
+             (file-exists-p home-file))
+    (setq org-agenda-files agenda-files)
+    (setq org-capture-templates
+          `(("t" "Tasks" entry
+             (file+headline ,todo-file "Tasks")
+             "* TODO %?\n  %U\n  %a")
+            ("h" "Home Tasks" entry
+             (file+headline ,home-file "Home Tasks")
+             "* TODO %?\n  %u"))))
+
+  (when (file-exists-p notes-file)
+    (setq org-default-notes-file notes-file)))
   :custom
   (org-auto-align-tags nil)
   (org-tags-column 0)
@@ -34,12 +50,7 @@
 
   (org-startup-folded nil)
   (org-src-fontify-natively t)
-  (org-default-notes-file (concat (getenv "HOME") "/notes/notes.org"))
   (org-log-done t)
-  (org-agenda-files
-   (mapcar (apply-partially #'my-home-path "notes")
-           '("todo/todo.org"
-             "todo/home.org")))
   (org-src-fontify-natively t)
 
   (org-agenda-prefix-format
@@ -47,14 +58,6 @@
           (todo    . "  %i %-12:c [%e] %b ")
           (tags    . "  %i %-12:c")
           (search  . "  %i %-12:c")))
-
-  (org-capture-templates
-        `(("t" "Tasks" entry
-           (file+headline ,(my-home-path "notes/todo/todo.org") "Tasks")
-           "* TODO %?\n  %U\n  %a")
-          ("h" "Home Tasks" entry
-           (file+headline ,(my-home-path "notes/todo/home.org") "Home Tasks")
-           "* TODO %?\n  %u")))
 
    ;; Agenda views
   (org-agenda-window-setup       'current-window)
