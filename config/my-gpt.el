@@ -62,6 +62,8 @@ request in the context."
       (setq gptel-api-key (getenv "OPENAI_API_KEY")))
   ;; Set default mode for gptel conversation
   (setq gptel-default-mode 'org-mode)
+
+  (setq gptel-model 'gpt-4.1)
   ;; is this correct? I want to make sure my directive is default.
 
   (setq gptel-directives
@@ -72,13 +74,6 @@ request in the context."
           (append my-gptel-directives filtered)))
 
   (evil-collection-gptel-setup))
-
-(use-package mcp
-  :straight
- (:type git
-       :host github
-       :repo "lizqwerscott/mcp.el"
-       :files ("*.el")))
 
 (use-package mcp
   :straight (:type git :host github :repo "lizqwerscott/mcp.el" :files ("*.el"))
