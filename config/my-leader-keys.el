@@ -62,7 +62,11 @@
   "af"         'gptel-add-file
   "am"         'gptel-menu
   "as"         'gptel-send
-  "aG"         'gptel
+  "ag"         'gptel
+  "ac"         'my-gptel-claude
+  "a4"         'my-gptel-openai
+  "ar"         'my-gptel-review
+  "ae"         'my-gptel-explain
 
   ;; org bindings
   "o a"        'org-agenda

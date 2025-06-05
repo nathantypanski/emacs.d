@@ -146,7 +146,7 @@
      "SPC z"           #'org-add-note
      "SPC t"           #'org-set-tags-command
      "SPC q"           #'org-todo
-     "SPC g"           #'org-open-at-point
+     "SPC o"           #'org-open-at-point
      "SPC e"           #'org-set-effort
      "SPC o"           #'org-toggle-ordered-property
      "SPC b"           #'org-toggle-checkbox

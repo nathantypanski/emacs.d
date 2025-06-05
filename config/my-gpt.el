@@ -12,13 +12,16 @@
   :commands
   (gptel gptel-menu gptel-send gptel-request
          my-gptel-review my-gptel-explain my-gptel-review
-         my-gptel-openai my-gptel-claude)
+         my-gptel-openai my-gptel-claude
+         gptel-add-file gptel-add)
 
-  :hook ((gptel-mode . my-gptel-setup-behavior))
+  :hook ((gptel-mode . my-gptel-setup-behavior)
+         (gptel-mode . my-gptel-setup-keybindings))
   :custom
-  (gptel-track-response nil)  ; Don't track for privacy
-  (gptel-log-level 'info)
-  (gptel-use-curl nil)
+  (gptel-track-response t)
+  (gptel-log-level 'error)
+  ;; WARNING: insecure
+  (gptel-use-curl t)
   (gptel-stream t)
   :init
   (defvar my-gptel-system-prompt
@@ -118,7 +121,7 @@ request in the context."
     (interactive)
     (if-let ((key (my-gptel-get-key "openai")))
         (progn
-          (setq gptel-model "gpt-4.1"
+          (setq gptel-model 'gpt-4.1
                 gptel-backend (gptel-make-openai "OpenAI" :key key))
           (message "Switched to OpenAI GPT-4.1"))
       (user-error "No OpenAI key found")))
@@ -128,8 +131,11 @@ request in the context."
     (interactive)
     (if-let ((key (my-gptel-get-key "anthropic")))
         (progn
-          (setq gptel-model "claude-sonnet-4-20250514"
-                gptel-backend (gptel-make-anthropic "Claude" :key key))
+          (setq gptel-model 'claude-sonnet-4-20250514
+                gptel-backend
+                (gptel-make-anthropic "Claude"
+                  :key key
+                  :stream t))
           (message "Switched to Claude Sonnet 4"))
       (user-error "No Anthropic key found")))
 
@@ -152,27 +158,38 @@ request in the context."
                   (buffer-string))))
       (gptel-request (format "Review this code for bugs and improvements:\n\n=\n%s\n=" text))))
 
-  ;; Only gptel-specific keybindings that need gptel loaded
-  (when (fboundp 'general-define-key)
-    (general-define-key
-     :states '(normal visual)
-     "SPC g g" #'gptel
-     "SPC g m" #'gptel-menu
-     "SPC g e" #'my-gptel-explain
-     "SPC g r" #'my-gptel-review))
+  (defun my-gptel-add-project-context ()
+    "Add relevant project files as context to gptel."
+    (interactive)
+    (if-let ((files (project-files (project-current))))
+        (progn
+          (dolist (file (completing-read-multiple "Add files: " files))
+            (gptel-add-file file))
+          (message "Added %d files to context" (length files)))
+      (message "No project found")))
+
+  (defun my-gptel-clear-context ()
+    "Clear all context from the current gptel session."
+    (interactive)
+    (setq-local gptel-context nil)
+    (message "Context cleared"))
+
+  ;; Documentation generation
+  (defun my-gptel-document-function ()
+    "Generate documentation for function at point."
+    (interactive)
+    (when-let ((fn (thing-at-point 'defun t)))
+      (gptel-request (format "Write documentation for this function:\n\n%s" fn))))
+
+  (defun my-gptel-setup-keybindings ()
+    (interactive)
+    "Ensure keybindings work in gptel buffers."
+    (when (derived-mode-p 'org-mode)
+      (my-org-setup-keybindings)))
 
   ;; Only call if the function exists
   (when (fboundp 'evil-collection-gptel-setup)
     (evil-collection-gptel-setup)))
-
-
-;; Global keybindings for autoloaded functions
-(when (fboundp 'general-define-key)
-  (general-define-key
-   :states '(normal visual)
-   "SPC g"   '(:ignore t :which-key "gptel")
-   "SPC g c" #'my-gptel-claude
-   "SPC g 4" #'my-gptel-openai))
 
 (use-package mcp
   :straight (:type git :host github :repo "lizqwerscott/mcp.el" :files ("*.el"))
