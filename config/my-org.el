@@ -176,7 +176,6 @@
                       (when (boundp 'electric-pair-skip-self) ; fallback
                         (funcall (default-value 'electric-pair-inhibit-predicate) char)))))))
 
-
 (use-package org-roam
   :after (org age)
   :straight (org-roam :type git :host github :repo "org-roam/org-roam"

@@ -260,31 +260,30 @@ If LSP isn’t active here, signal a user‑friendly error."
 
   (general-define-key
    :states 'normal
-   "RET" 'my-electric-append-with-indent
-   "<S-return>" 'my-append-and-indent
-   "C-w }" 'evil-window-rotate-downwards
-   "C-w {" 'evil-window-rotate-upwards
-   "SPC a" 'ag
-   "SPC SPC" 'execute-extended-command
-   "C-q" 'universal-argument
-   "C-h" 'evil-window-left
-   "C-j" 'evil-window-down
-   "C-k" 'evil-window-up
-   "C-l" 'evil-window-right
-   "-" "dd"
-   "a" 'evil-append
-   "A" 'my-electric-append-with-indent
-   "$" 'my-smart-end
-   "0" 'my-smart-home
-   "/" 'evil-search-forward
-   "Y" "y$"
-   "P" 'consult-yank-from-kill-ring)
+   "RET"            'my-electric-append-with-indent
+   "<S-return>"     'my-append-and-indent
+   "C-w }"          'evil-window-rotate-downwards
+   "C-w {"          'evil-window-rotate-upwards
+   "SPC SPC"        'execute-extended-command
+   "C-q"            'universal-argument
+   "C-h"            'evil-window-left
+   "C-j"            'evil-window-down
+   "C-k"            'evil-window-up
+   "C-l"            'evil-window-right
+   "-"              "dd"
+   "a"              'evil-append
+   "A"              'my-electric-append-with-indent
+   "$"              'my-smart-end
+   "0"              'my-smart-home
+   "/"              'evil-search-forward
+   "Y"              "y$"
+   "P"              'consult-yank-from-kill-ring)
 
   (general-define-key
    :states 'insert
-   "RET" 'my-ret-and-indent
-   "<S-backspace>" 'backward-delete-char-untabify
-   "<S-return>" 'electric-indent-just-newline)
+   "RET"             'my-ret-and-indent
+   "<S-backspace>"   'backward-delete-char-untabify
+   "<S-return>"      'electric-indent-just-newline)
 
   (general-define-key
    :states 'motion
