@@ -8,14 +8,13 @@
              :host github
              :repo "karthink/gptel"
              :branch "master")
-  :defer t
+
   :commands
   (gptel gptel-menu gptel-send gptel-request
          my-gptel-review my-gptel-explain my-gptel-review
          my-gptel-openai my-gptel-claude)
 
-  :hook ((gptel-mode . my-gptel-setup-keybindings)
-         (gptel-mode . my-gptel-setup-behavior))
+  :hook ((gptel-mode . my-gptel-setup-behavior))
   :custom
   (gptel-track-response nil)  ; Don't track for privacy
   (gptel-log-level 'info)
@@ -71,8 +70,8 @@ request in the context."
     "My preferred gptel directives for multi-language workflows.")
 
   :config
-  ;; Initialize the hash table in :config section
-  (setq my-gptel-api-keys (make-hash-table :test 'equal))
+  ;; Initialize the hash table
+  (defvar my-gptel-api-keys (make-hash-table :test 'equal))
 
   (if (getenv "OPENAI_API_KEY")
       (setq gptel-api-key (getenv "OPENAI_API_KEY")))
@@ -95,7 +94,7 @@ request in the context."
     (require 'gptel-integrations))
 
   (defun my-gptel-get-key (provider)
-    "Get API key for PROVIDER, cached."
+    "Get API key for PROVIDER, cached or prompt for input."
     ;; Ensure hash table exists
     (unless (hash-table-p my-gptel-api-keys)
       (setq my-gptel-api-keys (make-hash-table :test 'equal)))
@@ -103,11 +102,13 @@ request in the context."
         (let ((key (pcase provider
                      ("openai" (or (getenv "OPENAI_API_KEY")
                                    (auth-source-pick-first-password
-                                    :host "api.openai.com" :user "apikey")))
+                                    :host "api.openai.com" :user "apikey")
+                                   (read-string "OpenAI API Key: ")))
                      ("anthropic" (or (getenv "ANTHROPIC_API_KEY")
                                       (auth-source-pick-first-password
-                                       :host "api.anthropic.com" :user "apikey"))))))
-          (when key 
+                                       :host "api.anthropic.com" :user "apikey")
+                                      (read-string "Anthropic API Key: "))))))
+          (when key
             (puthash provider key my-gptel-api-keys))
           key)))
 
@@ -116,16 +117,20 @@ request in the context."
     "Switch to OpenAI."
     (interactive)
     (if-let ((key (my-gptel-get-key "openai")))
-        (setq gptel-model "gpt-4.1"
-              gptel-backend (gptel-make-openai "OpenAI" :key key))
+        (progn
+          (setq gptel-model "gpt-4.1"
+                gptel-backend (gptel-make-openai "OpenAI" :key key))
+          (message "Switched to OpenAI GPT-4.1"))
       (user-error "No OpenAI key found")))
 
   (defun my-gptel-claude ()
     "Switch to Claude."
     (interactive)
     (if-let ((key (my-gptel-get-key "anthropic")))
-        (setq gptel-model "claude-sonnet-4-20250514"
-              gptel-backend (gptel-make-anthropic "Claude" :key key))
+        (progn
+          (setq gptel-model "claude-sonnet-4-20250514"
+                gptel-backend (gptel-make-anthropic "Claude" :key key))
+          (message "Switched to Claude Sonnet 4"))
       (user-error "No Anthropic key found")))
 
   ;; Two simple functions to start
@@ -147,43 +152,27 @@ request in the context."
                   (buffer-string))))
       (gptel-request (format "Review this code for bugs and improvements:\n\n=\n%s\n=" text))))
 
-  ;; Keybinding setup function following your org pattern
-  (defun my-gptel-setup-keybindings ()
-    "Setup my keybindings for gptel-mode."
-    (interactive)
+  ;; Only gptel-specific keybindings that need gptel loaded
+  (when (fboundp 'general-define-key)
+    (general-define-key
+     :states '(normal visual)
+     "SPC g g" #'gptel
+     "SPC g m" #'gptel-menu
+     "SPC g e" #'my-gptel-explain
+     "SPC g r" #'my-gptel-review))
 
-    ;; Ensure general is available
-    (when (fboundp 'general-define-key)
-      ;; First define the prefix key
-      (general-define-key
-       :states '(normal visual)
-       "SPC a" '(:ignore t :which-key "AI"))
+  ;; Only call if the function exists
+  (when (fboundp 'evil-collection-gptel-setup)
+    (evil-collection-gptel-setup)))
 
-      ;; Local gptel-mode bindings (only active in gptel buffers)
-      (general-define-key
-       :states '(normal)
-       :keymaps 'local
-       "SPC g" '(:ignore t :which-key "gptel")
-       "SPC g g" #'gptel-send
-       "SPC g e" #'my-gptel-explain
-       "SPC g r" #'my-gptel-review
-       "SPC g 4" #'my-gptel-openai
-       "SPC g c" #'my-gptel-claude
-       "SPC g q" #'quit-window)
 
-      ;; Global AI keybindings
-      (general-define-key
-       :states '(normal visual)
-       "SPC a g" #'gptel
-       "SPC a m" #'gptel-menu
-       "SPC a e" #'my-gptel-explain
-       "SPC a r" #'my-gptel-review
-       "SPC a 4" #'my-gptel-openai
-       "SPC a c" #'my-gptel-claude))
-
-    ;; Only call if the function exists
-    (when (fboundp 'evil-collection-gptel-setup)
-      (evil-collection-gptel-setup))))
+;; Global keybindings for autoloaded functions
+(when (fboundp 'general-define-key)
+  (general-define-key
+   :states '(normal visual)
+   "SPC g"   '(:ignore t :which-key "gptel")
+   "SPC g c" #'my-gptel-claude
+   "SPC g 4" #'my-gptel-openai))
 
 (use-package mcp
   :straight (:type git :host github :repo "lizqwerscott/mcp.el" :files ("*.el"))

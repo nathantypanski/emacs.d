@@ -58,11 +58,11 @@
   "gz"         'eglot-inlay-hints-mode
 
   ;; gptel
-  "Ga"         'gptel-add
-  "Gf"         'gptel-add-file
-  "Gm"         'gptel-menu
-  "Gs"         'gptel-send
-  "GG"         'gptel
+  "aa"         'gptel-add
+  "af"         'gptel-add-file
+  "am"         'gptel-menu
+  "as"         'gptel-send
+  "aG"         'gptel
 
   ;; org bindings
   "o a"        'org-agenda
