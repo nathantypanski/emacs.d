@@ -19,22 +19,22 @@
   (global-set-key (kbd "C-c a") #'org-agenda)
 
   (let* ((todo-file  (my-home-path "notes/todo/todo.org"))
-       (home-file  (my-home-path "notes/todo/home.org"))
-       (agenda-files (list todo-file home-file))
-       (notes-file (concat (getenv "HOME") "/notes/notes.org")))
-  (when (and (file-exists-p todo-file)
-             (file-exists-p home-file))
-    (setq org-agenda-files agenda-files)
-    (setq org-capture-templates
-          `(("t" "Tasks" entry
-             (file+headline ,todo-file "Tasks")
-             "* TODO %?\n  %U\n  %a")
-            ("h" "Home Tasks" entry
-             (file+headline ,home-file "Home Tasks")
-             "* TODO %?\n  %u"))))
+         (home-file  (my-home-path "notes/todo/home.org"))
+         (agenda-files (list todo-file home-file))
+         (notes-file (concat (getenv "HOME") "/notes/notes.org")))
+    (when (and (file-exists-p todo-file)
+               (file-exists-p home-file))
+      (setq org-agenda-files agenda-files)
+      (setq org-capture-templates
+            `(("t" "Tasks" entry
+               (file+headline ,todo-file "Tasks")
+               "* TODO %?\n  %U\n  %a")
+              ("h" "Home Tasks" entry
+               (file+headline ,home-file "Home Tasks")
+               "* TODO %?\n  %u"))))
 
-  (when (file-exists-p notes-file)
-    (setq org-default-notes-file notes-file)))
+    (when (file-exists-p notes-file)
+      (setq org-default-notes-file notes-file)))
   :custom
   (org-auto-align-tags nil)
   (org-tags-column 0)
@@ -54,62 +54,62 @@
   (org-src-fontify-natively t)
 
   (org-agenda-prefix-format
-        '((home  . "  %i %-12:c%?-12t% s")
-          (todo    . "  %i %-12:c [%e] %b ")
-          (tags    . "  %i %-12:c")
-          (search  . "  %i %-12:c")))
+   '((home  . "  %i %-12:c%?-12t% s")
+     (todo    . "  %i %-12:c [%e] %b ")
+     (tags    . "  %i %-12:c")
+     (search  . "  %i %-12:c")))
 
-   ;; Agenda views
+  ;; Agenda views
   (org-agenda-window-setup       'current-window)
   (org-agenda-restore-windows-after-quit t)
 
-   ;; Capture
+  ;; Capture
   (org-capture-window-setup      'current-window)
 
-   ;; Refile targets (C-c C-w)
+  ;; Refile targets (C-c C-w)
   (org-refile-window-setup       'current-window)
 
-   ;; Tag searches (C-c a m)
+  ;; Tag searches (C-c a m)
   (org-tags-view-window-setup    'current-window)
-   ;; Search (C-c a /)
+  ;; Search (C-c a /)
   (org-search-view-window-setup  'current-window)
   ;; (Optional) if you want also to restore windows after a capture or refile:
   (org-capture-restore-windows-after-quit    t)
   (org-refile-restore-windows-after-quit     t)
   :config
-    (defface org-block-begin-line '((t ( org-meta-line :background "gray27" :overline "gray20" :underline "gray20" :height 0.8)))
-      "Face used for the line delimiting the begin of source blocks.")
+  (defface org-block-begin-line '((t ( org-meta-line :background "gray27" :overline "gray20" :underline "gray20" :height 0.8)))
+    "Face used for the line delimiting the begin of source blocks.")
 
-    (defface org-block-background
-      '((t (:background "#FFFFEA")))
-      "Face used for the source block background.")
+  (defface org-block-background
+    '((t (:background "#FFFFEA")))
+    "Face used for the source block background.")
 
-    (defface org-block-end-line
-      '((t ( org-meta-line :background "gray27" :overline "gray20" :underline "gray20" :height 0.8)))
-      "Face used for the line delimiting the end of source blocks.")
+  (defface org-block-end-line
+    '((t ( org-meta-line :background "gray27" :overline "gray20" :underline "gray20" :height 0.8)))
+    "Face used for the line delimiting the end of source blocks.")
 
-    ;; better default
-    (add-hook 'org-mode-hook 'org-indent-mode)
+  ;; better default
+  (add-hook 'org-mode-hook 'org-indent-mode)
 
-    (org-babel-do-load-languages
-     'org-babel-load-languages
-     '((R . t)
-       (emacs-lisp . t)
-       (python . t)))
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((R . t)
+     (emacs-lisp . t)
+     (python . t)))
 
   (require 'org-tempo)
 
   (defun my-org-tab-action ()
-  "Indent or expand org-tempo template based on context."
-  (interactive)
-  (if (org-at-table-p)
-      ;; If point is at a table, move to the next cell
-      (org-table-next-field)
-    ;; Else, try to expand a tempo template or indent
-    (let ((pos (point)))
-      (tempo-complete-tag)
-      (when (= pos (point))
-        (indent-for-tab-command)))))
+    "Indent or expand org-tempo template based on context."
+    (interactive)
+    (if (org-at-table-p)
+        ;; If point is at a table, move to the next cell
+        (org-table-next-field)
+      ;; Else, try to expand a tempo template or indent
+      (let ((pos (point)))
+        (tempo-complete-tag)
+        (when (= pos (point))
+          (indent-for-tab-command)))))
 
   (defun my-org-setup-keybindings ()
     "setup my keybindings for org-mode"
@@ -127,55 +127,54 @@
      "RET"             #'org-return
      (kbd "RET")       #'org-return
      (kbd "<return>")  #'org-return
-     [return]          #'org-return
-     ))
+     [return]          #'org-return)
 
     (general-define-key
      :states '(normal)
      :keymaps 'org-mode-map
-     "o" '(:ignore t :which-key "org") ; Define o as a prefix
-     "o c" '(:ignore t :which-key "org") ; Define o as a prefix
-     "o ["           #'org-metaup
-     "o ]"           #'org-metadown
-     "[ ["           #'org-previous-visible-heading
-     "] ]"           #'org-next-visible-heading
-     "o h"           #'org-insert-heading
-     "o s"           #'org-insert-subheading
-     "o <ret>"       #'org-insert-heading-after-current
-     "o }"           #'org-do-demote
-     "o {"           #'org-do-promote
-     "o d"           #'org-deadline
-     "o s"           #'org-schedule
-     "o p"           #'org-priority
-     "o z"           #'org-add-note
-     "o t"           #'org-set-tags-command
-     "o q"           #'org-todo
-     "o g"           #'org-open-at-point
-     "o e"           #'org-set-effort
-     "o o"           #'org-toggle-ordered-property
-     "o b"           #'org-toggle-checkbox
-     "o r"           #'org-refile
-     "o C i"         #'org-clock-in
-     "o C o"         #'org-clock-out
-     "o C r"         #'org-clock-report
-     "o v t"         #'org-tags-expand
-     "m-<ret>"       #'org-insert-heading-respect-content
-     "o i"           #'org-insert-todo-heading-respect-content
-     "o a"           #'org-agenda
-     "o t"           #'org-todo-list
-     "o c"           #'org-capture)
-(defun my-org-electric-pair-inhibit-angle (char)
-  "In org-mode, inhibit pairing for <."
-  (and (eq major-mode 'org-mode)
-       (eq char ?<)))
+     "SPC"             '(:ignore t :which-key "org")
+     "SPC ["           #'org-metaup
+     "SPC ]"           #'org-metadown
+     "SPC h"           #'org-insert-heading
+     "SPC s"           #'org-insert-subheading
+     "SPC <ret>"       #'org-insert-heading-after-current
+     "SPC }"           #'org-do-demote
+     "SPC {"           #'org-do-promote
+     "SPC d"           #'org-deadline
+     "SPC s"           #'org-schedule
+     "SPC p"           #'org-priority
+     "SPC z"           #'org-add-note
+     "SPC t"           #'org-set-tags-command
+     "SPC q"           #'org-todo
+     "SPC g"           #'org-open-at-point
+     "SPC e"           #'org-set-effort
+     "SPC o"           #'org-toggle-ordered-property
+     "SPC b"           #'org-toggle-checkbox
+     "SPC r"           #'org-refile
+     "SPC C i"         #'org-clock-in
+     "SPC C o"         #'org-clock-out
+     "SPC C r"         #'org-clock-report
+     "SPC v t"         #'org-tags-expand
+     "m-<ret>"         #'org-insert-heading-respect-content
+     "SPC i"           #'org-insert-todo-heading-respect-content
+     "SPC a"           #'org-agenda
+     "SPC t"           #'org-todo-list
+     "SPC c"           #'org-capture
+     "[ ["             #'org-previous-visible-heading
+     "] ]"             #'org-next-visible-heading))
 
-(defun my-org-setup-electric-pair ()
-  "Set buffer-local electric-pair inhibit predicate for org."
-  (setq-local electric-pair-inhibit-predicate
-              (lambda (char)
-                (or (my-org-electric-pair-inhibit-angle char)
-                    (when (boundp 'electric-pair-skip-self) ; fallback
-                      (funcall (default-value 'electric-pair-inhibit-predicate) char)))))))
+  (defun my-org-electric-pair-inhibit-angle (char)
+    "In org-mode, inhibit pairing for <."
+    (and (eq major-mode 'org-mode)
+         (eq char ?<)))
+
+  (defun my-org-setup-electric-pair ()
+    "Set buffer-local electric-pair inhibit predicate for org."
+    (setq-local electric-pair-inhibit-predicate
+                (lambda (char)
+                  (or (my-org-electric-pair-inhibit-angle char)
+                      (when (boundp 'electric-pair-skip-self) ; fallback
+                        (funcall (default-value 'electric-pair-inhibit-predicate) char)))))))
 
 
 (use-package org-roam
