@@ -19,24 +19,9 @@
 
 (use-package ibuffer
   :commands ibuffer
+  :custom
+  (ibuffer-expert t)
   :config
-  (setq ibuffer-expert t)
-  (setq ibuffer-saved-filter-groups
-        (quote (("default"
-                 ("dired" (mode . dired-mode))
-                 ("haskell" (mode . haskell-mode))
-                 ("python" (mode . python-mode))
-                 ("nasa" (or
-                          (name . ".nasa.")
-                          (filename . ".nasa.")))
-                 ("wiki" (or
-                          (filename . (concat (getenv "HOME") "/wiki"))
-                          (filename . (concat (getenv "HOME") ".gitit"))))
-                 ("notes" (or
-                           (name . "^\\*Calendar\\*$")
-                           (name . "^diary$")
-                           (mode . org-mode)))
-                 ("*buffer*" (name . "\\*.*\\*"))))))
   (defvar my-ibuffer-use-vc-groups t
     "Use filter groups detected from vc root when non-nil.
 This will be done with `ibuffer-vc-set-filter-groups-by-vc-root'
@@ -54,10 +39,6 @@ according to the values of `my-ibuffer-use-vc-groups' and
 
   (add-hook 'ibuffer-mode-hook 'my-ibuffer-setup)
   (setq ibuffer-show-empty-filter-groups nil)
-
-  (use-package ibuffer-vc
-    :ensure ibuffer-vc
-    :config)
 
   (defun my/ibuffer-raise-other-window ()
     (interactive)
@@ -77,6 +58,10 @@ according to the values of `my-ibuffer-use-vc-groups' and
         ("\\*Completions\\*"
          (display-buffer-at-bottom))
         ;; (add more rules as needed)
-       ))
+        ))
+
+(use-package ibuffer-vc
+  :ensure ibuffer-vc
+  :config)
 
 (provide 'my-buffers)
