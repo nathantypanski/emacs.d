@@ -7,7 +7,7 @@
   "qq"         'kill-current-buffer
   "qw"         'evil-window-delete
   "qo"         'my-kill-other-buffer
-  "Q"          'kill-buffer-and-window
+  "Q"          'kill-current-buffer
   "h"          'dired-jump
   ">"          'find-file-at-point
   "\\"         'split-window-horizontally
