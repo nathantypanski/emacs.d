@@ -2,6 +2,10 @@
 
 ;; The package is python" but the mode is "python-mode":
 
-;; previously, I used (python-mode) from melpa. Now builtin python-mode is way better.
+(use-package python
+  :ensure nil  ; builtin package
+  :mode ("\\.py\\'" . python-mode)
+  :hook (python-mode . (lambda ()
+                         (electric-indent-local-mode -1))))
 
 (provide 'my-python)
