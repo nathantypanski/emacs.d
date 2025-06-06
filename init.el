@@ -54,7 +54,6 @@
 (require 'my-copy)
 (require 'my-languages)
 (require 'my-org)
-;; (require 'my-shell)
 (require 'my-filetypes)
 (require 'my-flycheck)
 (require 'my-term)

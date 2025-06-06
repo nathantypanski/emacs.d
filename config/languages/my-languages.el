@@ -2,6 +2,7 @@
 (require 'my-lsp)
 (require 'my-tree-sitter)
 
+(require 'my-shell)
 (require 'my-c)
 (require 'my-clojure)
 (require 'my-elisp)

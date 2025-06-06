@@ -56,6 +56,7 @@
   (add-hook 'R-mode-hook 'ansi-color-for-comint-mode-on)
   (setq comint-prompt-read-only t)
   (evil-set-initial-state 'comint-mode 'normal)
+  (evil-define-key 'insert comint-mode-map (kbd "RET") 'comint-send-input)
   (evil-define-key 'normal comint-mode-map "i" 'my-comint-evil-insert)
   (evil-define-key 'visual comint-mode-map "i" 'my-comint-evil-insert)
   (evil-define-key 'normal comint-mode-map "a" 'my-comint-evil-append)
