@@ -24,20 +24,39 @@ then it takes a second \\[keyboard-quit] to abort the minibuffer."
                            (buffer-substring (region-beginning) (region-end))
                          (read-string "Search Google: "))))))
 
+(defun my-is-this-line-empty ()
+  "Returns t when the current line is empty or contains only whitespace."
+  (interactive)
+  (save-excursion
+    (beginning-of-line)
+    ;;;; old regex:
+    ;; (looking-at "^\s*$")
+    (looking-at "^[ \t]*$")))
+
+(defalias 'my-current-line-is-empty #'my-is-this-line-empty)
+
+(defun my-is-before-point-empty ()
+  "Returns t if the current line up until point is empty, otherwise nil."
+  (interactive)
+  (let ((old-point (point)))
+    (save-excursion
+      (beginning-of-line)
+      (s-blank? (s-trim (buffer-substring (point) old-point))))))
+
 (defun my-sensible-to-indent-p ()
-  "Non-nil only if indentation would meaningfully move point *and*
-we’re in a programming-language buffer (`prog-mode' derivative)."
-  (when (derived-mode-p 'prog-mode)               ; ← run only in code buffers
+  "Non-nil only if current line appears to be under-indented."
+  (when (derived-mode-p 'prog-mode)
     (let* ((handle (prepare-change-group (current-buffer)))
-           (orig   (point))
-           moved)
+           (orig-col (current-column))
+           (expected-col 0))
       (activate-change-group handle)
       (unwind-protect
           (progn
             (indent-according-to-mode)
-            (setq moved (> (point) orig)))
+            (setq expected-col (current-column)))
         (cancel-change-group handle))
-      moved)))
+      ;; Actually return the comparison!
+      (< orig-col expected-col))))
 
 (defun my-eval-and-replace ()
   "Replace the preceding sexp with its value."
@@ -137,27 +156,6 @@ Require `font-lock'."
   (interactive)
   (kill-buffer
    (other-buffer (current-buffer) t)))
-
-
-(defun my-is-this-line-empty ()
-  "Returns t when the current line is empty or contains only whitespace."
-  (interactive)
-  (save-excursion
-    (beginning-of-line)
-    ;;;; old regex:
-    ;; (looking-at "^\s*$")
-    (looking-at "^[ \t]*$")))
-
-(defalias 'my-current-line-is-empty #'my-is-this-line-empty)
-
-
-(defun my-is-before-point-empty ()
-  "Returns t if the current line up until point is empty, otherwise nil."
-  (interactive)
-  (let ((old-point (point)))
-    (save-excursion
-      (beginning-of-line)
-      (s-blank? (s-trim (buffer-substring (point) old-point))))))
 
 
 (defun my-which-column ()

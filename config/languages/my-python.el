@@ -5,7 +5,6 @@
 (use-package python
   :ensure nil  ; builtin package
   :mode ("\\.py\\'" . python-mode)
-  :hook (python-mode . (lambda ()
-                         (electric-indent-local-mode -1))))
+  :hook (python-mode . my-disable-insert-indent))
 
 (provide 'my-python)

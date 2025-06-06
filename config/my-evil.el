@@ -150,21 +150,27 @@ Not buffer-local, so it really is per frame.")
     :type line
     (interactive "p")
     (evil-append-line count)
-    (indent-for-tab-command))  ; <— piggybacks on tab-always-indent=’complete
+    (indent-for-tab-command))
 
   (defun my-exit-insert-state ()
     "Function to be run when Evil exits insert state."
     (if (my-current-line-is-empty)
         (delete-horizontal-space t)))
 
-  (defun my-enter-insert-state ()
-    "Function to be run when Evil enters insert state.
+  (defvar-local my-should-insert-indent t
+    "When non-nil, disable automatic indentation on insert state entry.")
 
-Loads indent data from my-sensible-to-indent-p and uses that to determine
-whether to call indent-according-to-mode."
+  (defun my-disable-insert-indent ()
+    "disable insert indentation"
     (interactive)
-    (if (my-sensible-to-indent-p)
-        (indent-according-to-mode)))
+    (setq-local my-should-insert-indent nil))
+
+  (defun my-enter-insert-state ()
+    "Function to be run when Evil enters insert state."
+    (interactive)
+    (when (and my-should-insert-indent
+               (my-sensible-to-indent-p))
+      (indent-according-to-mode)))
 
   (defun enable-tabs ()
     "Enable tabs in a file."
