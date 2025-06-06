@@ -36,6 +36,7 @@
     (when (file-exists-p notes-file)
       (setq org-default-notes-file notes-file)))
   :custom
+  (org-edit-src-content-indentation 0)
   (org-auto-align-tags nil)
   (org-tags-column 0)
   (org-catch-invisible-edits 'show-and-error)
