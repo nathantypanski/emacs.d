@@ -104,42 +104,83 @@ request in the context."
     (or (gethash provider my-gptel-api-keys)
         (let ((key (pcase provider
                      ("openai" (or (getenv "OPENAI_API_KEY")
-                                   (auth-source-pick-first-password
-                                    :host "api.openai.com" :user "apikey")
+                                   (ignore-errors
+                                     (auth-source-pick-first-password
+                                      :host "api.openai.com" :user "apikey"))
                                    (read-string "OpenAI API Key: ")))
                      ("anthropic" (or (getenv "ANTHROPIC_API_KEY")
-                                      (auth-source-pick-first-password
-                                       :host "api.anthropic.com" :user "apikey")
+                                      (ignore-errors
+                                        (auth-source-pick-first-password
+                                         :host "api.anthropic.com" :user "apikey"))
                                       (read-string "Anthropic API Key: "))))))
-          (when key
-            (puthash provider key my-gptel-api-keys))
-          key)))
+          (when (and key (not (string-empty-p key)))
+            (puthash provider key my-gptel-api-keys)
+            key))))
 
-  ;; Provider switching
-  (defun my-gptel-openai ()
-    "Switch to OpenAI."
-    (interactive)
+  (defun my-gptel-get-key (provider)
+    "Get API key for PROVIDER, cached or prompt for input."
+    ;; Ensure hash table exists
+    (unless (and (boundp 'my-gptel-api-keys)
+                 (hash-table-p my-gptel-api-keys))
+      (setq my-gptel-api-keys (make-hash-table :test 'equal)))
+
+    (or (gethash provider my-gptel-api-keys)
+        (let ((key (pcase provider
+                     ("openai"
+                      (or (getenv "OPENAI_API_KEY")
+                          (condition-case nil
+                              (auth-source-pick-first-password
+                               :host "api.openai.com" :user "apikey")
+                            (error nil))
+                          (read-passwd "OpenAI API Key: ")))
+                     ("anthropic"
+                      (or (getenv "ANTHROPIC_API_KEY")
+                          (condition-case nil
+                              (auth-source-pick-first-password
+                               :host "api.anthropic.com" :user "apikey")
+                            (error nil))
+                          (read-passwd "Anthropic API Key: ")))
+                     (_ (error "Unknown provider: %s" provider)))))
+          (when (and key (stringp key) (not (string-empty-p key)))
+            (puthash provider key my-gptel-api-keys)
+            key))))
+
+  ;; Provider switching with model selection
+  (defun my-gptel-openai (model)
+    "Switch to OpenAI backend with MODEL selection."
+    (interactive
+     (list (completing-read
+            "OpenAI Model: "
+            ;; Use the actual models from gptel--openai-models
+            (mapcar #'symbol-name (mapcar #'car gptel--openai-models))
+            nil t nil nil "gpt-4o-mini")))  ; Default selection
     (if-let ((key (my-gptel-get-key "openai")))
         (progn
-          (setq gptel-model 'gpt-4.1
-                gptel-backend (gptel-make-openai "OpenAI" :key key))
-          (message "Switched to OpenAI GPT-4.1"))
+          (setq gptel-model (intern model)  ; Convert back to symbol
+                gptel-backend (gptel-make-openai "OpenAI" :key key)
+                gptel-api-key key)
+          (message "Switched to OpenAI %s" model))
       (user-error "No OpenAI key found")))
 
-  (defun my-gptel-claude ()
-    "Switch to Claude."
-    (interactive)
+  (defun my-gptel-claude (model)
+    "Switch to Claude backend with MODEL selection."
+    (interactive
+     (list (completing-read
+            "Claude Model: "
+            ;; Use the actual models from gptel--anthropic-models
+            (progn
+              (require 'gptel-anthropic)  ; Ensure anthropic backend is loaded
+              (mapcar #'symbol-name (mapcar #'car gptel--anthropic-models)))
+            nil t nil nil "claude-3-5-sonnet-20241022")))
     (if-let ((key (my-gptel-get-key "anthropic")))
         (progn
-          (setq gptel-model 'claude-sonnet-4-20250514
-                gptel-backend
-                (gptel-make-anthropic "Claude"
-                  :key key
-                  :stream t))
-          (message "Switched to Claude Sonnet 4"))
+          (require 'gptel-anthropic)  ; Ensure it's loaded before making backend
+          (setq gptel-model (intern model)  ; Convert back to symbol
+                gptel-backend (gptel-make-anthropic "Claude" :key key :stream t)
+                gptel-api-key key)
+          (message "Switched to Claude %s" model))
       (user-error "No Anthropic key found")))
 
-  ;; Two simple functions to start
   (defun my-gptel-explain ()
     "Explain current region or function."
     (interactive)
@@ -189,7 +230,74 @@ request in the context."
 
   ;; Only call if the function exists
   (when (fboundp 'evil-collection-gptel-setup)
-    (evil-collection-gptel-setup)))
+    (evil-collection-gptel-setup))
+
+  ;; Commands to inspect and clean up gptel backends
+
+  ;; 1. Check what backends you currently have
+  (defun my-gptel-list-backends ()
+    "List all registered gptel backends."
+    (interactive)
+    (with-current-buffer (get-buffer-create "*gptel-backends*")
+      (erase-buffer)
+      (insert "=== Current gptel backends ===\n\n")
+      (insert (format "Default backend: %s\n\n" (gptel-backend-name gptel-backend)))
+      (insert "All known backends:\n")
+      (dolist (backend-pair gptel--known-backends)
+        (let* ((name (car backend-pair))
+               (backend (cdr backend-pair))
+               (type (type-of backend))
+               (models (length (gptel-backend-models backend))))
+          (insert (format "- %s (%s, %d models)\n" name type models))))
+      (display-buffer (current-buffer))))
+
+  ;; 2. Reset gptel backends to default state
+  (defun my-gptel-reset-backends ()
+    "Reset gptel backends to clean state."
+    (interactive)
+    (when (yes-or-no-p "Reset all gptel backends to defaults? ")
+      ;; Clear known backends except the default OpenAI one
+      (setq gptel--known-backends
+            (list (cons "ChatGPT" gptel--openai)))
+      ;; Reset to default backend
+      (setq gptel-backend gptel--openai)
+      (setq gptel-model 'gpt-4o-mini)
+      ;; Clear any cached keys
+      (when (boundp 'my-gptel-api-keys)
+        (clrhash my-gptel-api-keys))
+      (message "gptel backends reset to defaults")))
+
+  ;; 3. Remove a specific backend
+  (defun my-gptel-remove-backend (name)
+    "Remove a specific backend by NAME."
+    (interactive
+     (list (completing-read "Remove backend: "
+                            gptel--known-backends nil t)))
+    (setq gptel--known-backends
+          (assoc-delete-all name gptel--known-backends))
+    (when (equal (gptel-backend-name gptel-backend) name)
+      (setq gptel-backend gptel--openai))
+    (message "Removed backend: %s" name))
+
+  ;; 4. Check if your current backend is working
+  (defun my-gptel-test-backend ()
+    "Test if current backend is properly configured."
+    (interactive)
+    (condition-case err
+        (let* ((backend gptel-backend)
+               (name (gptel-backend-name backend))
+               (models (gptel-backend-models backend))
+               (key-fn (gptel-backend-key backend)))
+          (message "Backend: %s, Models: %d, Key function: %s"
+                   name (length models) key-fn)
+          (when key-fn
+            (condition-case key-err
+                (let ((key (gptel--get-api-key)))
+                  (if (and key (not (string-empty-p key)))
+                      (message "✓ Backend %s appears properly configured" name)
+                    (message "✗ Backend %s: no valid API key" name)))
+              (error (message "✗ Backend %s: key error: %s" name key-err)))))
+      (error (message "✗ Backend error: %s" err)))))
 
 (use-package mcp
   :straight (:type git :host github :repo "lizqwerscott/mcp.el" :files ("*.el"))
