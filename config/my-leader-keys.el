@@ -61,12 +61,12 @@
   "aa"         'gptel-add
   "af"         'gptel-add-file
   "am"         'gptel-menu
-  "as"         'gptel-send
+  "a RET"      'gptel-send
   "ag"         'gptel
   "ac"         'my-gptel-claude
   "a4"         'my-gptel-openai
-  "ar"         'my-gptel-review
   "ae"         'my-gptel-explain
+  "ar"         'my-gptel-review
 
   ;; org bindings
   "o a"        'org-agenda
