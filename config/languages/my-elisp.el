@@ -1,6 +1,5 @@
 ;; Always eldoc in lispy modes. -*- lexical-binding: t; -*-
 
-(require 'elisp-slime-nav)
 (require 'my-functions)
 
 (add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
