@@ -100,6 +100,7 @@ Not buffer-local, so it really is per frame.")
   (evil-set-initial-state 'diff-mode 'emacs)
   (evil-set-initial-state 'term-mode 'emacs)
   (evil-set-initial-state 'multi-term-mode 'emacs)
+  (evil-set-initial-state 'transient-mode 'emacs)
 
   (evil-define-text-object my-evil-next-match (count &optional beg end type)
     "Select next match."
@@ -278,12 +279,7 @@ If LSP isn’t active here, signal a user‑friendly error."
    "C-j"            'evil-window-down
    "C-k"            'evil-window-up
    "C-l"            'evil-window-right
-   ;; this macro causes trouble in transient buffers which use =-=
-   "-"              (lambda ()
-                      (interactive)
-                      (if (derived-mode-p 'transient-mode)
-                          (message "Use specific transient keys here")
-                        (execute-kbd-macro "dd")))
+   "-"              (lambda () (interactive) (evil-delete-whole-line 1))
    "a"              'evil-append
    "A"              'my-electric-append-with-indent
    "$"              'my-smart-end
