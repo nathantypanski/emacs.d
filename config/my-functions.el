@@ -237,4 +237,11 @@ position; otherwise use point."
         (user-error "No documentation available for %s"
                     (or symbol "<nothing>"))))))
 
+(defun my-eval-region-and-insert (start end)
+  "Evaluate region and insert the result after it."
+  (interactive "r")
+  (let ((result (eval (read (buffer-substring-no-properties start end)))))
+    (goto-char end)
+    (insert (format "\n;; => %s" result))))
+
 (provide 'my-functions)

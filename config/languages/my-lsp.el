@@ -32,9 +32,9 @@
   (eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
   :config
   (general-define-key
-   :states 'normal
-   :keymaps 'eglot-managed-mode-map
-   "K"      #'eglot-help-at-point)
+   :states     'normal
+   :keymaps    'eglot-managed-mode-map
+   "K"        #'eglot-help-at-point)
   (global-eldoc-mode -1))
 
 ;; Shows eldoc popups in a child frame/box, makes multiline docstrings

@@ -278,7 +278,12 @@ If LSP isn’t active here, signal a user‑friendly error."
    "C-j"            'evil-window-down
    "C-k"            'evil-window-up
    "C-l"            'evil-window-right
-   "-"              "dd"
+   ;; this macro causes trouble in transient buffers which use =-=
+   "-"              (lambda ()
+                      (interactive)
+                      (if (derived-mode-p 'transient-mode)
+                          (message "Use specific transient keys here")
+                        (execute-kbd-macro "dd")))
    "a"              'evil-append
    "A"              'my-electric-append-with-indent
    "$"              'my-smart-end
