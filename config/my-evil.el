@@ -60,7 +60,9 @@
       (hbar . "\e[4 q")
       (bar  . "\e[6 q")))
 
-  (defvar my-tty--frame-shape 'box
+  ;; Emacs starts with shape 'box, so start with nil to trigger an
+  ;; update at launch.
+  (defvar my-tty--frame-shape nil
     "Shape we last sent to THIS frame.
 Not buffer-local, so it really is per frame.")
 
