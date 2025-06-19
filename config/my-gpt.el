@@ -311,10 +311,7 @@ request in the context."
       (let ((level (org-current-level)))
         (if level
             (make-string (1+ level) ?*)  ; One level deeper
-          "**"))))  ; Default to level 2
-
-  (setq gptel-prompt-prefix-alist
-        '((org-mode . ,(concat (my-gptel-org-heading-level) " Human\n")))))
+          "**")))))
 
 (use-package mcp
   :straight (:type git :host github :repo "lizqwerscott/mcp.el" :files ("*.el"))
@@ -326,3 +323,4 @@ request in the context."
   )
 
 (provide 'my-gpt)
+
