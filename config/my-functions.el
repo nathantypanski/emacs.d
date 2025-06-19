@@ -2,7 +2,9 @@
 ;;
 ;; Helper functions that don't fit nicely anywhere else.
 
-(require 's)
+(use-package s
+  :ensure t
+  :straight t)
 
 (defun my-minibuffer-keyboard-quit ()
   "Abort recursive edit.
