@@ -387,7 +387,10 @@ request in the context."
     "Setup enhanced tools with claude-agent backend."
     (interactive)
     (my-gptel-setup-claude-tools)
-    (message "Enhanced gptel tools with claude-agent backend enabled")))
+    (message "Enhanced gptel tools with claude-agent backend enabled"))
+
+  ;; Auto-setup when gptel loads
+  (my-gptel-setup-enhanced-tools))
 
 (use-package mcp
   :straight (:type git :host github :repo "lizqwerscott/mcp.el" :files ("*.el"))
