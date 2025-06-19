@@ -3,6 +3,15 @@
 ;; The big, beating heart of my little corner of Emacs.
 ;; General, mostly-plugin-independent settings go here.
 
+;; Suppress lexical binding warnings for dependencies
+(setq warning-suppress-types '((files)))
+(setq warning-suppress-log-types '((files)))
+(setq warning-minimum-level :error)
+(setq warning-minimum-log-level :error)
+
+;; Always delete trailing whitespace on save
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
+
 (defvar my-terminal-emulator "foot"
   "Terminal emulator to be spawned with my-spawn-terminal-here.")
 
