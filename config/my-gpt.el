@@ -382,11 +382,60 @@ request in the context."
     "Enhanced grep using claude-agent."
     (my-gptel-execute-claude-tool 'grep pattern path))
 
+  ;; Register claude-agent tools with gptel's tool system
+  (defun my-gptel-register-claude-tools ()
+    "Register claude-agent tools with gptel."
+    (my-gptel-setup-claude-tools)
+    
+    ;; Register read_file tool
+    (gptel-make-tool
+     :function (lambda (path) (my-gptel-enhanced-read-file path))
+     :name "read_file"
+     :description "Read contents of a file with security checks"
+     :args (list (list :name "path" :type "string" :description "Path to the file to read"))
+     :category "filesystem")
+    
+    ;; Register list_files tool  
+    (gptel-make-tool
+     :function (lambda (path) (my-gptel-enhanced-list-files path))
+     :name "list_files"
+     :description "List files and directories in a given path"
+     :args (list (list :name "path" :type "string" :description "Directory path to list"))
+     :category "filesystem")
+    
+    ;; Register bash tool
+    (gptel-make-tool
+     :function (lambda (command) (my-gptel-enhanced-bash command))
+     :name "bash"
+     :description "Execute shell commands safely with security restrictions"
+     :args (list (list :name "command" :type "string" :description "Shell command to execute"))
+     :category "system"
+     :confirm t)
+    
+    ;; Register edit_file tool
+    (gptel-make-tool
+     :function (lambda (path content) (my-gptel-enhanced-edit-file path content))
+     :name "edit_file"
+     :description "Write content to a file with security checks"
+     :args (list (list :name "path" :type "string" :description "Path to the file to write")
+                 (list :name "content" :type "string" :description "Content to write to the file"))
+     :category "filesystem"
+     :confirm t)
+    
+    ;; Register grep tool
+    (gptel-make-tool
+     :function (lambda (pattern path) (my-gptel-enhanced-grep pattern path))
+     :name "grep"
+     :description "Search for patterns in files within allowed directories"
+     :args (list (list :name "pattern" :type "string" :description "Pattern to search for")
+                 (list :name "path" :type "string" :description "Path to search in"))
+     :category "search"))
+
   ;; Setup function to be called on gptel initialization
   (defun my-gptel-setup-enhanced-tools ()
     "Setup enhanced tools with claude-agent backend."
     (interactive)
-    (my-gptel-setup-claude-tools)
+    (my-gptel-register-claude-tools)
     (message "Enhanced gptel tools with claude-agent backend enabled"))
 
   ;; Auto-setup when gptel loads
