@@ -8,7 +8,10 @@
              :host github
              :repo "karthink/gptel"
              :branch "master")
-
+  :custom-face
+  (gptel-user-header ((t (:foreground "#dca3a3" :weight bold))))
+  (gptel-assistant-header ((t (:foreground "#7f9f7f" :weight bold))))
+  (gptel-response ((t (:foreground "#9fc59f"))))
   :commands
   (gptel gptel-menu gptel-send gptel-request
          my-gptel-review my-gptel-explain my-gptel-review
@@ -23,6 +26,12 @@
   ;; WARNING: insecure
   (gptel-use-curl t)
   (gptel-stream t)
+  (gptel-use-header-line t)
+  (gptel-prompt-prefix-alist '((org-mode . "** Human\n")))
+  (gptel-response-prefix-alist '((org-mode . "** Assistant\n")))
+  ;; should always be a symbol - see docs
+  (gptel-model 'claude-sonnet-4-20250514)
+  (gptel-max-tokens 4000)
   :init
   (defvar my-gptel-system-prompt
     "You are a LLM running inside Emacs. Your responses are inserted literally into the buffer where the prompt is sent - usually code in the language being discussed. Do not use markdown or org to structure your comments. Instead, structure in alignment with the surrounding text. Put your commentary in comments (e.g., `;;` for elisp, `//` for go, ...)."
@@ -81,9 +90,6 @@ request in the context."
 
   ;; Set default mode for gptel conversation
   (setq gptel-default-mode 'org-mode)
-
-  ;; Fix model name - should be string
-  (setq gptel-model "gpt-4.1")
 
   (setq gptel-directives
         (let* ((my-keywords (mapcar #'car my-gptel-directives))
@@ -294,10 +300,21 @@ request in the context."
             (condition-case key-err
                 (let ((key (gptel--get-api-key)))
                   (if (and key (not (string-empty-p key)))
-                      (message "✓ Backend %s appears properly configured" name)
-                    (message "✗ Backend %s: no valid API key" name)))
-              (error (message "✗ Backend %s: key error: %s" name key-err)))))
-      (error (message "✗ Backend error: %s" err)))))
+                      (message "[success] Backend %s appears properly configured" name)
+                    (message "[err] Backend %s: no valid API key" name)))
+              (error (message "[err] Backend %s: key error: %s" name key-err)))))
+      (error (message "[err] Backend error: %s" err))))
+
+  (defun my-gptel-org-heading-level ()
+    "Get appropriate heading level for current position"
+    (save-excursion
+      (let ((level (org-current-level)))
+        (if level
+            (make-string (1+ level) ?*)  ; One level deeper
+          "**"))))  ; Default to level 2
+
+  (setq gptel-prompt-prefix-alist
+        '((org-mode . ,(concat (my-gptel-org-heading-level) " Human\n")))))
 
 (use-package mcp
   :straight (:type git :host github :repo "lizqwerscott/mcp.el" :files ("*.el"))
