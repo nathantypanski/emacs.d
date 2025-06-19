@@ -4,6 +4,7 @@
 (add-to-list 'load-path (concat user-emacs-directory "elisp"))
 (add-to-list 'load-path (concat user-emacs-directory "config" "/eyecandy"))
 (add-to-list 'load-path (concat user-emacs-directory "config" "/languages"))
+(add-to-list 'load-path (concat user-emacs-directory "pkg"))
 ;; (add-to-list 'load-path "/usr/share/emacs/site-lisp")
 
 ;; (setq package-archives '(("melpa" . "https://stable.melpa.org/packages/")

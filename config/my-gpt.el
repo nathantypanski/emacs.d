@@ -16,7 +16,9 @@
   (gptel gptel-menu gptel-send gptel-request
          my-gptel-review my-gptel-explain my-gptel-review
          my-gptel-openai my-gptel-claude
-         gptel-add-file gptel-add)
+         gptel-add-file gptel-add
+         my-gptel-enhanced-read-file my-gptel-enhanced-list-files 
+         my-gptel-enhanced-bash my-gptel-enhanced-edit-file my-gptel-enhanced-grep)
 
   :hook ((gptel-mode . my-gptel-setup-behavior)
          (gptel-mode . my-gptel-setup-keybindings))
@@ -311,7 +313,81 @@ request in the context."
       (let ((level (org-current-level)))
         (if level
             (make-string (1+ level) ?*)  ; One level deeper
-          "**")))))
+          "**"))))
+
+
+  ;; Integration with claude-agent tools
+  (defvar my-gptel-claude-tools nil
+    "Claude agent tools available to gptel.")
+
+  (defun my-gptel-setup-claude-tools ()
+    "Setup Claude agent tools for use with gptel."
+    ;; Add pkg/claude-agent directly to load path
+    (add-to-list 'load-path (expand-file-name "pkg/claude-agent" user-emacs-directory))
+    (when (locate-library "claude-agent")
+      ;; Try to install request if not available
+      (unless (locate-library "request")
+        (when (fboundp 'straight-use-package)
+          (straight-use-package 'request)))
+      (require 'claude-agent)
+      (setq my-gptel-claude-tools
+            `((read_file . ,(lambda (args) 
+                              (claude-agent--tool-read-file 
+                               (if (stringp args) `((path . ,args)) args))))
+              (list_files . ,(lambda (args)
+                               (claude-agent--tool-list-files
+                                (if (stringp args) `((path . ,args)) args))))
+              (bash . ,(lambda (args)
+                         (claude-agent--tool-bash
+                          (if (stringp args) `((command . ,args)) args))))
+              (edit_file . ,(lambda (args)
+                              (if (and (listp args) (= (length args) 2))
+                                  (claude-agent--tool-edit-file
+                                   `((path . ,(car args))
+                                     (content . ,(cadr args))))
+                                (claude-agent--tool-edit-file args))))
+              (grep . ,(lambda (args)
+                         (if (and (listp args) (= (length args) 2))
+                             (claude-agent--tool-grep
+                              `((pattern . ,(car args))
+                                (path . ,(cadr args))))
+                           (claude-agent--tool-grep args))))))))
+
+  (defun my-gptel-execute-claude-tool (tool-name &rest args)
+    "Execute a Claude agent tool via gptel."
+    (unless my-gptel-claude-tools
+      (my-gptel-setup-claude-tools))
+    (if-let* ((handler (alist-get tool-name my-gptel-claude-tools)))
+        (funcall handler (car args))  ; Pass the first argument directly
+      (format "Error: Unknown Claude tool %s" tool-name)))
+
+  ;; Enhanced tool functions that use claude-agent backend
+  (defun my-gptel-enhanced-read-file (path)
+    "Enhanced file reading using claude-agent."
+    (my-gptel-execute-claude-tool 'read_file path))
+
+  (defun my-gptel-enhanced-list-files (path)
+    "Enhanced directory listing using claude-agent."
+    (my-gptel-execute-claude-tool 'list_files path))
+
+  (defun my-gptel-enhanced-bash (command)
+    "Enhanced bash execution using claude-agent."
+    (my-gptel-execute-claude-tool 'bash command))
+
+  (defun my-gptel-enhanced-edit-file (path content)
+    "Enhanced file editing using claude-agent."
+    (my-gptel-execute-claude-tool 'edit_file path content))
+
+  (defun my-gptel-enhanced-grep (pattern path)
+    "Enhanced grep using claude-agent."
+    (my-gptel-execute-claude-tool 'grep pattern path))
+
+  ;; Setup function to be called on gptel initialization
+  (defun my-gptel-setup-enhanced-tools ()
+    "Setup enhanced tools with claude-agent backend."
+    (interactive)
+    (my-gptel-setup-claude-tools)
+    (message "Enhanced gptel tools with claude-agent backend enabled")))
 
 (use-package mcp
   :straight (:type git :host github :repo "lizqwerscott/mcp.el" :files ("*.el"))
@@ -323,4 +399,3 @@ request in the context."
   )
 
 (provide 'my-gpt)
-
