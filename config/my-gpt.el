@@ -17,7 +17,7 @@
          my-gptel-review my-gptel-explain my-gptel-review
          my-gptel-openai my-gptel-claude
          gptel-add-file gptel-add
-         my-gptel-enhanced-read-file my-gptel-enhanced-list-files 
+         my-gptel-enhanced-read-file my-gptel-enhanced-list-files
          my-gptel-enhanced-bash my-gptel-enhanced-edit-file my-gptel-enhanced-grep)
 
   :hook ((gptel-mode . my-gptel-setup-behavior)
@@ -103,27 +103,6 @@ request in the context."
   ;; Only require if it exists
   (when (featurep 'gptel-integrations)
     (require 'gptel-integrations))
-
-  (defun my-gptel-get-key (provider)
-    "Get API key for PROVIDER, cached or prompt for input."
-    ;; Ensure hash table exists
-    (unless (hash-table-p my-gptel-api-keys)
-      (setq my-gptel-api-keys (make-hash-table :test 'equal)))
-    (or (gethash provider my-gptel-api-keys)
-        (let ((key (pcase provider
-                     ("openai" (or (getenv "OPENAI_API_KEY")
-                                   (ignore-errors
-                                     (auth-source-pick-first-password
-                                      :host "api.openai.com" :user "apikey"))
-                                   (read-string "OpenAI API Key: ")))
-                     ("anthropic" (or (getenv "ANTHROPIC_API_KEY")
-                                      (ignore-errors
-                                        (auth-source-pick-first-password
-                                         :host "api.anthropic.com" :user "apikey"))
-                                      (read-string "Anthropic API Key: "))))))
-          (when (and key (not (string-empty-p key)))
-            (puthash provider key my-gptel-api-keys)
-            key))))
 
   (defun my-gptel-get-key (provider)
     "Get API key for PROVIDER, cached or prompt for input."
@@ -331,8 +310,8 @@ request in the context."
           (straight-use-package 'request)))
       (require 'claude-agent)
       (setq my-gptel-claude-tools
-            `((read_file . ,(lambda (args) 
-                              (claude-agent--tool-read-file 
+            `((read_file . ,(lambda (args)
+                              (claude-agent--tool-read-file
                                (if (stringp args) `((path . ,args)) args))))
               (list_files . ,(lambda (args)
                                (claude-agent--tool-list-files
@@ -386,7 +365,7 @@ request in the context."
   (defun my-gptel-register-claude-tools ()
     "Register claude-agent tools with gptel."
     (my-gptel-setup-claude-tools)
-    
+
     ;; Register read_file tool
     (gptel-make-tool
      :function (lambda (path) (my-gptel-enhanced-read-file path))
@@ -394,15 +373,15 @@ request in the context."
      :description "Read contents of a file with security checks"
      :args (list (list :name "path" :type "string" :description "Path to the file to read"))
      :category "filesystem")
-    
-    ;; Register list_files tool  
+
+    ;; Register list_files tool
     (gptel-make-tool
      :function (lambda (path) (my-gptel-enhanced-list-files path))
      :name "list_files"
      :description "List files and directories in a given path"
      :args (list (list :name "path" :type "string" :description "Directory path to list"))
      :category "filesystem")
-    
+
     ;; Register bash tool
     (gptel-make-tool
      :function (lambda (command) (my-gptel-enhanced-bash command))
@@ -411,7 +390,7 @@ request in the context."
      :args (list (list :name "command" :type "string" :description "Shell command to execute"))
      :category "system"
      :confirm t)
-    
+
     ;; Register edit_file tool
     (gptel-make-tool
      :function (lambda (path content) (my-gptel-enhanced-edit-file path content))
@@ -421,7 +400,7 @@ request in the context."
                  (list :name "content" :type "string" :description "Content to write to the file"))
      :category "filesystem"
      :confirm t)
-    
+
     ;; Register grep tool
     (gptel-make-tool
      :function (lambda (pattern path) (my-gptel-enhanced-grep pattern path))
