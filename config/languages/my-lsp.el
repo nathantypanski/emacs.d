@@ -3,7 +3,7 @@
 (use-package eglot
   :straight nil
   :ensure nil  ;; Eglot is built-in since Emacs 29
-  :hook (((python-mode rust-mode) . eglot-ensure))
+  :hook (((python-mode rust-mode go-mode) . eglot-ensure))
   :custom
   ;; be more responsive
   (eglot-send-changes-idle-time 0.1)
@@ -18,9 +18,11 @@
                    :procMacro (:enable t)
                    :diagnostics (:disabled ["unresolved-proc-macro" "unresolved-macro-call"]))))
 
-  ;; Explicitly set pylsp as the server (if necessary)
+  ;; Explicitly set language servers
   (add-to-list 'eglot-server-programs
-               '(python-mode . ("pylsp"))))
+               '(python-mode . ("pylsp")))
+  (add-to-list 'eglot-server-programs
+               '(go-mode . ("gopls"))))
 
 (use-package eldoc
   :straight (:type built-in)
