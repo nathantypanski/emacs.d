@@ -21,16 +21,14 @@
   ;; as opposed to the first found compatible version
   ;; of a supported Age client
   (age-debug t)
-  (age-pinentry-mode "pinentry-emacs")
-  (age-program "rage-emacs")
+  (age-pinentry-mode nil)
+  (age-file-cache-passphrase-for-symmetric-encryption nil)
+  (age-program (my-home-path ".nix-profile/bin/rage-emacs"))
   (age-default-identity
-   (my-home-path
-    (string-join
-      (list ".age/" "identities"))))
+   (list
+   (my-home-path (string-join (list ".age/" "identities")))))
   (age-default-recipient
-   (my-home-path
-      (string-join
-       (list ".age/" "recipients"))))
+    (my-home-path (string-join (list ".age/" "recipients"))))
   (age-file-select-keys t)
   :config
   (age-file-enable))
