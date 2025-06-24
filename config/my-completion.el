@@ -123,5 +123,13 @@
   :config
   (global-corfu-mode))
 
+(use-package corfu-terminal
+  :straight t
+  :after corfu
+  :config
+  ;; Enable corfu-terminal for TTY support
+  (unless (display-graphic-p)
+    (corfu-terminal-mode +1)))
+
 (provide 'my-completion)
 ;;; my-completion.el ends here
