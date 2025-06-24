@@ -279,7 +279,7 @@ If LSP isn’t active here, signal a user‑friendly error."
    "C-j"            'evil-window-down
    "C-k"            'evil-window-up
    "C-l"            'evil-window-right
-   "-"              (lambda () (interactive) (evil-delete-whole-line 1))
+   "-"              'evil-delete-whole-line
    "a"              'evil-append
    "A"              'my-electric-append-with-indent
    "$"              'my-smart-end
