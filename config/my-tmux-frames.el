@@ -5,7 +5,7 @@
 (use-package emamux
   :straight t
   :commands
-  (my-tmux-new-frame emamux:tmux-run-command emamux:new_window)
+  (my-tmux-new-frame my-tmux-new-pane emamux:tmux-run-command emamux:new_window)
   :demand
   :ensure
   :config
@@ -36,5 +36,17 @@ Connects to this Emacs’s server socket and quits when you close the client."
         (apply #'start-process
                "foot-frame" nil
                "foot" "-e" "emacsclient" args)))))
+
+  (defun my-tmux-new-pane (&optional buffer)
+    "Open a new tmux pane in the current working directory."
+    (interactive)
+    (if (not (getenv "TMUX"))
+        (message "Not inside tmux")
+      (let* ((buf (or buffer (current-buffer)))
+             (cwd (if (buffer-file-name buf)
+                      (file-name-directory (buffer-file-name buf))
+                    default-directory)))
+        ;; inside tmux: use Emamux to spawn a new pane with -c flag for cwd
+        (emamux:tmux-run-command nil "split-window" "-c" cwd))))
 
 (provide 'my-tmux-frames)

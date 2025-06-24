@@ -17,6 +17,7 @@
   "TAB"        'my-hop-around-buffers
   "RET"        'my-spawn-terminal-here
   "<SPC>RET"   'my-tmux-new-frame
+  "<SPC>-"     'my-tmux-new-pane
   "B"          'my-ibuffer-raise-other-window
   ","          'other-window
   "/"          'evilnc-comment-or-uncomment-lines
