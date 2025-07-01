@@ -349,6 +349,31 @@ If LSP isn’t active here, signal a user‑friendly error."
   (progn
     (global-evil-surround-mode 1)))
 
+(use-package evil-mc
+  :straight t
+  :after evil
+  :demand t
+  :config
+  (global-evil-mc-mode 1)
+
+  ;;— Optional cursor tweaks —;;
+  (setq evil-mc-cursor-state  'hollow
+        evil-mc-cursor-colors '("#ff5555" "#50fa7b" "#f1fa8c"))
+
+  ;;— Define a “g”-prefixed definer for normal/visual —;;
+  (general-create-definer my-leader-def
+    :states  '(normal visual)
+    :prefix  "g"
+    :non-normal-prefix "M-g")
+
+  ;;— Bind your evil-mc commands under “g” —;;
+  (my-leader-def
+    "M" #'evil-mc-make-cursor-here
+    "n" #'evil-mc-make-and-goto-next-cursor
+    "p" #'evil-mc-make-and-goto-prev-cursor
+    "a" #'evil-mc-make-all-cursors
+    "q" #'evil-mc-undo-all-cursors))
+
 (use-package evil-collection
   :ensure evil-collection
   :after evil
