@@ -132,15 +132,31 @@ request in the context."
             (puthash provider key my-gptel-api-keys)
             key))))
 
+  (defun my-gptel-list-models ()
+    "List all models available in gptel."
+    (interactive)
+    (with-current-buffer (get-buffer-create "*GPTel Models*")
+      (erase-buffer)
+      (insert "== OpenAI Models ==\n\n")
+      (dolist (model-pair gptel--openai-models)
+        (insert (format "• %s\n" (car model-pair))))
+
+      (when (featurep 'gptel-anthropic)
+        (insert "\n\n== Anthropic Models ==\n\n")
+        (dolist (model-pair gptel--anthropic-models)
+          (insert (format "• %s\n" (car model-pair)))))
+
+      (pop-to-buffer (current-buffer))))
+
   ;; Provider switching with model selection
   (defun my-gptel-openai (model)
     "Switch to OpenAI backend with MODEL selection."
     (interactive
      (list (completing-read
             "OpenAI Model: "
-            ;; Use the actual models from gptel--openai-models
+            ;; Show full model names to avoid confusion
             (mapcar #'symbol-name (mapcar #'car gptel--openai-models))
-            nil t nil nil "gpt-4o-mini")))  ; Default selection
+            nil t nil nil "gpt-4o-mini")))
     (if-let ((key (my-gptel-get-key "openai")))
         (progn
           (setq gptel-model (intern model)  ; Convert back to symbol

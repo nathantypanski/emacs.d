@@ -129,8 +129,8 @@
         (path (or (alist-get 'path args) ".")))
     (if (not (claude-agent--path-allowed-p path))
         (format "Error: Access denied to %s" path)
-      (shell-command-to-string 
-       (format "grep -r %s %s" 
+      (shell-command-to-string
+       (format "grep -r %s %s"
                (shell-quote-argument pattern)
                (shell-quote-argument path))))))
 
