@@ -7,7 +7,7 @@
   "qq"         'kill-current-buffer
   "qw"         'evil-window-delete
   "qo"         'my-kill-other-buffer
-  "Q"          'kill-current-buffer
+  "Q"          'my-kill-current-buffer-with-confirmation
   "h"          'dired-jump
   ">"          'find-file-at-point
   "\\"         'split-window-horizontally
@@ -18,7 +18,7 @@
   "RET"        'my-spawn-terminal-here
   "<SPC>RET"   'my-tmux-new-frame
   "<SPC>-"     'my-tmux-new-pane
-  "B"          'my-ibuffer-raise-other-window
+  "B"          'ibuffer
   ","          'other-window
   "/"          'evilnc-comment-or-uncomment-lines
   "jf"         'ffap
@@ -28,17 +28,25 @@
   "P"          'projectile-switch-project
   "`"          'visit-term-buffer
   "cc"         'projectile-compile-project
-  "gs"         'magit-status
-  "gl"         'magit-log
-  "gd"         'magit-diff
   "f"          'find-file
   "k"          'kill-buffer
   "x"          'execute-extended-command
+  "X"          'consult-complex-command
   "s r"        'ag-regexp
+
+  ;; consult
+  "s R"        'consult-ripgrep
   "b"          'consult-buffer
   "l"          'consult-imenu
-  "s s"        'consult-line
+  "s i"        'consult-imenu
+  "s l"        'consult-line
+  "s m"        'consult-man
+  "s f"        'consult-find
+
+  "s e"        'consult-mark
+  "s /"        'consult-isearch-history
   "r"          'consult-register
+
   "n"          'neotree-toggle
 
   "pf"         'projectile-find-file
@@ -57,6 +65,26 @@
   "pV"         'projectile-browse-dirty-projects
 
   "gz"         'eglot-inlay-hints-mode
+
+  ;; tabs
+  "tt"         'tab-bar-switch-to-tab
+  "t <TAB>"    'tab-bar-switch-to-last-tab
+  "tl"         'tab-list
+  "tc"         'tab-bar-new-tab
+  "tq"         'tab-bar-close-tab
+  "tn"         'tab-bar-switch-to-next-tab
+  "tp"         'tab-bar-switch-to-prev-tab
+  "tr"         'tab-bar-rename-tab
+
+  ;; magit
+  "gs"         'magit-status
+  "gt"         'magit-tag
+  "gp"         'magit-push
+  "gp"         'magit-push
+  "gF"         'magit-pull
+  "gd"         'magit-diff
+  "gl"         'magit-log
+  "gd"         'magit-diff
 
   ;; gptel
   "aa"         'gptel-add

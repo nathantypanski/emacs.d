@@ -40,13 +40,11 @@ according to the values of `my-ibuffer-use-vc-groups' and
   (add-hook 'ibuffer-mode-hook 'my-ibuffer-setup)
   (setq ibuffer-show-empty-filter-groups nil)
 
-  (defun my/ibuffer-raise-other-window ()
+  (defun my-ibuffer-raise-other-window ()
     (interactive)
     (let* ((buf (ibuffer-list-buffers))
            (win (get-buffer-window buf 0)))
-      (if win (select-window win) (ibuffer-other-window))))
-
-  (defalias 'my-ibuffer-raise-other-window #'my/ibuffer-raise-other-window))
+      (if win (select-window win) (ibuffer-other-window)))))
 
 (setq display-buffer-alist
       '(("\\*Help\\*"
@@ -63,5 +61,11 @@ according to the values of `my-ibuffer-use-vc-groups' and
 (use-package ibuffer-vc
   :ensure ibuffer-vc
   :config)
+
+(defun my-kill-current-buffer-with-confirmation ()
+  "Kill current buffer with confirmation prompt."
+  (interactive)
+  (when (yes-or-no-p (format "Kill buffer '%s'? " (buffer-name)))
+    (kill-current-buffer)))
 
 (provide 'my-buffers)
