@@ -16,9 +16,7 @@
   (gptel gptel-menu gptel-send gptel-request
          my-gptel-review my-gptel-explain my-gptel-review
          my-gptel-openai my-gptel-claude
-         gptel-add-file gptel-add
-         my-gptel-enhanced-read-file my-gptel-enhanced-list-files
-         my-gptel-enhanced-bash my-gptel-enhanced-edit-file my-gptel-enhanced-grep)
+         gptel-add-file gptel-add)
 
   :hook ((gptel-mode . my-gptel-setup-behavior)
          (gptel-mode . my-gptel-setup-keybindings))
@@ -155,17 +153,33 @@ request in the context."
   (defun my-gptel-openai (model)
     "Switch to OpenAI backend with MODEL selection."
     (interactive
-     (list (completing-read
-            "OpenAI Model: "
-            ;; Show full model names to avoid confusion
-            (mapcar #'symbol-name (mapcar #'car gptel--openai-models))
-            nil t nil nil "gpt-4o-mini")))
+     (list (progn
+             ;; Find OpenAI backend from known backends
+             (let* ((openai-backend (cdr (assoc "ChatGPT" gptel--known-backends)))
+                    (models (when openai-backend (gptel-backend-models openai-backend))))
+               (unless models
+                 (error "No OpenAI backend found"))
+               (completing-read
+                "OpenAI Model: "
+                (mapcar #'gptel--model-name models)
+                nil t nil nil "gpt-4o-mini")))))
     (if-let ((key (my-gptel-get-key "openai")))
         (progn
-          (setq gptel-model (intern model)  ; Convert back to symbol
-                gptel-backend (gptel-make-openai "OpenAI" :key key)
-                gptel-api-key key)
-          (message "Switched to OpenAI %s" model))
+          ;; Find the backend and model
+          (let* ((openai-backend (cdr (assoc "ChatGPT" gptel--known-backends)))
+                 (model-obj (cl-find model (gptel-backend-models openai-backend)
+                                     :test (lambda (name model) 
+                                             (string= name (gptel--model-name model))))))
+            (unless model-obj
+              (error "Unknown model: %s" model))
+            
+            ;; Set the API key on the backend
+            (setf (gptel-backend-key openai-backend) key)
+            
+            (setq gptel-model model-obj
+                  gptel-backend openai-backend
+                  gptel-api-key key)
+            (message "Switched to OpenAI %s" model)))
       (user-error "No OpenAI key found")))
 
   (defun my-gptel-claude (model)
@@ -359,26 +373,6 @@ request in the context."
         (funcall handler (car args))  ; Pass the first argument directly
       (format "Error: Unknown Claude tool %s" tool-name)))
 
-  ;; Enhanced tool functions that use claude-agent backend
-  (defun my-gptel-enhanced-read-file (path)
-    "Enhanced file reading using claude-agent."
-    (my-gptel-execute-claude-tool 'read_file path))
-
-  (defun my-gptel-enhanced-list-files (path)
-    "Enhanced directory listing using claude-agent."
-    (my-gptel-execute-claude-tool 'list_files path))
-
-  (defun my-gptel-enhanced-bash (command)
-    "Enhanced bash execution using claude-agent."
-    (my-gptel-execute-claude-tool 'bash command))
-
-  (defun my-gptel-enhanced-edit-file (path content)
-    "Enhanced file editing using claude-agent."
-    (my-gptel-execute-claude-tool 'edit_file path content))
-
-  (defun my-gptel-enhanced-grep (pattern path)
-    "Enhanced grep using claude-agent."
-    (my-gptel-execute-claude-tool 'grep (list pattern path)))
 
   ;; Register claude-agent tools with gptel's tool system
   (defun my-gptel-register-claude-tools ()
@@ -390,7 +384,7 @@ request in the context."
           (list
            ;; read_file tool
            (gptel-make-tool
-            :function (lambda (path) (my-gptel-enhanced-read-file path))
+            :function (lambda (path) (my-gptel-execute-claude-tool 'read_file path))
             :name "read_file"
             :description "Read contents of a file with security checks"
             :args (list (list :name "path" :type "string" :description "Path to the file to read"))
@@ -398,7 +392,7 @@ request in the context."
 
            ;; list_files tool
            (gptel-make-tool
-            :function (lambda (path) (my-gptel-enhanced-list-files path))
+            :function (lambda (path) (my-gptel-execute-claude-tool 'list_files path))
             :name "list_files"
             :description "List files and directories in a given path"
             :args (list (list :name "path" :type "string" :description "Directory path to list"))
@@ -406,7 +400,7 @@ request in the context."
 
            ;; bash tool
            (gptel-make-tool
-            :function (lambda (command) (my-gptel-enhanced-bash command))
+            :function (lambda (command) (my-gptel-execute-claude-tool 'bash command))
             :name "bash"
             :description "Execute shell commands safely with security restrictions"
             :args (list (list :name "command" :type "string" :description "Shell command to execute"))
@@ -415,7 +409,7 @@ request in the context."
 
            ;; edit_file tool
            (gptel-make-tool
-            :function (lambda (path content) (my-gptel-enhanced-edit-file path content))
+            :function (lambda (path content) (my-gptel-execute-claude-tool 'edit_file (list path content)))
             :name "edit_file"
             :description "Write content to a file with security checks"
             :args (list (list :name "path" :type "string" :description "Path to the file to write")
@@ -425,7 +419,7 @@ request in the context."
 
            ;; grep tool
            (gptel-make-tool
-            :function (lambda (pattern path) (my-gptel-enhanced-grep pattern path))
+            :function (lambda (pattern path) (my-gptel-execute-claude-tool 'grep (list pattern path)))
             :name "grep"
             :description "Search for patterns in files within allowed directories"
             :args (list (list :name "pattern" :type "string" :description "Pattern to search for")
