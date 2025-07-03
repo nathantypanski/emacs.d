@@ -32,8 +32,11 @@
   (gptel-prompt-prefix-alist '((org-mode . "** Human\n")))
   (gptel-response-prefix-alist '((org-mode . "** Assistant\n")))
   ;; should always be a symbol - see docs
-  (gptel-model 'claude-sonnet-4-20250514)
-  (gptel-max-tokens 4000)
+  (gptel-model 'claude-3-7-sonnet-20250219)
+  ;; response length in tokens
+  (gptel-max-tokens 300)
+  ;; disable tools by default
+  (gptel-use-tools nil)
   :init
   (defvar my-gptel-system-prompt
     "You are a LLM running inside Emacs. Your responses are inserted literally into the buffer where the prompt is sent - usually code in the language being discussed. Do not use markdown or org to structure your comments. Instead, structure in alignment with the surrounding text. Put your commentary in comments (e.g., `;;` for elisp, `//` for go, ...)."
