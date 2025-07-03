@@ -77,7 +77,13 @@ Not buffer-local, so it really is per frame.")
   (defun my-tty-cursor-update (&rest _)
     "Apply correct DECSCUSR escape in TTY frames after every command."
     (interactive)
-    (when (and (not (display-graphic-p)) (bound-and-true-p evil-local-mode))
+    (when (and (not (display-graphic-p))
+               (bound-and-true-p evil-local-mode)
+               ;; Don't send escapes during potentially problematic states
+               (not (and (boundp 'transient--prefix) transient--prefix))
+               (not (minibuffer-window-active-p (minibuffer-window)))
+               (not executing-kbd-macro)
+               (not defining-kbd-macro))
       (let ((shape (my-evil--shape)))
         ;; 1. Let Emacs know (covers 28+ which translate cursor-type themselves)
         (setq-local cursor-type shape)
@@ -101,6 +107,21 @@ Not buffer-local, so it really is per frame.")
   (evil-set-initial-state 'term-mode 'emacs)
   (evil-set-initial-state 'multi-term-mode 'emacs)
   (evil-set-initial-state 'transient-mode 'emacs)
+
+  ;; Ensure transient menus work properly with Evil
+  (add-hook 'transient-setup-hook
+            (lambda ()
+              ;; Force emacs state for transient menus - but only if not already in it
+              (when (and (boundp 'evil-local-mode) evil-local-mode
+                         (not (evil-emacs-state-p)))
+                (evil-emacs-state))
+              ;; Also disable the cursor update hook during transient to prevent interference
+              (remove-hook 'post-command-hook #'my-tty-cursor-update t)))
+
+  ;; Re-enable cursor updates when transient exits
+  (add-hook 'transient-exit-hook
+            (lambda ()
+              (add-hook 'post-command-hook #'my-tty-cursor-update)))
 
   (evil-define-text-object my-evil-next-match (count &optional beg end type)
     "Select next match."
