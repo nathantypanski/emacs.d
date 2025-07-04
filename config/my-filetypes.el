@@ -7,4 +7,9 @@
 
 (add-to-list 'auto-mode-alist '("/mutt" . mail-mode))
 
+(use-package sudo-edit
+  :commands (sudo-edit)
+  :straight t
+  :defer t)
+
 (provide 'my-filetypes)
