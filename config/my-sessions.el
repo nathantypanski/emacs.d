@@ -1,28 +1,34 @@
 ;; -*- lexical-binding: t; -*-
-(use-package workgroups2
-  :disabled t
-  :ensure workgroups2
-  :init
+(use-package perspective
+  :ensure perspective
+  :config
   (progn
-    (setq wg-use-default-session-file nil)
-    (setq wg-mode-line-display-on t)          ; Default: (not (featurep 'powerline))
-    (setq wg-flag-modified t)                 ; Display modified flags as well
-    (setq wg-mode-line-decor-left-brace "["
-          wg-mode-line-decor-right-brace "]"  ; how to surround it
-          wg-mode-line-decor-divider ":")
-    (defun my-wg-switch-to-workgroup (wg)
-      "Switch to a workgroup using wokgroups2"
-      (interactive (list
-                    (progn
-                      (wg-find-session-file wg-default-session-file)
-                      (wg-read-workgroup-name))))
-      (wg-switch-to-workgroup wg)
-      )
-    (defun my-wg-save-session ()
+    ;; Configure perspective settings
+    (setq persp-mode-prefix-key (kbd "C-x x"))
+    (setq persp-initial-frame-name "main")
+    (setq persp-sort 'created)
+
+    ;; Enable perspective mode
+    (persp-mode 1)
+
+    ;; Custom functions for perspective management
+    (defun my-perspective-switch ()
+      "Switch to a perspective with completion"
       (interactive)
-      (wg-save-session)
-      )
-    (workgroups-mode 1))
-)
+      (call-interactively 'persp-switch))
+
+    (defun my-perspective-new ()
+      "Create a new perspective"
+      (interactive)
+      (call-interactively 'persp-switch))
+
+    (defun my-perspective-kill-with-confirmation ()
+      "Kill current perspective with confirmation"
+      (interactive)
+      (when (y-or-n-p (format "Kill perspective '%s'? " (persp-current-name)))
+        (persp-kill (persp-current-name))))
+
+    ;; Automatic perspective persistence
+    (setq persp-state-default-file (expand-file-name "perspectives" user-emacs-directory))))
 
 (provide 'my-sessions)

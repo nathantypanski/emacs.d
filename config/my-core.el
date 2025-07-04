@@ -260,6 +260,22 @@ This command only has an effect on graphical frames."
 ;; tell indent-for-tab-command to complete when indent has no effect
 (setq tab-always-indent 'complete)
 
+;; Enable desktop-save-mode for session persistence
+(desktop-save-mode 1)
+(setq desktop-dirname user-emacs-directory)
+(setq desktop-path (list desktop-dirname))
+(setq desktop-load-locked-desktop t)
+(setq desktop-auto-save-timeout 600) ; Auto-save every 10 minutes
+
+;; Enable savehist for minibuffer history
+(savehist-mode 1)
+(setq savehist-additional-variables
+      '(search-ring regexp-search-ring kill-ring compile-history))
+
+;; Enable recentf for recent files
+(recentf-mode 1)
+(setq recentf-max-saved-items 100)
+
 ;; 1. Ensure margins exist
 (setq-default left-margin-width  0
               right-margin-width 0)

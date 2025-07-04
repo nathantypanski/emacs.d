@@ -76,6 +76,13 @@
   "tp"         'tab-bar-switch-to-prev-tab
   "tr"         'tab-bar-rename-tab
 
+  ;; perspectives
+  "pt"         'my-perspective-switch
+  "pc"         'my-perspective-new
+  "pq"         'my-perspective-kill-with-confirmation
+  "pr"         'persp-rename
+  "p <TAB>"    'persp-switch-last
+
   ;; magit
   "gs"         'magit-status
   "gt"         'magit-tag
