@@ -153,34 +153,22 @@ request in the context."
   (defun my-gptel-openai (model)
     "Switch to OpenAI backend with MODEL selection."
     (interactive
-     (list (progn
-             ;; Find OpenAI backend from known backends
-             (let* ((openai-backend (cdr (assoc "ChatGPT" gptel--known-backends)))
-                    (models (when openai-backend (gptel-backend-models openai-backend))))
-               (unless models
-                 (error "No OpenAI backend found"))
-               (completing-read
-                "OpenAI Model: "
-                (mapcar #'gptel--model-name models)
-                nil t nil nil "gpt-4o-mini")))))
-    (if-let ((key (my-gptel-get-key "openai")))
+     (list (let* ((backend (cdr (assoc "ChatGPT" gptel--known-backends)))
+                  (models (gptel-backend-models backend)))
+             (unless models (error "No OpenAI backend found"))
+             (completing-read "OpenAI Model: " (mapcar #'gptel--model-name models)
+                              nil t nil nil "gpt-4o-mini"))))
+    (if-let* ((key (my-gptel-get-key "openai"))
+              (backend (cdr (assoc "ChatGPT" gptel--known-backends)))
+              (model-obj (cl-find model (gptel-backend-models backend)
+                                  :test (lambda (name model)
+                                          (string= name (gptel--model-name model))))))
         (progn
-          ;; Find the backend and model
-          (let* ((openai-backend (cdr (assoc "ChatGPT" gptel--known-backends)))
-                 (model-obj (cl-find model (gptel-backend-models openai-backend)
-                                     :test (lambda (name model) 
-                                             (string= name (gptel--model-name model))))))
-            (unless model-obj
-              (error "Unknown model: %s" model))
-            
-            ;; Set the API key on the backend
-            (setf (gptel-backend-key openai-backend) key)
-            
-            (setq gptel-model model-obj
-                  gptel-backend openai-backend
-                  gptel-api-key key)
-            (message "Switched to OpenAI %s" model)))
-      (user-error "No OpenAI key found")))
+          (setq gptel-model model-obj
+                gptel-backend backend
+                gptel-api-key key)
+          (message "Switched to OpenAI %s" model))
+      (user-error "OpenAI backend or model not found")))
 
   (defun my-gptel-claude (model)
     "Switch to Claude backend with MODEL selection."
@@ -319,15 +307,6 @@ request in the context."
               (error (message "[err] Backend %s: key error: %s" name key-err)))))
       (error (message "[err] Backend error: %s" err))))
 
-  (defun my-gptel-org-heading-level ()
-    "Get appropriate heading level for current position"
-    (save-excursion
-      (let ((level (org-current-level)))
-        (if level
-            (make-string (1+ level) ?*)  ; One level deeper
-          "**"))))
-
-
   ;; Integration with claude-agent tools
   (defvar my-gptel-claude-tools nil
     "Claude agent tools available to gptel.")
@@ -436,7 +415,24 @@ request in the context."
     (message "Enhanced gptel tools with claude-agent backend enabled"))
 
   ;; Auto-setup when gptel loads
-  (my-gptel-setup-enhanced-tools))
+  (my-gptel-setup-enhanced-tools)
+
+  ;; Auto-enable gptel-mode for org files with GPTEL properties
+  (defun my-auto-enable-gptel-mode ()
+    "Auto-enable gptel-mode for files with GPTEL properties in the top properties block."
+    (when (eq major-mode 'org-mode)
+      (save-excursion
+        (goto-char (point-min))
+        ;; Look for :PROPERTIES: block at the start of the file
+        (when (re-search-forward "^:PROPERTIES:" nil t)
+          (let ((props-start (point))
+                (props-end (when (re-search-forward "^:END:" nil t) (point))))
+            (when (and props-end
+                       (goto-char props-start)
+                       (re-search-forward "^:GPTEL_" props-end t))
+              (gptel-mode 1)))))))
+
+  (add-hook 'find-file-hook 'my-auto-enable-gptel-mode))
 
 (use-package mcp
   :straight (:type git :host github :repo "lizqwerscott/mcp.el" :files ("*.el"))
