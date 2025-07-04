@@ -115,8 +115,10 @@
 (use-package corfu
   :straight t
   :custom
-  (corfu-auto t)           ; Enable auto popup
-  (corfu-cycle t)          ; Enable cycling for completions
+  ;; Note that auto completion is particularly dangerous in untrusted files
+  ;; since some completion functions may perform arbitrary code execution,
+  (corfu-auto nil)
+  (corfu-cycle t) ; Enable cycling for completions
   (corfu-quit-at-boundary nil)
   (corfu-quit-no-match 'separator)
   (corfu-preview-current nil)
