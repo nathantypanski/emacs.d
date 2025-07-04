@@ -295,6 +295,7 @@ If LSP isn’t active here, signal a user‑friendly error."
    "C-w }"          'evil-window-rotate-downwards
    "C-w {"          'evil-window-rotate-upwards
    "SPC SPC"        'execute-extended-command
+   "SPC p"          'execute-extended-command
    "C-q"            'universal-argument
    "C-h"            'evil-window-left
    "C-j"            'evil-window-down
