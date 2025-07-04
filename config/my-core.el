@@ -89,8 +89,12 @@
 (defvar my-auto-save-folder (my-home-path "/.emacs.d/.saves/")
   "Directory used for Emacs backups.")
 
-(setq backup-directory-alist `(("." . ,my-auto-save-folder)))
+;; Keep all backups in .emacs.d, including tramp
+(setq backup-directory-alist `((".*" . ,my-auto-save-folder)))
 (setq auto-save-file-name-transforms `((".*" ,(expand-file-name my-auto-save-folder) t)))
+;; Force tramp to use the same backup directory
+(setq tramp-backup-directory-alist backup-directory-alist)
+(setq tramp-auto-save-directory my-auto-save-folder)
 
 ;; Only scroll one line when near the bottom of the screen, instead
 ;; of jumping the screen around.
