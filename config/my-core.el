@@ -131,6 +131,28 @@
 ;; Display the current function name in the modeline.
 (which-function-mode 0)
 
+;; Fix minibuffer messages disappearing too quickly
+(setq minibuffer-message-timeout 10)     ; Keep messages for 10 seconds
+(setq eldoc-idle-delay 1.0)              ; Wait 1 second before showing eldoc
+(setq eldoc-echo-area-display-truncation-message nil) ; Don't truncate
+(setq eldoc-print-after-edit t)          ; Don't spam during typing
+
+;; Debug function to track what's clearing the minibuffer
+(defun my-debug-minibuffer-clear ()
+  "Debug function to see what's clearing the minibuffer."
+  (interactive)
+  (let ((original-message (symbol-function 'message)))
+    (advice-add 'message :around
+                (lambda (orig-fun &rest args)
+                  (when (and args (stringp (car args)))
+                    (message "[DEBUG] Message: %s" (car args)))
+                  (apply orig-fun args)))
+    (message "Minibuffer debugging enabled. Run again to disable.")
+    (run-with-timer 30 nil
+                    (lambda ()
+                      (advice-remove 'message 'my-debug-minibuffer-clear)
+                      (message "Minibuffer debugging disabled")))))
+
 ;; Thanks
 ;; http://www.jesshamrick.com/2013/03/31/macs-and-emacs/
 (defun my-system-is-mac ()
@@ -272,6 +294,7 @@ This command only has an effect on graphical frames."
 (setq desktop-path (list desktop-dirname))
 (setq desktop-load-locked-desktop t)
 (setq desktop-auto-save-timeout 600) ; Auto-save every 10 minutes
+(setq desktop-save-mode nil)          ; Don't save desktop on every quit
 
 ;; Enable savehist for minibuffer history
 (savehist-mode 1)
