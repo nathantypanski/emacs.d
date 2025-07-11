@@ -3,11 +3,7 @@
 ;; configure llm interactions
 
 (use-package gptel
-  :straight (gptel
-             :type git
-             :host github
-             :repo "karthink/gptel"
-             :branch "master")
+  :straight (:repo "karthink/gptel")
   :custom-face
   (gptel-user-header ((t (:foreground "#dca3a3" :weight bold))))
   (gptel-assistant-header ((t (:foreground "#7f9f7f" :weight bold))))
@@ -435,7 +431,7 @@ request in the context."
   (add-hook 'find-file-hook 'my-auto-enable-gptel-mode))
 
 (use-package mcp
-  :straight (:type git :host github :repo "lizqwerscott/mcp.el" :files ("*.el"))
+  :straight (:repo "lizqwerscott/mcp.el" :files ("*.el"))
   ;; Auto-start all MCP servers after initialization
   ;; :hook (after-init . mcp-hub-start-all-server))
   :after gptel

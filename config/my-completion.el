@@ -115,9 +115,8 @@
 (use-package corfu
   :straight t
   :custom
-  ;; Note that auto completion is particularly dangerous in untrusted files
-  ;; since some completion functions may perform arbitrary code execution,
-  (corfu-auto nil)
+  ;; Auto completion is now safe since file-local variables are disabled
+  (corfu-auto t)
   (corfu-cycle t) ; Enable cycling for completions
   (corfu-quit-at-boundary nil)
   (corfu-quit-no-match 'separator)

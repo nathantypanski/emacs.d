@@ -7,7 +7,7 @@
   (pinentry-start))
 
 (use-package age
-  :straight (age :type git :host github :repo "anticomputer/age.el")
+  :straight (:repo "anticomputer/age.el")
   :after pinentry
   :ensure t
   :demand t

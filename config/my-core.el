@@ -9,6 +9,12 @@
 (setq warning-minimum-level :error)
 (setq warning-minimum-log-level :error)
 
+;; Security: Disable file-local variables and eval headers
+;; This prevents malicious files from executing code when opened
+(setq enable-local-variables nil)      ; Disable all file-local variables
+(setq enable-local-eval nil)           ; Never eval code from files
+(setq enable-dir-local-variables nil)  ; Disable .dir-locals.el files
+
 ;; Always delete trailing whitespace on save
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 

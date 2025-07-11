@@ -179,8 +179,8 @@
 
 (use-package org-roam
   :after (org age)
-  :straight (org-roam :type git :host github :repo "org-roam/org-roam"
-                      :files (:defaults "extensions/*"))
+  :straight (:repo "org-roam/org-roam"
+             :files (:defaults "extensions/*"))
   :ensure t
   :config
   (add-to-list 'auto-mode-alist '("\\.org\\.age" . org-mode)))
@@ -199,7 +199,7 @@
 
 (use-package org-modern
   :ensure t
-  :straight (org-modern :type git :host github :repo "minad/org-modern")
+  :straight (:repo "minad/org-modern")
   :config
   (global-org-modern-mode))
 
