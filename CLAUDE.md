@@ -83,7 +83,17 @@ Modern completion stack:
 ## Common Tasks
 
 ### Adding New Configuration
-1. Create new `my-<name>.el` file in appropriate directory
+
+**Package Configuration Rules:**
+1. **General Emacs packages**: Add `use-package` declarations to `config/my-<domain>.el` files
+2. **Language-specific packages**: Add to `config/languages/my-<lang>.el` files
+3. **Never manually clone** into `straight/repos/` - always use `use-package` with `:straight` 
+4. **straight.el handles everything** - package installation, building, loading automatically
+
+**File Organization:**
+1. Create new `my-<name>.el` file in appropriate directory:
+   - `config/my-<name>.el` for general Emacs functionality
+   - `config/languages/my-<lang>.el` for language support (including LSP, tree-sitter)
 2. Add `(require 'my-<name>)` to `init.el` in correct load order
 3. Use `my-` prefix for all custom functions/variables
 4. Use `after` macro for conditional loading of package-dependent code
@@ -95,9 +105,11 @@ Modern completion stack:
 - Evil-specific bindings use state-specific definitions
 
 ### Language Support
-- Add new language file to `config/languages/my-<lang>.el`
-- Add require statement to `config/languages/my-languages.el`
-- Follow existing patterns for LSP integration and keybindings
+- **File location**: `config/languages/my-<lang>.el` for language-specific packages
+- **Include all language tools**: LSP (eglot, eldoc), tree-sitter (treesit), language modes
+- **Integration**: Add require statement to `config/languages/my-languages.el`
+- **Patterns**: Follow existing patterns for LSP integration and keybindings
+- **Use `use-package`**: Never manually install language tools - use `use-package` declarations
 
 ## Claude Agent Integration
 
