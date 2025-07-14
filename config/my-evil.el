@@ -116,12 +116,18 @@ Not buffer-local, so it really is per frame.")
                          (not (evil-emacs-state-p)))
                 (evil-emacs-state))
               ;; Also disable the cursor update hook during transient to prevent interference
-              (remove-hook 'post-command-hook #'my-tty-cursor-update t)))
+              (remove-hook 'post-command-hook #'my-tty-cursor-update t)
+              ;; Ensure Evil doesn't interfere with transient keys
+              (setq-local evil-intercept-maps nil)
+              (setq-local evil-overriding-maps nil)))
 
   ;; Re-enable cursor updates when transient exits
   (add-hook 'transient-exit-hook
             (lambda ()
-              (add-hook 'post-command-hook #'my-tty-cursor-update)))
+              (add-hook 'post-command-hook #'my-tty-cursor-update)
+              ;; Restore Evil maps
+              (kill-local-variable 'evil-intercept-maps)
+              (kill-local-variable 'evil-overriding-maps)))
 
   (evil-define-text-object my-evil-next-match (count &optional beg end type)
     "Select next match."
