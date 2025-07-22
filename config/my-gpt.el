@@ -3,7 +3,7 @@
 ;; configure llm interactions
 
 (use-package gptel
-  :straight (:repo "karthink/gptel")
+  :straight (:repo "karthink/gptel" :branch "state-tracking" :files ("*.el") :no-byte-compile t)
   :custom-face
   (gptel-user-header ((t (:foreground "#dca3a3" :weight bold))))
   (gptel-assistant-header ((t (:foreground "#7f9f7f" :weight bold))))
@@ -26,11 +26,20 @@
   (gptel-prompt-prefix-alist '((org-mode . "** Human\n")))
   (gptel-response-prefix-alist '((org-mode . "** Assistant\n")))
   ;; should always be a symbol - see docs
-  (gptel-model 'claude-3-7-sonnet-20250219)
+  (gptel-model 'claude-sonnet-4-20250514)
   ;; response length in tokens
   (gptel-max-tokens 300)
   ;; disable tools by default
   (gptel-use-tools nil)
+  ;; enable expert commands for enhanced functionality
+  (gptel-expert-commands t)
+  ;; enable visual debugging of conversation state
+  (gptel-enable-visual-debugging t)
+  ;; enable enhanced state tracking with markers and overlays
+  (gptel-enable-enhanced-state-tracking t)
+  (gptel-enable-strict-validation nil)
+  (gptel-auto-repair-invalid-state t)
+  (gptel-validation-log-level 'info)
   :init
   (defvar my-gptel-system-prompt
     "You are a LLM running inside Emacs. Your responses are inserted literally into the buffer where the prompt is sent - usually code in the language being discussed. Do not use markdown or org to structure your comments. Instead, structure in alignment with the surrounding text. Put your commentary in comments (e.g., `;;` for elisp, `//` for go, ...)."
@@ -304,20 +313,29 @@ request in the context."
       (error (message "[err] Backend error: %s" err))))
 
   ;; Integration with claude-agent tools
-  (defvar my-gptel-claude-tools nil
-    "Claude agent tools available to gptel.")
+  ;;
+  ;; Tool setup architecture:
+  ;;   1. my-gptel-create-tool-handlers - Creates tool handler functions
+  ;;   2. my-gptel-register-tools       - Registers handlers with gptel
+  ;;   3. my-gptel-enable-tools         - Main entry point (calls 1 & 2)
+  ;;
+  ;; Usage: my-gptel-enable-tools is called automatically on load
 
-  (defun my-gptel-setup-claude-tools ()
-    "Setup Claude agent tools for use with gptel."
+  (defvar my-gptel-tools nil
+    "AI agent tools available to gptel.")
+
+  (defun my-gptel-create-tool-handlers ()
+    "Create AI agent tool handler functions.
+This is layer 1: creates the tool handler functions."
     ;; Add pkg/claude-agent directly to load path
-    (add-to-list 'load-path (expand-file-name "pkg/claude-agent" user-emacs-directory))
+    (add-to-list 'load-path (expand-file-name "pkg/claude-agent-tools" user-emacs-directory))
     (when (locate-library "claude-agent")
       ;; Try to install request if not available
       (unless (locate-library "request")
         (when (fboundp 'straight-use-package)
           (straight-use-package 'request)))
       (require 'claude-agent)
-      (setq my-gptel-claude-tools
+      (setq my-gptel-tools
             `((read_file . ,(lambda (args)
                               (claude-agent--tool-read-file
                                (if (stringp args) `((path . ,args)) args))))
@@ -340,26 +358,27 @@ request in the context."
                                 (path . ,(cadr args))))
                            (claude-agent--tool-grep args))))))))
 
-  (defun my-gptel-execute-claude-tool (tool-name &rest args)
-    "Execute a Claude agent tool via gptel."
-    (unless my-gptel-claude-tools
-      (my-gptel-setup-claude-tools))
-    (if-let* ((handler (alist-get tool-name my-gptel-claude-tools)))
+  (defun my-gptel-execute-tool (tool-name &rest args)
+    "Execute an AI agent tool via gptel."
+    (unless my-gptel-tools
+      (my-gptel-create-tool-handlers))
+    (if-let* ((handler (alist-get tool-name my-gptel-tools)))
         (funcall handler (car args))  ; Pass the first argument directly
-      (format "Error: Unknown Claude tool %s" tool-name)))
+      (format "Error: Unknown tool %s" tool-name)))
 
 
   ;; Register claude-agent tools with gptel's tool system
-  (defun my-gptel-register-claude-tools ()
-    "Register claude-agent tools with gptel."
-    (my-gptel-setup-claude-tools)
+  (defun my-gptel-register-tools ()
+    "Register AI agent tools with gptel.
+This is layer 2: registers tool handlers with gptel's tool system."
+    (my-gptel-create-tool-handlers)
 
     ;; Store tools in gptel-tools variable
     (setq gptel-tools
           (list
            ;; read_file tool
            (gptel-make-tool
-            :function (lambda (path) (my-gptel-execute-claude-tool 'read_file path))
+            :function (lambda (path) (my-gptel-execute-tool 'read_file path))
             :name "read_file"
             :description "Read contents of a file with security checks"
             :args (list (list :name "path" :type "string" :description "Path to the file to read"))
@@ -367,7 +386,7 @@ request in the context."
 
            ;; list_files tool
            (gptel-make-tool
-            :function (lambda (path) (my-gptel-execute-claude-tool 'list_files path))
+            :function (lambda (path) (my-gptel-execute-tool 'list_files path))
             :name "list_files"
             :description "List files and directories in a given path"
             :args (list (list :name "path" :type "string" :description "Directory path to list"))
@@ -375,7 +394,7 @@ request in the context."
 
            ;; bash tool
            (gptel-make-tool
-            :function (lambda (command) (my-gptel-execute-claude-tool 'bash command))
+            :function (lambda (command) (my-gptel-execute-tool 'bash command))
             :name "bash"
             :description "Execute shell commands safely with security restrictions"
             :args (list (list :name "command" :type "string" :description "Shell command to execute"))
@@ -384,7 +403,7 @@ request in the context."
 
            ;; edit_file tool
            (gptel-make-tool
-            :function (lambda (path content) (my-gptel-execute-claude-tool 'edit_file (list path content)))
+            :function (lambda (path content) (my-gptel-execute-tool 'edit_file (list path content)))
             :name "edit_file"
             :description "Write content to a file with security checks"
             :args (list (list :name "path" :type "string" :description "Path to the file to write")
@@ -394,7 +413,7 @@ request in the context."
 
            ;; grep tool
            (gptel-make-tool
-            :function (lambda (pattern path) (my-gptel-execute-claude-tool 'grep (list pattern path)))
+            :function (lambda (pattern path) (my-gptel-execute-tool 'grep (list pattern path)))
             :name "grep"
             :description "Search for patterns in files within allowed directories"
             :args (list (list :name "pattern" :type "string" :description "Pattern to search for")
@@ -404,14 +423,18 @@ request in the context."
     (message "Registered %d tools with gptel" (length gptel-tools)))
 
   ;; Setup function to be called on gptel initialization
-  (defun my-gptel-setup-enhanced-tools ()
-    "Setup enhanced tools with claude-agent backend."
+  (defun my-gptel-enable-tools ()
+    "Enable AI agent tools for gptel.
+This is layer 3: main entry point that coordinates the full setup."
     (interactive)
-    (my-gptel-register-claude-tools)
-    (message "Enhanced gptel tools with claude-agent backend enabled"))
+    (my-gptel-register-tools)
+    (message "Enhanced gptel tools with AI agent backend enabled"))
 
   ;; Auto-setup when gptel loads
-  (my-gptel-setup-enhanced-tools)
+  ;; This is the main initialization - calls layer 3 which calls layers 2 & 1
+  (my-gptel-enable-tools)
+
+
 
   ;; Auto-enable gptel-mode for org files with GPTEL properties
   (defun my-auto-enable-gptel-mode ()
@@ -429,6 +452,14 @@ request in the context."
               (gptel-mode 1)))))))
 
   (add-hook 'find-file-hook 'my-auto-enable-gptel-mode))
+
+(use-package gptel-plus
+  :straight
+  (:host github
+   :repo "benthamite/gptel-plus"
+   :files ("*.el")
+  )
+  :after 'gptel)
 
 (use-package mcp
   :straight (:repo "lizqwerscott/mcp.el" :files ("*.el"))
