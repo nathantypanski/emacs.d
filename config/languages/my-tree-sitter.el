@@ -6,8 +6,17 @@
   :custom
   (treesit-auto-install-grammar nil)
   :config
-  ;; Uncomment to use github-cloned sources
-  (setq treesit-language-source-alist ())
+  (setq treesit-language-source-alist
+        (cond
+         ((eq system-type 'gnu/linux)
+          '())
+         ((eq system-type 'darwin)
+          '((typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master"
+                        "typescript/src")
+            (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")))))
+
+
+        ;; (setq treesit-language-source-alist ())
         ;; '((bash "https://github.com/tree-sitter/tree-sitter-bash")
         ;;   (c "https://github.com/tree-sitter/tree-sitter-c")
         ;;   (cpp "https://github.com/tree-sitter/tree-sitter-cpp")
