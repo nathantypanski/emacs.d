@@ -244,4 +244,14 @@ position; otherwise use point."
     (goto-char end)
     (insert (format "\n;; => %s" result))))
 
+(defun my-replace-mac-addresses ()
+  "Replace MAC addresses in buffer or region with [mac]."
+  (interactive)
+  (let ((start (if (use-region-p) (region-beginning) (point-min)))
+        (end (if (use-region-p) (region-end) (point-max))))
+    (save-excursion
+      (goto-char start)
+      (while (re-search-forward "\\([a-z0-9]\\{2\\}:\\)\\{5\\}[a-z0-9]\\{2\\}" end t)
+        (replace-match "[mac]")))))
+
 (provide 'my-functions)
