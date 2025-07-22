@@ -2,6 +2,8 @@
 ;;
 ;; <leader> keybindings for evil-leader
 
+(evil-leader/set-leader ",")
+
 (evil-leader/set-key
   "$"          'display-line-numbers-mode
   "qq"         'kill-current-buffer
@@ -111,10 +113,8 @@
   "o c"        'org-capture
   "o l"        'org-store-link)
 
-
 (evil-leader/set-key-for-mode 'git-commit-mode "qq" 'git-commit-abort)
 (evil-leader/set-key-for-mode 'git-commit-mode "C" 'with-editor-finish)
-
 (evil-leader/set-key-for-mode 'emacs-lisp-mode "." 'elisp-slime-nav-find-elisp-thing-at-point)
 
 (provide 'my-leader-keys)

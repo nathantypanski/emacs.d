@@ -25,6 +25,10 @@
   :straight t)
 
 
+;; https://github.com/emacs-evil/evil-collection/issues/60
+(setq evil-want-integration t)
+;; let us load evil-collection separately
+(setq evil-want-keybinding nil)
 ;; Here's what we've all been waiting for.
 ;; Recreate Vim inside Emacs.
 (use-package evil
@@ -401,6 +405,15 @@ If LSP isn’t active here, signal a user‑friendly error."
     "p" #'evil-mc-make-and-goto-prev-cursor
     "a" #'evil-mc-make-all-cursors
     "q" #'evil-mc-undo-all-cursors))
+
+(use-package evil-leader
+  :ensure t
+  :demand t
+  :after (evil)
+  :config
+  (evil-leader-mode t)
+  (evil-leader/set-leader ",")
+  (global-evil-leader-mode t))
 
 (use-package evil-collection
   :ensure evil-collection
