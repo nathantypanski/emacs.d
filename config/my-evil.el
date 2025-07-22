@@ -85,9 +85,18 @@ Not buffer-local, so it really is per frame.")
                (bound-and-true-p evil-local-mode)
                ;; Don't send escapes during potentially problematic states
                (not (and (boundp 'transient--prefix) transient--prefix))
+               (not (and (boundp 'transient--stack) transient--stack))
                (not (minibuffer-window-active-p (minibuffer-window)))
                (not executing-kbd-macro)
-               (not defining-kbd-macro))
+               (not defining-kbd-macro)
+               ;; Also check if we're in the middle of key sequence processing
+               (not (and (boundp 'this-command-keys-vector)
+                         (vectorp this-command-keys-vector)
+                         (> (length this-command-keys-vector) 0)
+                         (let ((last-key (aref this-command-keys-vector
+                                               (1- (length this-command-keys-vector)))))
+                           ;; Don't update cursor if last key was an escape sequence
+                           (and (numberp last-key) (= last-key 27))))))
       (let ((shape (my-evil--shape)))
         ;; 1. Let Emacs know (covers 28+ which translate cursor-type themselves)
         (setq-local cursor-type shape)
@@ -112,26 +121,34 @@ Not buffer-local, so it really is per frame.")
   (evil-set-initial-state 'multi-term-mode 'emacs)
   (evil-set-initial-state 'transient-mode 'emacs)
 
-  ;; Ensure transient menus work properly with Evil
+  ;; Ensure gptel transient menus work properly with Evil
   (add-hook 'transient-setup-hook
             (lambda ()
-              ;; Force emacs state for transient menus - but only if not already in it
-              (when (and (boundp 'evil-local-mode) evil-local-mode
-                         (not (evil-emacs-state-p)))
-                (evil-emacs-state))
-              ;; Also disable the cursor update hook during transient to prevent interference
-              (remove-hook 'post-command-hook #'my-tty-cursor-update t)
-              ;; Ensure Evil doesn't interfere with transient keys
-              (setq-local evil-intercept-maps nil)
-              (setq-local evil-overriding-maps nil)))
+              ;; Only apply these fixes for gptel transients
+              (when (and (boundp 'transient--prefix)
+                         transient--prefix
+                         (string-match-p "gptel" (symbol-name (oref transient--prefix command))))
+                ;; Force emacs state for gptel transients
+                (when (and (boundp 'evil-local-mode) evil-local-mode
+                           (not (evil-emacs-state-p)))
+                  (evil-emacs-state))
+                ;; Completely disable cursor update during gptel transients
+                (remove-hook 'post-command-hook #'my-tty-cursor-update t)
+                ;; Disable Evil key interception for gptel transients
+                (setq-local evil-intercept-maps nil)
+                (setq-local evil-overriding-maps nil))))
 
-  ;; Re-enable cursor updates when transient exits
+  ;; Re-enable everything when gptel transients exit
   (add-hook 'transient-exit-hook
             (lambda ()
-              (add-hook 'post-command-hook #'my-tty-cursor-update)
-              ;; Restore Evil maps
-              (kill-local-variable 'evil-intercept-maps)
-              (kill-local-variable 'evil-overriding-maps)))
+              ;; Only restore for gptel transients
+              (when (and (boundp 'transient--prefix)
+                         transient--prefix
+                         (string-match-p "gptel" (symbol-name (oref transient--prefix command))))
+                (add-hook 'post-command-hook #'my-tty-cursor-update)
+                ;; Restore Evil maps by killing local overrides
+                (kill-local-variable 'evil-intercept-maps)
+                (kill-local-variable 'evil-overriding-maps))))
 
   (evil-define-text-object my-evil-next-match (count &optional beg end type)
     "Select next match."
@@ -203,7 +220,10 @@ Not buffer-local, so it really is per frame.")
     "Function to be run when Evil enters insert state."
     (interactive)
     (when (and my-should-insert-indent
-               (my-sensible-to-indent-p))
+               (my-sensible-to-indent-p)
+               ;; Don't indent if we're at the end of a non-empty line
+               (not (and (> (line-end-position) (line-beginning-position))
+                         (= (point) (line-end-position)))))
       (indent-according-to-mode)))
 
   (defun enable-tabs ()
@@ -348,18 +368,6 @@ If LSP isn’t active here, signal a user‑friendly error."
 
   ;; Bind <TAB> to org-tempo-expand in Evil insert mode
   )
-
-(use-package evil-leader
-  :ensure t
-  :demand t
-  :after (evil)
-  :custom (evil-want-integration t
-                                 ;; https://github.com/emacs-evil/evil-collection/issues/60
-                                 evil-want-keybinding nil) ; let us load evil-collection separately
-  :config
-  (progn
-    (evil-leader/set-leader ",")
-    (global-evil-leader-mode t)))
 
 (use-package evil-nerd-commenter
   :ensure evil-nerd-commenter
