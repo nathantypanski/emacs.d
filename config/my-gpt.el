@@ -1,6 +1,18 @@
 ;; my-gpt.el -*- lexical-binding: t; -*-
 ;;
 ;; configure llm interactions
+(require 'cl-lib)
+
+(use-package claude-agent
+  :init
+  :custom
+  (claude-agent-allowed-directories
+   ;; better way than `delete-dups' / more modern than `cl-'?
+   (seq-uniq claude-agent-allowed-directories
+             (list (my-home-path "notes")
+                   #'equal)))
+  :config)
+
 
 (use-package gptel
   :straight (:repo "karthink/gptel" :branch "state-tracking" :files ("*.el") :no-byte-compile t)
@@ -28,18 +40,20 @@
   ;; should always be a symbol - see docs
   (gptel-model 'claude-sonnet-4-20250514)
   ;; response length in tokens
-  (gptel-max-tokens 300)
+  (gptel-max-tokens 3000)
   ;; disable tools by default
   (gptel-use-tools nil)
   ;; enable expert commands for enhanced functionality
   (gptel-expert-commands t)
+
   ;; enable visual debugging of conversation state
-  (gptel-enable-visual-debugging t)
+  (gptel-enable-visual-debugging nil)
   ;; enable enhanced state tracking with markers and overlays
   (gptel-enable-enhanced-state-tracking t)
   (gptel-enable-strict-validation nil)
   (gptel-auto-repair-invalid-state t)
   (gptel-validation-log-level 'info)
+
   :init
   (defvar my-gptel-system-prompt
     "You are a LLM running inside Emacs. Your responses are inserted literally into the buffer where the prompt is sent - usually code in the language being discussed. Do not use markdown or org to structure your comments. Instead, structure in alignment with the surrounding text. Put your commentary in comments (e.g., `;;` for elisp, `//` for go, ...)."
