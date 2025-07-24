@@ -30,6 +30,7 @@
 
 (use-package smart-mode-line
   :ensure smart-mode-line
+  :if (not noninteractive)  ; Skip in batch mode
   :custom
   (sml/theme 'automatic)
   (sml/show-frame-identification t)
