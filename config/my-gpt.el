@@ -3,15 +3,15 @@
 ;; configure llm interactions
 (require 'cl-lib)
 
-(use-package claude-agent
-  :init
-  :custom
-  (claude-agent-allowed-directories
-   ;; better way than `delete-dups' / more modern than `cl-'?
-   (seq-uniq claude-agent-allowed-directories
-             (list (my-home-path "notes")
-                   #'equal)))
-  :config)
+;; (use-package claude-agent
+;;   :init
+;;   :custom
+;;   (claude-agent-allowed-directories
+;;    ;; better way than `delete-dups' / more modern than `cl-'?
+;;    (seq-uniq claude-agent-allowed-directories
+;;              (list (my-home-path "notes")
+;;                    #'equal)))
+;;   :config)
 
 
 (use-package gptel
