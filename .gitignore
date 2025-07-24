@@ -34,3 +34,15 @@ smex-items
 .lsp-session*
 var/
 org-roam.db
+%backup%~
+desktop
+*-bak/*
+*-bak-*/*
+history
+notes/
+perspectives/*
+projects.eld/
+recentf
+*.eld
+request/*
+tree-sitter/*
