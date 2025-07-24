@@ -364,6 +364,12 @@ If LSP isn’t active here, signal a user‑friendly error."
    :states '(insert)
    "M-/" 'company-complete)
 
+  (general-define-key
+   :states '(normal)
+   :keymaps 'dired-mode-map
+   "k" 'my-dired-prev-line
+   "j" 'my-dired-next-line)
+
   ;; TODO: figure out how to make these load in =my-org.el=
 
   ;; Bind <TAB> to org-tempo-expand in Evil insert mode

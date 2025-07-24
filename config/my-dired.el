@@ -1,5 +1,7 @@
 ;; my-dired.el   -*- lexical-binding:t; -*-
 
+(require 'dired)
+
 (put 'dired-find-alternate-file 'disabled nil)
 
 (setq my-default-dired-switches "-akBhl")
@@ -21,7 +23,7 @@
   (dired-next-line count)
   (dired-move-to-filename))
 
-(defun my-dired-previous-line (count)
+(defun my-dired-prev-line (count)
   "Move to previous line, always staying on the dired filename."
   (interactive "p")
   (dired-previous-line count)
@@ -59,19 +61,17 @@ Otherwise, returns nil."
   (if (my-dired-at-title)
       (dired-kill-subdir)))
 
+;; use font-lock in dired for a more colorful dired
 (use-package diredfl
+  :after (dired)
   :hook (dired-mode . diredfl-mode))
 
 (add-hook 'dired-mode-hook 'hl-line-mode)
-
 (add-hook 'dired-mode-hook
           (lambda ()
             (setq truncate-lines nil)))
 
 (setq dired-use-ls-dired t)
 
-;; TODO: make this work
-;; (after 'evil
-;;  (evil-define-key 'normal evil-normal-state-map (kbd "R") 'revert-buffer))
 
 (provide 'my-dired)
