@@ -53,11 +53,16 @@
      (executable-find "python3")
      (executable-find "python")))
 
+  ;; Helper function to build pylsp command
+  (defun my-pylsp-command ()
+    "Return pylsp command with appropriate Python executable."
+    (list (my-python-find-executable) "-m" "pylsp"))
+
   ;; Explicitly set language servers with dynamic python path
   (add-to-list 'eglot-server-programs
-               `(python-mode . (,(my-python-find-executable) "-m" "pylsp")))
+               '(python-mode . my-pylsp-command))
   (add-to-list 'eglot-server-programs
-               `(python-ts-mode . (,(my-python-find-executable) "-m" "pylsp")))
+               '(python-ts-mode . my-pylsp-command))
   (add-to-list 'eglot-server-programs
                '(go-mode . ("gopls"))))
 
