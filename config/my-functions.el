@@ -254,4 +254,20 @@ position; otherwise use point."
       (while (re-search-forward "\\([a-z0-9]\\{2\\}:\\)\\{5\\}[a-z0-9]\\{2\\}" end t)
         (replace-match "[mac]")))))
 
+(defun my-unique-append (default-list additional-items)
+    "Extend DEFAULT-LIST with ADDITIONAL-ITEMS, removing duplicates."
+    (seq-uniq (append default-list additional-items) #'equal))
+
+(defmacro my-extend-custom-default (var-symbol additional-items)
+  "Extend the default value of VAR-SYMBOL with ADDITIONAL-ITEMS and set it."
+  `(setq ,var-symbol
+         (if (boundp ',var-symbol)
+             ;; originally, `default-value' was `(symbol-value ',var-symbol)'
+             ;; but that didn't quite work right in initial tests.
+             ;; (eval (car (get ',var-symbol 'standard-value)))
+             (let ((default-value (symbol-value ',var-symbol)))
+               (my-unique-append default-value ,additional-items))
+           ;; If variable isn't bound yet, just use the additional items
+           ,additional-items)))
+
 (provide 'my-functions)

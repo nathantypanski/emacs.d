@@ -1,4 +1,4 @@
-;;; claude-agent-setup.el --- Setup for claude-agent -*- lexical-binding: t; -*-
+;;; claude-agent-tools-setup.el --- Setup for claude-agent -*- lexical-binding: t; -*-
 
 ;; Add this to your init.el or load it separately
 
@@ -40,4 +40,4 @@
   (let ((project-root (or (vc-root-dir) default-directory)))
     (claude-agent (format "Analyze the code structure in %s" project-root))))
 
-(provide 'claude-agent-setup)
+(provide 'claude-agent-tools-setup)

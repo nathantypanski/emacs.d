@@ -3,16 +3,18 @@
 ;; configure llm interactions
 (require 'cl-lib)
 
-;; (use-package claude-agent
-;;   :init
-;;   :custom
-;;   (claude-agent-allowed-directories
-;;    ;; better way than `delete-dups' / more modern than `cl-'?
-;;    (seq-uniq claude-agent-allowed-directories
-;;              (list (my-home-path "notes")
-;;                    #'equal)))
-;;   :config)
+(use-package request
+  :ensure t)
 
+(use-package claude-agent
+  :straight nil
+  :load-path "pkg/claude-agent"
+  :after request
+  :init
+  :config
+  ;; in :config instead of :custom because we append to the defaults
+  (my-extend-custom-default claude-agent-allowed-directories
+        (list (my-home-path "notes"))))
 
 (use-package gptel
   :straight (:repo "karthink/gptel" :branch "state-tracking" :files ("*.el") :no-byte-compile t)
@@ -342,12 +344,14 @@ request in the context."
     "Create AI agent tool handler functions.
 This is layer 1: creates the tool handler functions."
     ;; Add pkg/claude-agent directly to load path
-    (add-to-list 'load-path (expand-file-name "pkg/claude-agent-tools" user-emacs-directory))
+    (add-to-list 'load-path (expand-file-name "pkg/claude-agent" user-emacs-directory))
     (when (locate-library "claude-agent")
       ;; Try to install request if not available
       (unless (locate-library "request")
         (when (fboundp 'straight-use-package)
-          (straight-use-package 'request)))
+          (condition-case nil
+              (straight-use-package 'request)
+            (error (message "Warning: Failed to install request package")))))
       (require 'claude-agent)
       (setq my-gptel-tools
             `((read_file . ,(lambda (args)
