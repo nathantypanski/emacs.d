@@ -14,13 +14,7 @@
 ;;; Code:
 
 (require 'json)
-
-;; Try to require request, but don't fail if it's not available
-(defvar claude-agent--request-available-p
-  (condition-case nil
-      (progn (require 'request) t)
-    (error nil))
-  "Whether the request package is available.")
+(require 'request)
 
 ;;; Customization
 
@@ -208,8 +202,6 @@
 
 (defun claude-agent--call-api (messages)
   "Call Claude API with MESSAGES."
-  (unless claude-agent--request-available-p
-    (error "Request package not available. Install with: (straight-use-package 'request) or similar"))
   (let ((api-key (claude-agent--get-api-key)))
     (if (not api-key)
         (error "No API key found. Set claude-agent-api-key or ANTHROPIC_API_KEY")

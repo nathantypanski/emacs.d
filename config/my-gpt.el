@@ -28,8 +28,7 @@
   :commands
   (gptel gptel-menu gptel-send gptel-request
          my-gptel-review my-gptel-explain my-gptel-review
-         my-gptel-openai my-gptel-claude
-         gptel-add-file gptel-add)
+         mgptel-add-file gptel-add)
 
   :hook ((gptel-mode . my-gptel-setup-behavior)
          (gptel-mode . my-gptel-setup-keybindings))
@@ -472,7 +471,49 @@ This is layer 3: main entry point that coordinates the full setup."
                        (re-search-forward "^:GPTEL_" props-end t))
               (gptel-mode 1)))))))
 
-  (add-hook 'find-file-hook 'my-auto-enable-gptel-mode))
+  (add-hook 'find-file-hook 'my-auto-enable-gptel-mode)
+
+  ;; Add error handling around all gptel transient calls (idempotent)
+  (with-eval-after-load 'gptel
+    ;; Remove any existing advice first
+    (advice-remove 'gptel-menu 'my-gptel-menu-error-handler)
+    (advice-remove 'gptel-request 'my-gptel-request-error-handler)
+    (advice-remove 'transient--post-command 'my-gptel-transient-error-handler)
+    
+    ;; Define named advice functions for easy removal
+    (defun my-gptel-menu-error-handler (orig-fun &rest args)
+      (condition-case err
+          (apply orig-fun args)
+        (error
+         (message "gptel transient error (known issue): %s" err)
+         (message "Try running gptel-menu again"))))
+    
+    (defun my-gptel-request-error-handler (orig-fun &rest args)
+      (condition-case err
+          (apply orig-fun args)
+        (error
+         (message "gptel request error: %s" err))))
+    
+    (defun my-gptel-transient-error-handler (orig-fun &rest args)
+      (condition-case err
+          (apply orig-fun args)
+        (error 
+         (when (and (boundp 'transient--prefix) 
+                    transient--prefix
+                    (string-match-p "gptel" (symbol-name (oref transient--prefix command))))
+           (message "gptel transient error caught: %s" err)
+           (message "Current command: %s" this-command))
+         ;; Re-signal the error if it's not gptel-related
+         (unless (and (boundp 'transient--prefix) 
+                      transient--prefix
+                      (string-match-p "gptel" (symbol-name (oref transient--prefix command))))
+           (signal (car err) (cdr err))))))
+    
+    ;; Add the advice with names for easy removal
+    (advice-add 'gptel-menu :around #'my-gptel-menu-error-handler)
+    (when (fboundp 'gptel-request)
+      (advice-add 'gptel-request :around #'my-gptel-request-error-handler))
+    (advice-add 'transient--post-command :around #'my-gptel-transient-error-handler)))
 
 (use-package gptel-plus
   :straight
