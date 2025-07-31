@@ -4,6 +4,7 @@
   :straight (:type built-in)  ; treesit is built into Emacs 29+
   :when (treesit-available-p)
   :custom
+  ;; don't autoinstall grammars. Use nix with home-manager to get them.
   (treesit-auto-install-grammar nil)
   :config
   (setq treesit-language-source-alist

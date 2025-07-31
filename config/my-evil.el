@@ -124,6 +124,10 @@ Not buffer-local, so it really is per frame.")
   ;; Ensure gptel transient menus work properly with Evil
   (add-hook 'transient-setup-hook
             (lambda ()
+              ;; Debug transient state
+              (when debug-on-error
+                (message "Transient setup: prefix=%s"
+                         (when (boundp 'transient--prefix) transient--prefix)))
               ;; Only apply these fixes for gptel transients
               (when (and (boundp 'transient--prefix)
                          transient--prefix
@@ -135,8 +139,10 @@ Not buffer-local, so it really is per frame.")
                 ;; Completely disable cursor update during gptel transients
                 (remove-hook 'post-command-hook #'my-tty-cursor-update t)
                 ;; Disable Evil key interception for gptel transients
-                (setq-local evil-intercept-maps nil)
-                (setq-local evil-overriding-maps nil))))
+                (when (boundp 'evil-intercept-maps)
+                  (setq-local evil-intercept-maps nil))
+                (when (boundp 'evil-overriding-maps)
+                  (setq-local evil-overriding-maps nil)))))
 
   ;; Re-enable everything when gptel transients exit
   (add-hook 'transient-exit-hook
@@ -147,8 +153,10 @@ Not buffer-local, so it really is per frame.")
                          (string-match-p "gptel" (symbol-name (oref transient--prefix command))))
                 (add-hook 'post-command-hook #'my-tty-cursor-update)
                 ;; Restore Evil maps by killing local overrides
-                (kill-local-variable 'evil-intercept-maps)
-                (kill-local-variable 'evil-overriding-maps))))
+                (when (boundp 'evil-intercept-maps)
+                  (kill-local-variable 'evil-intercept-maps))
+                (when (boundp 'evil-overriding-maps)
+                  (kill-local-variable 'evil-overriding-maps)))))
 
   (evil-define-text-object my-evil-next-match (count &optional beg end type)
     "Select next match."

@@ -12,11 +12,11 @@
     (condition-case err
         (eglot-ensure)
       (error (message "eglot-ensure failed: %s" err))))
-      
+
   ;; Add hooks for both python-mode and python-ts-mode
   (add-hook 'python-mode-hook 'eglot-ensure)
   (add-hook 'python-ts-mode-hook 'eglot-ensure)
-  (add-hook 'rust-mode-hook 'eglot-ensure)  
+  (add-hook 'rust-mode-hook 'eglot-ensure)
   (add-hook 'go-mode-hook 'eglot-ensure)
   :custom
   ;; be more responsive
@@ -54,13 +54,12 @@
      (executable-find "python")))
 
   ;; Helper function to build pylsp command
-  (defun my-pylsp-command ()
+  (defun my-pylsp-command (&rest _ignored)
     "Return pylsp command with appropriate Python executable."
     (list (my-python-find-executable) "-m" "pylsp"))
 
   ;; Explicitly set language servers with dynamic python path
-  (add-to-list 'eglot-server-programs
-               '(python-mode . my-pylsp-command))
+  (add-to-list 'eglot-server-programs '(python-mode . my-pylsp-command))
   (add-to-list 'eglot-server-programs
                '(python-ts-mode . my-pylsp-command))
   (add-to-list 'eglot-server-programs
