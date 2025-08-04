@@ -122,42 +122,9 @@ Not buffer-local, so it really is per frame.")
   (evil-set-initial-state 'multi-term-mode 'emacs)
   (evil-set-initial-state 'transient-mode 'emacs)
 
-  ;; Ensure gptel transient menus work properly with Evil
-  (add-hook 'transient-setup-hook
-            (lambda ()
-              ;; Debug transient state
-              (when debug-on-error
-                (message "Transient setup: prefix=%s"
-                         (when (boundp 'transient--prefix) transient--prefix)))
-              ;; Only apply these fixes for gptel transients
-              (when (and (boundp 'transient--prefix)
-                         transient--prefix
-                         (string-match-p "gptel" (symbol-name (oref transient--prefix command))))
-                ;; Force emacs state for gptel transients
-                (when (and (boundp 'evil-local-mode) evil-local-mode
-                           (not (evil-emacs-state-p)))
-                  (evil-emacs-state))
-                ;; Completely disable cursor update during gptel transients
-                (remove-hook 'post-command-hook #'my-tty-cursor-update t)
-                ;; Disable Evil key interception for gptel transients
-                (when (boundp 'evil-intercept-maps)
-                  (setq-local evil-intercept-maps nil))
-                (when (boundp 'evil-overriding-maps)
-                  (setq-local evil-overriding-maps nil)))))
-
-  ;; Re-enable everything when gptel transients exit
-  (add-hook 'transient-exit-hook
-            (lambda ()
-              ;; Only restore for gptel transients
-              (when (and (boundp 'transient--prefix)
-                         transient--prefix
-                         (string-match-p "gptel" (symbol-name (oref transient--prefix command))))
-                (add-hook 'post-command-hook #'my-tty-cursor-update)
-                ;; Restore Evil maps by killing local overrides
-                (when (boundp 'evil-intercept-maps)
-                  (kill-local-variable 'evil-intercept-maps))
-                (when (boundp 'evil-overriding-maps)
-                  (kill-local-variable 'evil-overriding-maps)))))
+  ;; Simple transient integration - minimal interference approach
+  (with-eval-after-load 'transient
+    (add-to-list 'evil-emacs-state-modes 'transient-mode))
 
   (evil-define-text-object my-evil-next-match (count &optional beg end type)
     "Select next match."
@@ -340,7 +307,8 @@ If LSP isn’t active here, signal a user‑friendly error."
    "C-j"            'evil-window-down
    "C-k"            'evil-window-up
    "C-l"            'evil-window-right
-   "-"              'evil-delete-whole-line
+   ;; TEMPORARILY DISABLED: Testing gptel-menu crash fix
+   ;; "-"              'evil-delete-whole-line
    "a"              'evil-append
    "A"              'my-electric-append-with-indent
    "$"              'my-smart-end
