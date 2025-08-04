@@ -44,6 +44,7 @@
 (require 'my-elisp)
 (require 'my-tags)
 (require 'my-spelling)
+(require 'my-finances)
 (require 'my-completion)
 (require 'my-projects)
 (require 'my-ag)

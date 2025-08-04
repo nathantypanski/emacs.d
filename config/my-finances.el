@@ -7,4 +7,10 @@
   :config
   :mode "\\.ledger\\'")
 
+(use-package beancount
+  :ensure beancount
+  :config
+  :mode "\\.beancount\\'")
+
+
 (provide 'my-finances)
