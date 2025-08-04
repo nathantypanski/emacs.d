@@ -18,21 +18,60 @@
 ;; Always delete trailing whitespace on save
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
-(defvar my-terminal-emulator "foot"
-  "Terminal emulator to be spawned with my-spawn-terminal-here.")
+(defvar my-terminal-emulator
+  "Terminal emulator to be spawned with my-spawn-terminal-here."
+  (cond
+    ((eq system-type 'gnu/linux) "foot")
+    ((eq system-type 'darwin) "open -a Terminal")))
 
 (defvar my-graphical-font
   (cond
-    ((eq system-type 'darwin) "Terminus 10")
+    ((eq system-type 'darwin) "Monaco 14")
     ((eq system-type 'gnu/linux) "Terminus (TTF)-10"))
   "Font used for graphical editing sessions.")
 
-(tool-bar-mode -1)
-(menu-bar-mode -1)
-(tab-bar-mode 1)
+(defun my-general-ui-setup ()
+  "Do setup for both terminal and non-graphical modes."
+  (tab-bar-mode 1)
+  ;; don't break long lines at word boundaries
+  (global-visual-line-mode 1)
+  ;; bar cursor
+  (setq cursor-type 'box)
+  ;; number columns in the status bar
+  (column-number-mode)
+  (setq-default scroll-margin 5)
 
-;; don't break long lines at word boundaries
-(visual-line-mode nil)
+  )
+
+(defun my-graphical-ui-setup ()
+  "Do setup for graphical terminals, like enabling the menu bar."
+  (interactive)
+  (menu-bar-mode 1)
+  (tool-bar-mode 1)
+    (add-hook 'after-make-frame-functions 'my-use-default-font)
+    (setq pop-up-frames nil)
+    (setq display-buffer-alist ()
+          ;;'(("\\*Help\\*" display-buffer-pop-up-frame)
+          ;;  ("\\*Completions\\*" display-buffer-pop-up-frame)
+          ;; Add more rules as desired
+          )
+
+    (my-use-default-font))
+
+(defun my-terminal-ui-setup ()
+  "Do setup for non-graphical terminals, like disabling the toolbar."
+  (interactive)
+  (menu-bar-mode -1)
+  (tool-bar-mode -1)
+
+
+  ;; try to make scrolling smooth in terminal
+  (setq scroll-preserve-screen-position t))
+
+(defun my-macos-setup ()
+  "Do macos-specific setup. Caller must ensure `my-system-is-mac'."
+  (require 'ls-lisp)
+  (setq ls-lisp-use-insert-directory-program nil))
 
 ;; split at end of buffer in programming mode buffers
 (add-hook 'prog-mode-hook (lambda () (setq truncate-lines t)))
@@ -40,14 +79,8 @@
 ;; lockfiles are evil.
 (setq create-lockfiles nil)
 
-;; bar cursor
-(setq cursor-type 'box)
-
 ;; also tabs are evil
 (setq-default indent-tabs-mode nil)
-
-;; number columns in the status bar
-(column-number-mode)
 
 ;; require a trailing newline
 (setq require-final-newline t)
@@ -236,33 +269,14 @@ FONT is the name of a xft font, like `Monospace-10'."
 
 (defun my-use-default-font (&optional frame)
   "Set the frame font to the font name in the variable my-graphical-font.
-This command only has an effect on graphical frames."
+  This command only has an effect on graphical frames."
   (interactive)
-  (if (my-system-is-mac)
-    (set-face-attribute 'default nil
-       :family "Monaco" :height 100 :weight 'normal))
-  (when window-system
-    (my-set-window-font my-graphical-font)))
-
-(when (display-graphic-p)
-    (add-hook 'after-make-frame-functions 'my-use-default-font)
-    (setq pop-up-frames nil)
-    (setq display-buffer-alist ()
-          ;;'(("\\*Help\\*" display-buffer-pop-up-frame)
-          ;;  ("\\*Completions\\*" display-buffer-pop-up-frame)
-            ;; Add more rules as desired
-            )
-
-    (my-use-default-font))
+  (my-set-window-font my-graphical-font))
 
 (global-set-key (kbd "C-x C-b") 'ibuffer)
 (global-set-key (kbd "C-x C-k") 'kill-this-buffer)
 (global-set-key (kbd "C-x g") 'my-google)
 (global-set-key (kbd "C-c e") 'my-eval-and-replace)
-
-(when (my-system-is-mac)
-  (require 'ls-lisp)
-  (setq ls-lisp-use-insert-directory-program nil))
 
 (defun my-enable-line-numbers ()
   "Enable line numbers in a smart way."
@@ -320,9 +334,13 @@ This command only has an effect on graphical frames."
 (set-keyboard-coding-system 'utf-8)
 (set-language-environment   'utf-8)
 
-(setq-default scroll-margin 5)
+(my-general-ui-setup)
+(if (display-graphic-p)
+    ;; graphical mode
+    (my-graphical-ui-setup)
+  ;; terminal mode
+  (my-terminal-ui-setup))
 
-;; try to make scrolling smooth in terminal
-(setq scroll-preserve-screen-position t)
+(if (my-system-is-mac) (my-macos-setup))
 
 (provide 'my-core)

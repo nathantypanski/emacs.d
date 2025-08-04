@@ -5,6 +5,9 @@
 
 (use-package request
   :ensure t)
+;; (straight-pull-recipe-repositories)
+(require 'claude-agent)
+
 
 (use-package claude-agent
   :straight nil

@@ -2,8 +2,7 @@
 ;;
 ;; <leader> keybindings for evil-leader
 
-(evil-leader/set-leader ",")
-
+(require 'evil-leader)
 (evil-leader/set-key
   "$"          'display-line-numbers-mode
   "qq"         'kill-current-buffer
