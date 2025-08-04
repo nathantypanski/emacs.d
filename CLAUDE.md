@@ -131,7 +131,11 @@ The configuration includes a sophisticated Claude agent integration that bridges
 
 ### Security Model
 Claude agent operates with strict security controls:
-- **Allowed paths**: `~/src`, `~/dotfiles`, `~/.emacs.d` by default
+- **Allowed context**: `~/src`, `~/dotfiles` and `~/.emacs.d/straight/repos` by default.
+  - Equivalent symlinks are OK. For instance, if `~/.emacs.d` symlinks to `~/src/github.com/nathantypanski/dotfiles/emacs.d` and the former is allowed, then the symlink target in `~/src` is also permitted.
+- **Main files:** `init.el` `config/` `pkg/`
+- **Git-tracked files only**: Only files tracked by Git should be in scope for file operations
+- **Respect .gitignore**: Files listed in .gitignore should be ignored, even within allowed paths
 - **Command safety**: Blocks dangerous commands (`rm -rf`, `sudo`, etc.)
 - **Confirmation**: Required for `bash`, `edit`, `delete` operations
 - **File size limits**: 1MB maximum for file operations

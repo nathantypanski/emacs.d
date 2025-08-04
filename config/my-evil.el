@@ -106,11 +106,12 @@ Not buffer-local, so it really is per frame.")
           (when-let ((esc (cdr (assq shape my-tty-cursor-escape-table))))
             (send-string-to-terminal esc))))))
 
-  (add-hook 'evil-mode-hook #'my-tty-cursor-update)
-  (add-hook 'evil-local-mode-hook #'my-tty-cursor-update)
-  (add-hook 'post-command-hook #'my-tty-cursor-update)
-  (add-hook 'after-make-frame-functions #'my-tty-cursor-update)
-  (add-hook 'focus-in-hook #'my-tty-cursor-update)
+  ;; TEMPORARILY DISABLED: Testing gptel-menu crash fix
+  ;; (add-hook 'evil-mode-hook #'my-tty-cursor-update)
+  ;; (add-hook 'evil-local-mode-hook #'my-tty-cursor-update)
+  ;; (add-hook 'post-command-hook #'my-tty-cursor-update)
+  ;; (add-hook 'after-make-frame-functions #'my-tty-cursor-update)
+  ;; (add-hook 'focus-in-hook #'my-tty-cursor-update)
 
   (evil-set-initial-state 'flycheck-error-list-mode 'normal)
   (evil-set-initial-state 'git-commit-mode 'insert)
