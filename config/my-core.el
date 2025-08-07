@@ -26,7 +26,7 @@
 
 (defvar my-graphical-font
   (cond
-    ((eq system-type 'darwin) "Monaco 14")
+    ((eq system-type 'darwin) "Monaco 12")
     ((eq system-type 'gnu/linux) "Terminus (TTF)-10"))
   "Font used for graphical editing sessions.")
 
@@ -88,8 +88,14 @@
 ;; don't put intitial text in scratch buffer
 (setq initial-scratch-message nil)
 
-;'Woman' > 'man'.
-(defalias 'man 'woman)
+;; 'Woman' > 'man'.
+;;
+;; no longer! from woman:
+;;
+;; Note that `M-x woman' doesn’t yet support the latest features of
+;; modern man pages, so we recommend using `M-x man' if that is
+;; available on your system."
+;; (defalias 'man 'woman)
 
 ;; Disable toolbars and splash screens.
 (when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
