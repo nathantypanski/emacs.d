@@ -2,6 +2,9 @@
 (require 'my-lsp)
 (require 'my-tree-sitter)
 
+(use-package graphviz-dot
+  :ensure graphviz-dot)
+
 (require 'my-shell)
 (require 'my-c)
 (require 'my-clojure)

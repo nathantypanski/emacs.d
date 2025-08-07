@@ -2,6 +2,10 @@
 ;;
 ;; Settings for the Nix programming language.
 
+(require 'man)
+(when (eq Man-header-file-path t)
+    (setq Man-header-file-path nil))
+
 (use-package nix-haskell-mode
   :commands (nix-haskell-mode)
   :ensure nix-haskell-mode)
@@ -14,9 +18,5 @@
 ;; (use-package nix-repl
 ;;   :ensure nix-mode
 ;;   :commands (nix-repl))
-
-;; (use-package nix-shell
-;;   :ensure nix-mode
-;;   :commands (nix-shell-unpack nix-shell-configure nix-shell-build))
 
 (provide 'my-nix)
