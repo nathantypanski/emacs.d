@@ -6,18 +6,6 @@
 (use-package request
   :ensure t)
 ;; (straight-pull-recipe-repositories)
-(require 'claude-agent)
-
-
-(use-package claude-agent
-  :straight nil
-  :load-path "pkg/claude-agent"
-  :after request
-  :init
-  :config
-  ;; in :config instead of :custom because we append to the defaults
-  (my-extend-custom-default claude-agent-allowed-directories
-        (list (my-home-path "notes"))))
 
 (use-package gptel
   :straight (:repo "karthink/gptel" :branch "state-tracking" :files ("*.el") :no-byte-compile t)
