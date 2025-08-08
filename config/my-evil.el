@@ -106,12 +106,22 @@ Not buffer-local, so it really is per frame.")
           (when-let ((esc (cdr (assq shape my-tty-cursor-escape-table))))
             (send-string-to-terminal esc))))))
 
-  ;; TEMPORARILY DISABLED: Testing gptel-menu crash fix
-  ;; (add-hook 'evil-mode-hook #'my-tty-cursor-update)
-  ;; (add-hook 'evil-local-mode-hook #'my-tty-cursor-update)
-  ;; (add-hook 'post-command-hook #'my-tty-cursor-update)
-  ;; (add-hook 'after-make-frame-functions #'my-tty-cursor-update)
-  ;; (add-hook 'focus-in-hook #'my-tty-cursor-update)
+  ;; Re-enable cursor updates for key state changes only
+  (add-hook 'evil-mode-hook #'my-tty-cursor-update)
+  (add-hook 'evil-local-mode-hook #'my-tty-cursor-update)
+  (add-hook 'after-make-frame-functions #'my-tty-cursor-update)
+  (add-hook 'focus-in-hook #'my-tty-cursor-update)
+
+  ;; Hook into major state changes (but not every command)
+  (advice-add 'evil-insert-state :after #'my-tty-cursor-update)
+  (advice-add 'evil-normal-state :after #'my-tty-cursor-update)
+  (advice-add 'evil-replace-state :after #'my-tty-cursor-update)
+  (advice-add 'evil-visual-state :after #'my-tty-cursor-update)
+
+  ;; God-mode integration
+  (with-eval-after-load 'god-mode
+    (add-hook 'god-mode-enabled-hook #'my-tty-cursor-update)
+    (add-hook 'god-mode-disabled-hook #'my-tty-cursor-update))
 
   (evil-set-initial-state 'flycheck-error-list-mode 'normal)
   (evil-set-initial-state 'git-commit-mode 'insert)
