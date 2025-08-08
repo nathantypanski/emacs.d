@@ -58,6 +58,7 @@
 (require 'my-filetypes)
 (require 'my-flycheck)
 (require 'my-term)
+(require 'my-vterm)
 (require 'my-magit)
 (require 'my-android)
 (require 'my-eshell)

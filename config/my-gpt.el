@@ -7,6 +7,12 @@
   :ensure t)
 ;; (straight-pull-recipe-repositories)
 
+(use-package claude-code-ide
+  :straight (:type git :host github :repo "manzaltu/claude-code-ide.el")
+  :bind ("C-c C-'" . claude-code-ide-menu) ; Set your favorite keybinding
+  :config
+  (claude-code-ide-emacs-tools-setup)) ; Optionally enable Emacs MCP tools
+
 (use-package gptel
   :straight (:repo "karthink/gptel" :branch "state-tracking" :files ("*.el") :no-byte-compile t)
   :custom-face

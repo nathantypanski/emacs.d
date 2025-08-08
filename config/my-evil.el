@@ -130,6 +130,8 @@ Not buffer-local, so it really is per frame.")
   (evil-set-initial-state 'diff-mode 'emacs)
   (evil-set-initial-state 'term-mode 'emacs)
   (evil-set-initial-state 'multi-term-mode 'emacs)
+  (evil-set-initial-state 'vterm-mode 'emacs)
+  (evil-set-initial-state 'vterm-copy-mode 'normal)
   (evil-set-initial-state 'transient-mode 'emacs)
 
   ;; Simple transient integration - minimal interference approach
@@ -421,6 +423,8 @@ If LSP isn’t active here, signal a user‑friendly error."
   :after evil
   :demand t
   :config
+  ;; Include vterm in evil-collection
+  (add-to-list 'evil-collection-mode-list 'vterm)
   (evil-collection-init))
 
 (use-package paredit
