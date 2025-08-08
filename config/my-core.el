@@ -47,7 +47,7 @@
   "Do setup for graphical terminals, like enabling the menu bar."
   (interactive)
   (menu-bar-mode 1)
-  (tool-bar-mode 1)
+  (tool-bar-mode -1)
     (add-hook 'after-make-frame-functions 'my-use-default-font)
     (setq pop-up-frames nil)
     (setq display-buffer-alist ()
