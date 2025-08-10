@@ -104,6 +104,7 @@
   "a4"         'my-gptel-openai
   "ae"         'my-gptel-explain
   "ar"         'my-gptel-review
+  "at"         'my-gptel-check-tokens
 
   ;; org bindings
   "o a"        'org-agenda
