@@ -37,25 +37,29 @@
           ".svn"
           "build")))
 
-(require 'desktop)
-;; Enable desktop-save-mode for session persistence
-(desktop-save-mode 1)
-(setq desktop-dirname user-emacs-directory)
-(setq desktop-path (list desktop-dirname))
-(setq desktop-load-locked-desktop t)
-(setq desktop-auto-save-timeout 600) ; Auto-save every 10 minutes
-(setq desktop-save-mode nil)          ; Don't save desktop on every quit
+(use-package desktop
+  :straight nil  ; Built-in package
+  :config
+  ;; Enable desktop-save-mode for session persistence
+  (desktop-save-mode 1)
+  (setq desktop-dirname user-emacs-directory)
+  (setq desktop-path (list desktop-dirname))
+  (setq desktop-load-locked-desktop t)
+  (setq desktop-auto-save-timeout 600) ; Auto-save every 10 minutes
+  (setq desktop-save-mode nil)          ; Don't save desktop on every quit
 
-;; Don't save scratch and other special buffers
-(setq desktop-buffers-not-to-save
-      (concat "\\("
-              "^nn\\.a[0-9]+\\|^\\*.*\\*\\|^\\s-*$"
-              "\\|\\*compilation\\*\\|\\*Completions\\*"
-              "\\|\\*scratch\\*\\|\\*Messages\\*"
-              "\\)"))
-(add-to-list 'desktop-modes-not-to-save 'dired-mode)
-(add-to-list 'desktop-modes-not-to-save 'Info-mode)
-(add-to-list 'desktop-modes-not-to-save 'info-lookup-mode)
-(add-to-list 'desktop-modes-not-to-save 'fundamental-mode)
+  ;; Don't save scratch and other special buffers
+  (setq desktop-buffers-not-to-save
+        (concat "\\("
+                "^nn\\.a[0-9]+\\|^\\*.*\\*\\|^\\s-*$"
+                "\\|\\*compilation\\*\\|\\*Completions\\*"
+                "\\|\\*scratch\\*\\|\\*Messages\\*"
+                ;; buffers starting and ending with a *
+                "\\|\\*\\*.*\\*\\)"))
+  (add-to-list 'desktop-modes-not-to-save 'dired-mode)
+  (add-to-list 'desktop-modes-not-to-save 'Info-mode)
+  (add-to-list 'desktop-modes-not-to-save 'info-lookup-mode)
+  (add-to-list 'desktop-modes-not-to-save 'fundamental-mode)
+  (after 'gptel (add-to-list 'desktop-modes-not-to-save 'gptel-mode)))
 
 (provide 'my-projects)
