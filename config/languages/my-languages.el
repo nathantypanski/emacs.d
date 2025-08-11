@@ -3,7 +3,10 @@
 (require 'my-tree-sitter)
 
 (use-package graphviz-dot
-  :ensure graphviz-dot)
+  :ensure graphviz-dot
+  :mode "\\dot\\'"
+  :init
+  (add-to-list 'auto-mode-alist '("\\.dot\\'" . graphviz-dot-mode)))
 
 (require 'my-shell)
 (require 'my-c)
