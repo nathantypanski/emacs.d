@@ -7,6 +7,17 @@
 (use-package claude-code-ide
   :straight (:type git :host github :repo "manzaltu/claude-code-ide.el")
   :bind ("C-c C-'" . claude-code-ide-menu)
+  :custom
+  (claude-code-ide-cli-extra-flags "")
+  (claude-code-ide-cli-path "claude")
+  (claude-code-ide-focus-claude-after-ediff t)
+  (claude-code-ide-focus-on-open t)
+  (claude-code-ide-show-claude-window-in-ediff t)
+  (claude-code-ide-system-prompt nil)
+  (claude-code-ide-use-side-window t)
+  (claude-code-ide-window-side 'right)
+  ;; shrink from 90
+  (claude-code-ide-window-width 80)
   :config (claude-code-ide-emacs-tools-setup))
 
 (use-package gptel
