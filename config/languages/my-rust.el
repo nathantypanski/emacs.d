@@ -4,7 +4,7 @@
   :commands rust-mode
   :config
   (progn
-    (defun my-rust-electric-rbrace (arg)
+    (defun my-rust-electric-rbrace (&optional _)
       "Insert a rbrace, and then indent the line properly"
       (interactive "*P")
       (insert "}")
