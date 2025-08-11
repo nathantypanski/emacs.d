@@ -50,7 +50,6 @@
            (executable-find (expand-file-name ".venv/bin/python" root))
            (executable-find (expand-file-name "env/bin/python" root))))
      ;; Fall back to system python
-     (executable-find "python3")
      (executable-find "python")))
 
   ;; Helper function to build pylsp command
