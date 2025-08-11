@@ -26,6 +26,12 @@
 
 (setq copy-region-blink-delay 0)
 ;; -------------------------------------------------------------------
+
+;; responsiveness
+(setq echo-keystrokes 0.1)
+
+(setq backup-by-copying t)
+
 ;; Suppress lexical binding warnings for dependencies
 (setq warning-suppress-types '((files)))
 (setq warning-suppress-log-types '((files)))
