@@ -76,4 +76,34 @@
   "Eyecandy specific to programming text editing modes."
   (rainbow-delimiters-mode-enable))
 
+;; half-riffed from
+;; https://gist.github.com/b7r6/23cfacbf181c9b0447841c798345a793
+(defun my-clean-window-dividers-with-fringe ()
+  "Set up clean Unicode window dividers while keeping fringe for diagnostics."
+  (interactive)
+  ;; Clean vertical borders
+  (custom-set-faces '(vertical-border nil))
+
+  ;; Clean up fringe indicators (from first function)
+  (setq-default fringe-indicator-alist '())
+
+  ;; Keep fringe for diagnostics but make it subtle
+  (fringe-mode '(8 . 8))
+
+  ;; Remove mode-line position (from first function)
+  (setq-default
+   mode-line-format
+   (remove 'mode-line-position mode-line-format))
+
+  ;; Unicode divider character
+  (when (boundp 'standard-display-table)
+    (unless standard-display-table
+      (setq standard-display-table (make-display-table)))
+    (set-display-table-slot
+     standard-display-table 'vertical-border
+     (make-glyph-code ?│))))
+
+
+(my-clean-window-dividers-with-fringe)
+
 (provide 'my-eyecandy)
