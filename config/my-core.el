@@ -338,14 +338,6 @@ FONT is the name of a xft font, like `Monospace-10'."
 ;; tell indent-for-tab-command to complete when indent has no effect
 (setq tab-always-indent 'complete)
 
-;; Enable desktop-save-mode for session persistence
-(desktop-save-mode 1)
-(setq desktop-dirname user-emacs-directory)
-(setq desktop-path (list desktop-dirname))
-(setq desktop-load-locked-desktop t)
-(setq desktop-auto-save-timeout 600) ; Auto-save every 10 minutes
-(setq desktop-save-mode nil)          ; Don't save desktop on every quit
-
 ;; Enable savehist for minibuffer history
 (savehist-mode 1)
 (setq savehist-additional-variables
