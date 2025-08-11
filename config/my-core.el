@@ -3,6 +3,29 @@
 ;; The big, beating heart of my little corner of Emacs.
 ;; General, mostly-plugin-independent settings go here.
 
+;; ===================================================================
+;; ## Performance
+;; -------------------------------------------------------------------
+;; 268,435,456
+(defvar my-gc-cons-threshold (* 256 1024 1024))
+
+(setq
+ gc-cons-threshold my-gc-cons-threshold
+ gc-cons-percentage 0.1)
+
+(add-hook
+ 'minibuffer-setup-hook
+ (lambda ()
+   (setq gc-cons-threshold most-positive-fixnum)))
+
+(add-hook
+ 'minibuffer-exit-hook
+ (lambda ()
+   (garbage-collect)
+   (setq gc-cons-threshold my-gc-cons-threshold)))
+
+(setq copy-region-blink-delay 0)
+;; -------------------------------------------------------------------
 ;; Suppress lexical binding warnings for dependencies
 (setq warning-suppress-types '((files)))
 (setq warning-suppress-log-types '((files)))
