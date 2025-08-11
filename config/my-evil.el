@@ -87,8 +87,6 @@ Not buffer-local, so it really is per frame.")
     (when (and (not (display-graphic-p))
                (bound-and-true-p evil-local-mode)
                ;; Don't send escapes during potentially problematic states
-               (not (and (boundp 'transient--prefix) transient--prefix))
-               (not (and (boundp 'transient--stack) transient--stack))
                (not (minibuffer-window-active-p (minibuffer-window)))
                (not executing-kbd-macro)
                (not defining-kbd-macro)
@@ -139,7 +137,10 @@ Not buffer-local, so it really is per frame.")
 
   ;; Simple transient integration - minimal interference approach
   (with-eval-after-load 'transient
-    (add-to-list 'evil-emacs-state-modes 'transient-mode))
+    (add-to-list 'evil-emacs-state-modes 'transient-mode)
+    ;; Prevent Evil from interfering with transient keybindings
+    (evil-make-overriding-map transient-map)
+    (evil-make-overriding-map transient-sticky-map))
 
   (evil-define-text-object my-evil-next-match (count &optional beg end type)
     "Select next match."
