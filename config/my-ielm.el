@@ -2,6 +2,6 @@
 ;;
 ;; elisp interpreter shell settings
 
-(add-hook 'ielm-mode-hook 'electric-pair-mode)
+(add-hook 'ielm-mode-hook 'my-pair-delim)
 
 (provide 'my-ielm)

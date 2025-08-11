@@ -378,4 +378,12 @@ FONT is the name of a xft font, like `Monospace-10'."
 
 (if (my-system-is-mac) (my-macos-setup))
 
+(defun my-pair-delim (&optional ARG)
+  "Set up pairing delim, e.g. disable `electiric-pair-mode' and eventually
+will hook in smartparens."
+  (interactive)
+  ;; disable electric pair
+  (electric-pair-mode -1))
+
+
 (provide 'my-core)
