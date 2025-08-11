@@ -20,10 +20,13 @@
 
 (use-package smartparens
   :demand t
+  :straight t
+  :init
+  (electric-pair-mode -1)
+  :config
+  (smartparens-global-mode)
   :ensure t
-  :hook ((prog-mode . electric-pair-mode))
-  :straight t)
-
+  :hook ((prog-mode . (turn-on-smartparens-mode))))
 
 ;; https://github.com/emacs-evil/evil-collection/issues/60
 (setq evil-want-integration t)
@@ -377,13 +380,6 @@ If LSP isn’t active here, signal a user‑friendly error."
     (setq global-evil-matchit-mode t)
     (define-key evil-normal-state-map "%" 'evilmi-jump-items)))
 
-(use-package evil-surround
-  :ensure evil-surround
-  :after evil
-  :config
-  (progn
-    (global-evil-surround-mode 1)))
-
 (use-package evil-mc
   :straight t
   :after evil
@@ -417,6 +413,20 @@ If LSP isn’t active here, signal a user‑friendly error."
   (evil-leader-mode t)
   (evil-leader/set-leader ",")
   (global-evil-leader-mode t))
+
+(use-package evil-matchit
+  :ensure evil-matchit
+  :after evil
+  :config
+  (progn
+    (global-evil-matchit-mode 1)))
+
+(use-package evil-surround
+  :ensure evil-surround
+  :after evil
+  :config
+  (progn
+    (global-evil-surround-mode 1)))
 
 (use-package evil-collection
   :ensure evil-collection
