@@ -15,8 +15,4 @@
   :ensure nix-mode
   :mode "\\.nix\\'")
 
-;; (use-package nix-repl
-;;   :ensure nix-mode
-;;   :commands (nix-repl))
-
 (provide 'my-nix)
