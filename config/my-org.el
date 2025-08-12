@@ -12,7 +12,6 @@
   :commands (org-mode org-capture org-agenda orgtbl-mode)
   :straight nil
   :hook ((org-mode . my-org-setup-keybindings)
-         (org-mode . my-org-setup-electric-pair)
          (org-mode . visual-line-mode))
   :init
   (global-set-key (kbd "C-c c") #'org-capture)
@@ -162,20 +161,7 @@
      "SPC t"           #'org-todo-list
      "SPC c"           #'org-capture
      "[ ["             #'org-previous-visible-heading
-     "] ]"             #'org-next-visible-heading))
-
-  (defun my-org-electric-pair-inhibit-angle (char)
-    "In org-mode, inhibit pairing for <."
-    (and (eq major-mode 'org-mode)
-         (eq char ?<)))
-
-  (defun my-org-setup-electric-pair ()
-    "Set buffer-local electric-pair inhibit predicate for org."
-    (setq-local electric-pair-inhibit-predicate
-                (lambda (char)
-                  (or (my-org-electric-pair-inhibit-angle char)
-                      (when (boundp 'electric-pair-skip-self) ; fallback
-                        (funcall (default-value 'electric-pair-inhibit-predicate) char)))))))
+     "] ]"             #'org-next-visible-heading)))
 
 (use-package org-roam
   :after (org age)

@@ -37,16 +37,19 @@
           ".svn"
           "build")))
 
-(use-package desktop
-  :straight nil  ; Built-in package
-  :config
-  ;; Enable desktop-save-mode for session persistence
-  (desktop-save-mode 1)
-  (setq desktop-dirname user-emacs-directory)
-  (setq desktop-path (list desktop-dirname))
-  (setq desktop-load-locked-desktop t)
-  (setq desktop-auto-save-timeout 600) ; Auto-save every 10 minutes
-  (setq desktop-save-mode nil)          ; Don't save desktop on every quit
+(require 'desktop)
+;; Enable desktop-save-mode for session persistence
+(setq desktop-dirname user-emacs-directory)
+(setq desktop-path (list desktop-dirname))
+(setq desktop-load-locked-desktop t)
+(setq desktop-auto-save-timeout 600) ; Auto-save every 10 minutes
+
+;; Add error handling to prevent broken desktop files
+(setq desktop-save 'ask-if-new)
+(setq desktop-restore-eager 5) ; Only restore first 5 buffers immediately
+
+;; Desktop mode is disabled - remove problematic save hook
+(desktop-save-mode -1)
 
   ;; Don't save scratch and other special buffers
   (setq desktop-buffers-not-to-save

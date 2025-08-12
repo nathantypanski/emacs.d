@@ -69,8 +69,42 @@
   (setq vterm-toggle-fullscreen-p nil)
   (setq vterm-toggle-scope 'project)
 
-  ;; Key bindings
-  (global-set-key (kbd "C-c t") 'vterm-toggle)
-  (global-set-key (kbd "C-c T") 'vterm-toggle-cd))
+  ;; Preserve window configurations - don't mess with existing layouts
+  (setq vterm-toggle-use-dedicated-buffer t) ; Keep dedicated buffer behavior
+  (setq vterm-toggle-hide-method 'bury-buffer) ; Don't delete windows
+  (setq vterm-toggle-reset-window-configration-after-exit nil) ; Don't reset layouts
+
+  ;; Configure window placement to be less disruptive
+  (setq display-buffer-alist
+        (append display-buffer-alist
+                '(("\\*vterm\\*"
+                   (display-buffer-reuse-window display-buffer-in-direction)
+                   (direction . below)
+                   (window-height . 0.3)
+                   (reusable-frames . visible)))))
+
+  ;; Custom split functions that preserve window layout
+  (defun my-vterm-toggle-split-below ()
+    "Open vterm in a split below current window."
+    (interactive)
+    (let ((current-window (selected-window)))
+      (split-window-below)
+      (other-window 1)
+      (vterm-toggle-show)
+      (select-window current-window)))
+
+  (defun my-vterm-toggle-split-right ()
+    "Open vterm in a split to the right of current window."
+    (interactive)
+    (let ((current-window (selected-window)))
+      (split-window-right)
+      (other-window 1)
+      (vterm-toggle-show)
+      (select-window current-window)))
+
+  ;; Key bindings - use custom split functions that preserve window layout
+  (global-set-key (kbd "C-c t") 'my-vterm-toggle-split-below) ; Split below
+  (global-set-key (kbd "C-c T") 'my-vterm-toggle-split-right) ; Split right
+  (global-set-key (kbd "C-c v") 'vterm)) ; Direct vterm fallback
 
 (provide 'my-vterm)
