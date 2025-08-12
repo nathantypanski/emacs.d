@@ -48,20 +48,8 @@
 (setq desktop-save 'ask-if-new)
 (setq desktop-restore-eager 5) ; Only restore first 5 buffers immediately
 
-;; Hook to validate desktop file before saving
-(add-hook 'desktop-save-hook
-          (lambda ()
-            (when (file-exists-p (desktop-full-file-name))
-              (condition-case err
-                  (with-temp-buffer
-                    (insert-file-contents (desktop-full-file-name))
-                    (goto-char (point-min))
-                    (read (current-buffer)))
-                (error 
-                 (message "Desktop file appears corrupted, skipping save: %s" err)
-                 (setq desktop-save nil))))))
-
-(desktop-save-mode 1)
+;; Desktop mode is disabled - remove problematic save hook
+(desktop-save-mode -1)
 
 ;; Don't save scratch and other special buffers
 (setq desktop-buffers-not-to-save
