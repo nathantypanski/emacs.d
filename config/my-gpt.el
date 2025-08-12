@@ -16,8 +16,8 @@
   (claude-code-ide-system-prompt nil)
   (claude-code-ide-use-side-window t)
   (claude-code-ide-window-side 'right)
-  ;; shrink from 90
-  (claude-code-ide-window-width 80)
+  ;; 1 char wider than previous
+  (claude-code-ide-window-width 81)
   :config (claude-code-ide-emacs-tools-setup))
 
 (use-package gptel
