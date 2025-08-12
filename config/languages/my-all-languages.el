@@ -1,0 +1,804 @@
+;; my-languages.el -*- lexical-binding: t; -*-
+;;
+;; Integrations between emacs and programming languages.
+;;
+
+
+;;--------------------------------------------------------------------
+;; LSP - language server protocol
+;;
+(use-package eglot
+  :straight nil
+  :ensure nil  ;; Eglot is built-in since Emacs 29
+  :demand t
+  :config
+  ;; Debug eglot-ensure
+  (defun my-debug-eglot-ensure ()
+    "Debug version of eglot-ensure with logging."
+    (message "my-debug-eglot-ensure called in %s" major-mode)
+    (condition-case err
+        (eglot-ensure)
+      (error (message "eglot-ensure failed: %s" err))))
+
+  ;; Add hooks for both python-mode and python-ts-mode
+  (add-hook 'python-mode-hook 'eglot-ensure)
+  (add-hook 'python-ts-mode-hook 'eglot-ensure)
+  (add-hook 'rust-mode-hook 'eglot-ensure)
+  (add-hook 'go-mode-hook 'eglot-ensure)
+  :custom
+  ;; be more responsive
+  (eglot-send-changes-idle-time 0.1)
+  ;; shut down unused servers
+  (eglot-autoshutdown t)
+  (eglot-code-action-indicator "*")
+  :config
+  (setq-default eglot-workspace-configuration
+                '(:pylsp
+                  (:plugins
+                   (:pydocstyle (:enabled t)
+                    :rope_completion (:enabled t)
+                    :jedi_completion (:include_params t :include_class_objects t)
+                    :jedi_hover (:enabled t)
+                    :jedi_signatures (:enabled t)))
+                  :rust-analyzer
+                  (:cargo
+                   (:buildScripts (:enable t))
+                   :procMacro (:enable t)
+                   :diagnostics (:disabled ["unresolved-proc-macro" "unresolved-macro-call"]))))
+
+  ;; Helper to find project python executable
+  (defun my-python-find-executable ()
+    "Find the appropriate Python executable for the current project."
+    (or
+     ;; Check for venv in common locations relative to project root
+     (when-let* ((project (project-current))
+                 (root (project-root project)))
+       (or (executable-find (expand-file-name "venv/bin/python" root))
+           (executable-find (expand-file-name ".venv/bin/python" root))
+           (executable-find (expand-file-name "env/bin/python" root))))
+     ;; Fall back to system python
+     (executable-find "python")))
+
+  ;; Helper function to build pylsp command
+  (defun my-pylsp-command (&rest _ignored)
+    "Return pylsp command with appropriate Python executable."
+    (list (my-python-find-executable) "-m" "pylsp"))
+
+  ;; Explicitly set language servers with dynamic python path
+  (add-to-list 'eglot-server-programs '(python-mode . my-pylsp-command))
+  (add-to-list 'eglot-server-programs
+               '(python-ts-mode . my-pylsp-command))
+  (add-to-list 'eglot-server-programs
+               '(go-mode . ("gopls"))))
+
+
+;;--------------------------------------------------------------------
+;; eldoc.el --- Show fn arglist or variable docstring in echo area
+;;
+;; Used to provide documentation in programming language modes.
+;;
+(use-package eldoc
+  :straight (:type built-in)
+  :custom
+  (eldoc-echo-area-use-multiline-p t)
+  (eldoc-echo-area-max-lines 8)
+  (eldoc-display-functions '(eldoc-display-in-echo-area
+                             eldoc-display-in-buffer))
+  (eldoc-documentation-strategy #'eldoc-documentation-compose)
+  :config
+  (general-define-key
+   :states     'normal
+   :keymaps    'eglot-managed-mode-map
+   "K"        #'eglot-help-at-point)
+  ;; Disable automatic eldoc but keep it available for eglot
+  (global-eldoc-mode -1)
+  ;; Enable eldoc only in eglot-managed buffers
+  (add-hook 'eglot-managed-mode-hook
+            (lambda ()
+              (eldoc-mode 1)
+              (setq-local eldoc-idle-delay 1.0)))
+
+  ;; Debug eglot startup
+  (defun my-debug-eglot ()
+    "Debug eglot startup issues."
+    (interactive)
+    (message "Python mode: %s, Eglot managed: %s, LSP server: %s"
+             (derived-mode-p 'python-mode)
+             (bound-and-true-p eglot--managed-mode)
+             (when (bound-and-true-p eglot--managed-mode)
+               (eglot-current-server)))))
+
+;; Shows eldoc popups in a child frame/box, makes multiline docstrings
+;; readable.
+(use-package eldoc-box
+    :after (eldoc general)
+    :custom
+    (eldoc-echo-area-use-multiline-p t)
+    :config
+    (general-define-key
+     :keymaps 'prog-mode-map
+     "C-c d" #'eldoc-doc-buffer))
+
+;; -*- lexical-binding: t; -*-
+
+(use-package treesit
+  :straight (:type built-in)  ; treesit is built into Emacs 29+
+  :when (treesit-available-p)
+  :custom
+  ;; don't autoinstall grammars. Use nix with home-manager to get them.
+  (treesit-auto-install-grammar nil)
+  :config
+  (setq treesit-language-source-alist
+        (cond
+         ((eq system-type 'gnu/linux)
+          '())
+         ((eq system-type 'darwin)
+          '((typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master"
+                        "typescript/src")
+            (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")))))
+
+
+        ;; (setq treesit-language-source-alist ())
+        ;; '((bash "https://github.com/tree-sitter/tree-sitter-bash")
+        ;;   (c "https://github.com/tree-sitter/tree-sitter-c")
+        ;;   (cpp "https://github.com/tree-sitter/tree-sitter-cpp")
+        ;;   (python "https://github.com/tree-sitter/tree-sitter-python")
+        ;;   (rust "https://github.com/tree-sitter/tree-sitter-rust")
+        ;;   (go "https://github.com/tree-sitter/tree-sitter-go")
+        ;;   (javascript "https://github.com/tree-sitter/tree-sitter-javascript")
+        ;;   (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
+        ;;   (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
+
+        ;; Auto-install missing grammars
+        (defun my/treesit-install-all-languages ()
+          "Install all configured tree-sitter languages."
+          (interactive)
+          (dolist (lang-config treesit-language-source-alist)
+            (let ((lang (car lang-config)))
+              (unless (treesit-language-available-p lang)
+                (message "Installing tree-sitter grammar for %s" lang)
+                (treesit-install-language-grammar lang)))))
+
+        ;; Set up auto-mode-alist for tree-sitter modes
+        (setq major-mode-remap-alist
+              '((bash-mode . bash-ts-mode)
+                (sh-mode . bash-ts-mode)
+                (c-mode . c-ts-mode)
+                (c++-mode . c++-ts-mode)
+                (python-mode . python-ts-mode)
+                (rust-mode . rust-ts-mode)
+                (go-mode . go-ts-mode)
+                (js-mode . js-ts-mode)
+                (typescript-mode . typescript-ts-mode)
+                (yaml-mode . yaml-ts-mode)))
+
+        (add-to-list 'major-mode-remap-alist '(sh-mode . bash-ts-mode)))
+
+
+;;--------------------------------------------------------------------
+;; shell (bash, zsh, ...)
+;;
+(add-to-list 'auto-mode-alist '("\\.zsh\\'" . shell-script-mode))
+
+;; -*- lexical-binding: t; -*-
+(setq c-default-style '((java-mode . "java")
+                        (awk-mode . "awk")
+                        (other . "linux")))
+
+(defun my-set-evil-shift-width ()
+  "Set Evil's shift width for C editing."
+  (after 'evil
+    (setq evil-shift-width 8)))
+
+(add-hook 'c-initialization-hook 'my-set-evil-shift-width)
+
+(setq c-hungry-delete-key t)
+
+(defun my-c-mode-common-setup ()
+  "Setup C/C++-mode common configurations."
+  ;; (setq flycheck-clang-language-standard "c17")
+  (c-set-offset 'case-label '+))
+
+(defun my-c++-mode-setup ()
+  "Setup C++-mode configurations."
+  (interactive)
+  (google-set-c-style)
+  (after 'flycheck
+    ;; (setq flycheck-clang-language-standard "c++11")
+    (after 'projectile
+      (if (projectile-project-root)
+          (add-to-list 'flycheck-clang-include-path (concat (projectile-project-root) "src")))
+      )))
+
+
+(add-hook 'c-mode-common-hook 'my-c-mode-common-setup)
+(add-hook 'c++-mode-hook 'my-c++-mode-setup)
+
+(after 'evil
+    (evil-define-key 'normal c-mode-map (kbd "K")   'my-woman-entry)
+    (evil-define-key 'insert c-mode-map (kbd "<backspace>") 'backward-delete-char-untabify)
+    (evil-define-key 'normal c++-mode-map (kbd "K")   'my-woman-entry)
+    (evil-define-key 'insert c++-mode-map (kbd "<backspace>") 'backward-delete-char-untabify))
+
+;;--------------------------------------------------------------------
+;; clojure
+;;
+(use-package clojure-mode
+  :ensure clojure-mode
+  :defer t
+  :commands clojure-mode clojure-mode-men)
+
+(use-package cider
+  :ensure cider
+  :after clojure-mode
+  :defer t
+  :commands clojure-mode cider cider-run cider-doc
+  :config
+  (progn
+    ;; always eldoc in cider mode
+    (add-hook 'cider-mode-hook 'cider-turn-on-eldoc-mode)
+    (add-hook 'cider-mode-hook '(paredit-mode +1))
+
+    (after 'evil
+    (defun my-evil-cider-repl-insert ()
+      "Enter insert mode at the prompt, if we're behind the prompt."
+      (interactive)
+      (if (> cider-repl-input-start-mark (point))
+          (goto-char cider-repl-input-start-mark))
+      (evil-insert-state))
+
+    (defun my-evil-cider-repl-append ()
+      "Enter insert mode at the prompt, if we're behind the prompt."
+      (interactive)
+      (if (> cider-repl-input-start-mark (point))
+          (goto-char cider-repl-input-start-mark))
+      (evil-append))
+
+    (defun my-cider-on-prompt-line ()
+      "Returns t if point is on the same line as the current prompt."
+      (my-same-line (point) (cider-repl-input-start-mark)))
+
+    (defun my-evil-cider-repl-bol ()
+      "Perform cider-bol, but never go before the prompt."
+      (interactive)
+      (cider-bol)
+      (if (> cider-repl-input-start-mark (point))
+          (goto-char cider-repl-input-start-mark)))
+
+    ;; http://blog.jenkster.com/2013/12/a-cider-excursion.html
+    (defun cider-namespace-refresh ()
+     "Reset the Clojure namespace."
+      (interactive)
+      (cider-interactive-eval
+       "(require 'clojure.tools.namespace.repl)
+        (clojure.tools.namespace.repl/refresh)"))
+
+
+    (setq nrepl-hide-special-buffers t)
+    (evil-define-key 'insert cider-repl-mode-map
+        (kbd "<up>") 'cider-repl-previous-input
+        (kbd "<down>") 'cider-repl-next-input
+        (kbd "C-c C-d") 'cider-doc-map
+        (kbd "M-.") 'cider-jump
+        (kbd "M-,") 'cider-jump-back
+        (kbd "C-c M-.") 'cider-jump-to-resource
+        (kbd "RET") 'cider-repl-return
+        (kbd "TAB") 'cider-repl-tab
+        (kbd "C-<return>") 'cider-repl-closing-return
+        (kbd "C-j") 'cider-repl-newline-and-indent
+        (kbd "C-c C-o") 'cider-repl-clear-output
+        (kbd "C-c M-o") 'cider-repl-clear-buffer
+        (kbd "C-c M-n") 'cider-repl-set-ns
+        (kbd "C-c C-u") 'cider-repl-kill-input
+        (kbd "C-a") 'cider-repl-bol
+        (kbd "C-S-a") 'cider-repl-bol-mark
+        [home] 'cider-repl-bol
+        [S-home] 'cider-repl-bol-mark
+        (kbd "C-<up>") 'cider-repl-backward-input
+        (kbd "C-<down>") 'cider-repl-forward-input
+        (kbd "M-p") 'cider-repl-previous-input
+        (kbd "M-n") 'cider-repl-next-input
+        (kbd "M-r") 'cider-repl-previous-matching-input
+        (kbd "M-s") 'cider-repl-next-matching-input
+        (kbd "C-c C-n") 'cider-repl-next-prompt
+        (kbd "C-c C-p") 'cider-repl-previous-prompt
+        (kbd "C-c C-b") 'cider-interrupt
+        (kbd "C-c C-c") 'cider-interrupt
+        (kbd "C-c C-m") 'cider-macroexpand-1
+        (kbd "C-c M-m") 'cider-macroexpand-all
+        (kbd "C-c C-z") 'cider-switch-to-last-clojure-buffer
+        (kbd "C-c M-s") 'cider-selector
+        (kbd "C-c M-f") 'cider-load-fn-into-repl-buffer
+        (kbd "C-c C-q") 'cider-quit
+        (kbd "C-c M-i") 'cider-inspect
+        (kbd "C-c M-t") 'cider-toggle-trace
+        (kbd "C-c C-x") 'cider-refresh
+        (kbd "C-x C-e") 'cider-eval-last-sexp
+        (kbd "C-c C-r") 'cider-eval-region
+        )
+    (evil-define-key 'visual cider-repl-mode-map
+        (kbd "0") 'cider-repl-bol
+      )
+    (evil-define-key 'normal cider-repl-mode-map
+        (kbd "i") 'my-evil-cider-repl-insert
+        (kbd "<up>") 'cider-repl-previous-input
+        (kbd "<down>") 'cider-repl-next-input
+        (kbd "C-c C-d") 'cider-doc-map
+        (kbd "M-.") 'cider-jump
+        (kbd "M-,") 'cider-jump-back
+        (kbd "C-c M-.") 'cider-jump-to-resource
+        (kbd "RET") 'cider-repl-return
+        (kbd "TAB") 'cider-repl-tab
+        (kbd "C-<return>") 'cider-repl-closing-return
+        (kbd "C-j") 'cider-repl-newline-and-indent
+        (kbd "C-c C-o") 'cider-repl-clear-output
+        (kbd "C-c M-o") 'cider-repl-clear-buffer
+        (kbd "C-c M-n") 'cider-repl-set-ns
+        (kbd "C-c C-u") 'cider-repl-kill-input
+        (kbd "C-a") 'cider-repl-bol
+        (kbd "C-S-a") 'cider-repl-bol-mark
+        (kbd "0") 'cider-repl-bol
+        ;; [S-home] 'cider-repl-bol-mark
+        (kbd "C-<up>") 'cider-repl-backward-input
+        (kbd "C-<down>") 'cider-repl-forward-input
+        (kbd "M-p") 'cider-repl-previous-input
+        (kbd "M-n") 'cider-repl-next-input
+        (kbd "M-r") 'cider-repl-previous-matching-input
+        (kbd "M-s") 'cider-repl-next-matching-input
+        (kbd "C-c C-n") 'cider-repl-next-prompt
+        (kbd "C-c C-p") 'cider-repl-previous-prompt
+        (kbd "C-c C-b") 'cider-interrupt
+        (kbd "C-c C-c") 'cider-interrupt
+        (kbd "C-c C-m") 'cider-macroexpand-1
+        (kbd "C-c M-m") 'cider-macroexpand-all
+        (kbd "C-c C-z") 'cider-switch-to-last-clojure-buffer
+        (kbd "C-c M-s") 'cider-selector
+        (kbd "C-c M-f") 'cider-load-fn-into-repl-buffer
+        (kbd "C-c C-q") 'cider-quit
+        (kbd "C-c M-i") 'cider-inspect
+        (kbd "C-c M-t") 'cider-toggle-trace
+        (kbd "C-c C-x") 'cider-refresh
+        (kbd "C-x C-e") 'cider-eval-last-sexp
+        (kbd "C-c C-r") 'cider-eval-region))))
+
+;;--------------------------------------------------------------------
+;; elisp
+;;
+;; Always eldoc in lispy modes.
+
+(add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode)
+(add-hook 'ielm-mode-hook 'turn-on-eldoc-mode)
+
+(when (not (display-graphic-p))
+  (setq eldoc-echo-area-prefer-doc-buffer t
+        eldoc-echo-area-use-multiline-p nil
+        eldoc-echo-area-prefer-doc-buffer t))
+
+(use-package slime
+  :straight nil
+  :ensure slime)
+
+(use-package elisp-slime-nav
+  :after slime
+  :ensure elisp-slime-nav
+  :commands my-jump-to-elisp-docs
+  :diminish elisp-slime-nav-mode
+  :init
+    (defun my-lisp-hook ()
+        (elisp-slime-nav-mode)
+        (turn-on-eldoc-mode))
+    (add-hook 'emacs-lisp-mode-hook 'my-lisp-hook)
+    (add-hook 'lisp-interaction-mode-hook 'my-lisp-hook)
+    (add-hook 'ielm-mode-hook 'my-lisp-hook)
+    (defun my-jump-to-elisp-docs (sym-name)
+      "Jump to a pane and do elisp-slime-nav-describe-elisp-thing-at-point"
+      (interactive (list (elisp-slime-nav--read-symbol-at-point)))
+      (help-xref-interned (intern sym-name))))
+
+(defun my-setup-elisp-mode ()
+  "Commands to be run at the start of Emacs Lisp mode."
+  (eldoc-mode)
+  (my-coding-mode-eyecandy))
+
+(add-hook 'emacs-lisp-mode-hook 'my-setup-elisp-mode)
+
+(defun my-electric-lisp-comment ()
+    "Autocomment things for lisp."
+  (interactive)
+  ;; we can get away with autocommenting on empty lines.
+  ;; not so much on regular ones - that's more likely to be a mistake.
+  (if (my-is-this-line-empty)
+      (insert ";; ")
+    (insert ";")))
+
+(after 'evil
+  (evil-define-key 'insert emacs-lisp-mode-map ";" 'my-electric-lisp-comment)
+  (evil-define-key 'normal emacs-lisp-mode-map "\C-c\C-c" 'eval-defun))
+
+(use-package slime-company
+  :straight t
+  :after (slime company)
+  :custom
+  (slime-company-completion 'fuzzy)
+  (slime-company-after-completion 'slime-company-just-one-space))
+
+;; -------------------------------------------------------------------
+;; go language
+;;
+;; Settings for the Go programming language.
+
+(use-package go-mode
+  :commands go-mode godoc
+  :ensure go-mode
+  :mode "\\.go\\'"
+  :config
+  (progn
+    (defun my-godoc--buffer-sentinel (proc event)
+      "Modified sentinel function run when godoc command completes.
+Doesn't jump to buffer automatically. Enters help mode on buffer."
+      (with-current-buffer (process-buffer proc)
+        (cond ((string= event "finished\n")  ;; Successful exit.
+               (goto-char (point-min))
+               (view-mode 1)
+               (help-mode)
+               )
+              ((/= (process-exit-status proc) 0)  ;; Error exit.
+               (let ((output (buffer-string)))
+                 (kill-buffer (current-buffer))
+                 (message (concat "godoc: " output)))))))
+
+
+        (defun my-jump-to-go-docs ()
+          "Jump to a pane and do godoc"
+          (interactive)
+          (let ((query (thing-at-point 'word)))
+            (if (set-process-sentinel
+                 (start-process-shell-command "godoc" (godoc--get-buffer query)
+                                              (concat "godoc " query))
+                 'my-godoc--buffer-sentinel)
+                nil)
+            (let ((helpdoc (-first
+                            (lambda (e) (string-match ".*godoc.*" (buffer-name e)))
+                            (buffer-list))))
+              (pop-to-buffer (buffer-name helpdoc)))))
+
+        (add-hook 'go-mode-hook (lambda ()
+                                  (setq evil-shift-width 8)
+                                  (setq indent-tabs-mode t)
+
+        (evil-define-key 'normal go-mode-map (kbd "K") 'my-jump-to-go-docs)))))
+
+
+;;  -*- lexical-binding: t; -*-
+;; (eval-after-load "tex"
+;;   '(remove-from-list 'TeX-command-list
+;; 		'("Latex Make" "latexmk %(-pdf) %t" TeX-run-TeX) t)
+;;   )
+;; (use-package auctex
+;;   :ensure auctex
+;;   :config
+;;   (progn
+;;     (setq-default TeX-master nil)
+;;     ;; (setq-default TeX-command-default "Latex Make")
+;;
+;;     (setq TeX-view-program-list '(("zathura" "zathura -s -x \"emacsclient --no-wait +%%{line} %%{input}\" %o")))
+;;     ;; Always use PDF mode
+;;     (setq TeX-PDF-mode t)
+;;
+;;     ;; View my PDFs with Zathura
+;;     (setq TeX-view-program-selection '((output-pdf "zathura")))
+;;
+;;
+;;     ;; Maybe someday this will actually work and I can sync PDFs with Zathura
+;;     (setq TeX-source-correlate-mode t)
+;;     (setq TeX-source-correlate-method 'synctex)
+;;     (setq TeX-source-correlate-start-server t)
+;;     (setq TeX-auto-save t)
+;;     (setq TeX-parse-self t)
+;;     (setq-default TeX-master nil)
+;;     (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+;;     (add-hook 'LaTeX-mode-hook 'flyspell-mode)
+;;     (add-hook 'LaTeX-mode-hook 'flyspell-buffer)
+;;     (add-hook 'LaTeX-mode-hook 'auto-fill-mode)
+;;     (add-hook 'LaTeX-mode-hook 'orgtbl-mode)
+;;
+;;     ;; source:
+;;     ;; http://tex.stackexchange.com/questions/185688/how-to-force-emacs-with-auctex-to-show-compilation-in-new-buffer
+;;     (add-to-list 'TeX-command-list '("pdfLaTeX" "pdflatex -shell-escape %t" TeX-run-interactive nil t))
+;;     (defcustom tex-my-viewer "zathura --fork -s -x \"emacsclient --eval '(progn (switch-to-buffer  (file-name-nondirectory \"'\"'\"%{input}\"'\"'\")) (goto-line %{line}))'\""
+;;       "PDF Viewer for TeX documents. You may want to fork the viewer
+;;     so that it detects when the same document is launched twice, and
+;;     persists when Emacs gets closed.
+;;
+;;     Simple command:
+;;
+;;       zathura --fork
+;;
+;;     We can use
+;;
+;;       emacsclient --eval '(progn (switch-to-buffer  (file-name-nondirectory \"%{input}\")) (goto-line %{line}))'
+;;
+;;     to reverse-search a pdf using SyncTeX. Note that the quotes and double-quotes matter and must be escaped appropriately."
+;;       :safe 'stringp)
+;;
+;;     ;; (use-package auctex-latexmk
+;;     ;;   :ensure auctex-latexmk
+;;     ;;   :init
+;;     ;;   (progn
+;;     ;;     (auctex-latexmk-setup)
+;;     ;;     )
+;;     ;; )
+;;     ))
+
+;;--------------------------------------------------------------------
+;; Python language
+;;
+
+;; The package is python" but the mode is "python-mode":
+
+(use-package python
+  :ensure nil  ; builtin package
+  :mode ("\\.py\\'" . python-mode)
+  :hook ((python-mode . my-disable-insert-indent)
+         (python-ts-mode . my-disable-insert-indent)
+         (python-ts-mode . my-python-ts-mode-setup))
+  :config
+  ;; Configure python-ts-mode indentation
+  (when (treesit-available-p)
+    (setq python-ts-mode-indent-offset 4))
+
+  ;; Setup function for python-ts-mode
+  (defun my-python-ts-mode-setup ()
+    "Configure python-ts-mode settings."
+    (setq-local python-indent-offset 4)
+    (setq-local python-indent-guess-indent-offset-verbose nil)
+    (setq-local indent-tabs-mode nil)
+    ;; Disable evil auto-indent for python-ts-mode
+    (my-disable-insert-indent))
+
+  ;; Debug function to check if insert indent is disabled
+  (defun my-debug-python-indent ()
+    "Debug python indentation settings."
+    (interactive)
+    (message "my-should-insert-indent: %s, major-mode: %s"
+             my-should-insert-indent major-mode)))
+
+;;--------------------------------------------------------------------
+;; rust language
+;;
+
+(use-package rust-mode
+  :ensure rust-mode
+  :commands rust-mode
+  :config
+  (progn
+    (defun my-rust-electric-rbrace (&optional _)
+      "Insert a rbrace, and then indent the line properly"
+      (interactive "*P")
+      (insert "}")
+      (rust-mode-indent-line)
+      )
+    (after 'evil
+      (defvar rust-mode-map () "Keymap used in Rust mode.")
+      (defun my-rust-setup ()
+        "Make rust do things the way I like it."
+        (interactive)
+        (setq tab-width 4)
+        (evil-define-key 'insert rust-mode-map "}" 'my-rust-electric-rbrace)
+        (use-local-map rust-mode-map)
+        (flycheck-mode 0))
+      (add-hook 'rust-mode-hook 'my-rust-setup))))
+
+
+;; -------------------------------------------------------------------
+;; scss language
+;;
+
+(use-package css-mode
+  :commands css-mode
+  :ensure css-mode
+  :mode "\\.css\\'"
+  )
+
+(use-package scss-mode
+  :commands scss-mode
+  :ensure scss-mode
+  :mode "\\.scss\\'"
+  :config
+  (progn
+    (setq scss-compile-at-save nil)
+    )
+)
+
+;; -------------------------------------------------------------------
+;; haskell language
+;;
+
+(use-package haskell-mode
+  :ensure haskell-mode
+  :commands haskell-mode
+  :config
+  (progn
+    (setq haskell-process-show-debug-tips nil)
+    (setq haskell-process-type 'cabal-repl)
+    (defun my-haskell-autoloads ()
+      "Autoloads for entering Haskell-mode."
+      (turn-on-haskell-doc-mode)
+      (after 'evil (setq evil-auto-indent nil))
+
+      (electric-indent-mode 0)
+      (turn-on-haskell-indentation))
+
+    (add-hook 'haskell-mode-hook 'my-haskell-autoloads)
+
+    (defun my-haskell-interactive-evil-bol ()
+      "If λ prompt is before point, go to bol. Otherwise, go to λ."
+      (interactive)
+      (if (> haskell-interactive-mode-prompt-start (point))
+          (evil-beginning-of-line)
+        (my-haskell-interactive-jump-to-prompt)))
+
+    (defun my-haskell-interactive-jump-to-prompt ()
+      "Go to the prompt."
+      (goto-char haskell-interactive-mode-prompt-start))
+
+    (defun my-haskell-interactive-maybe-jump-to-prompt ()
+      "Go to the prompt if it's after POINT. Otherwise do nothing."
+        (if (> haskell-interactive-mode-prompt-start (point))
+            (my-haskell-interactive-jump-to-prompt)))
+
+    (defun my-haskell-interactive-evil-insert ()
+      "If the λ prompt is before point, enter insert state. Otherwise, insert after the prompt"
+      (interactive)
+      (my-haskell-interactive-maybe-jump-to-prompt)
+      (evil-insert-state))
+
+    (defun my-haskell-interactive-evil-append (count &optional vcount skip-empty-lines)
+      "If the comint prompt is before point, just do evil-append. Otherwise, insert after the prompt"
+      (interactive
+       (list (prefix-numeric-value current-prefix-arg)
+             (and (evil-visual-state-p)
+                  (memq (evil-visual-type) '(line block))
+                  (save-excursion
+                    ;; go to upper-left corner temporarily so
+                    ;; `count-lines' yields accurate results
+                    (evil-visual-rotate 'upper-left)
+                    (count-lines evil-visual-beginning evil-visual-end)))))
+      (if (> haskell-interactive-mode-prompt-start (point))
+          (my-haskell-interactive-jump-to-prompt))
+      (evil-append count vcount skip-empty-lines))
+
+    (defun my-haskell-interactive-evil-append-line (count &optional vcount)
+      "Go to the end of the prompt if before it.
+
+       Otherwise, behave like a normal Evil append line."
+      (interactive "p")
+      (if (> haskell-interactive-mode-prompt-start (point))
+          (progn
+            (goto-char (point-max))
+            (evil-insert-state))
+          (evil-append-line count vcount)))
+
+    (defun my-haskell-interactive-history-previous (arg)
+      "Go to the prompt if we're before it. Then cycle through previous history."
+      (interactive "*p")
+      (my-haskell-interactive-maybe-jump-to-prompt)
+      (haskell-interactive-mode-history-previous arg))
+
+    (defun my-haskell-interactive-history-next (arg)
+      "Go to the prompt if we're before it. Then cycle through next history."
+      (interactive "*p")
+      (my-haskell-interactive-maybe-jump-to-prompt)
+      (haskell-interactive-mode-history-next arg))
+
+    (after 'evil
+      (evil-set-initial-state 'haskell-error-mode 'emacs)
+      (evil-define-key 'insert haskell-interactive-mode-map
+        (kbd "<up>")          'my-haskell-interactive-history-previous
+        (kbd "<down>")        'my-haskell-interactive-history-next
+        (kbd "RET")           'haskell-interactive-mode-return)
+      (evil-define-key 'normal haskell-interactive-mode-map
+        (kbd "<up>")          'my-haskell-interactive-history-previous
+        (kbd "<down>")        'my-haskell-interactive-history-next
+        (kbd "0")             'my-haskell-interactive-evil-bol
+        (kbd "A")             'my-haskell-interactive-evil-append-line
+        (kbd "a")             'my-haskell-interactive-evil-append
+        (kbd "i")             'my-haskell-interactive-evil-insert
+        (kbd "RET")           'haskell-interactive-mode-return)
+      (evil-define-key 'normal haskell-mode-map (kbd "C-x C-d") nil)
+      (evil-define-key 'normal haskell-mode-map (kbd "C-c C-z") 'haskell-interactive-switch)
+      (evil-define-key 'normal haskell-mode-map (kbd "C-c C-l") 'haskell-process-load-file)
+      (evil-define-key 'normal haskell-mode-map (kbd "C-c C-b") 'haskell-interactive-switch)
+      (evil-define-key 'normal haskell-mode-map (kbd "C-c C-t") 'haskell-process-do-type)
+      (evil-define-key 'normal haskell-mode-map (kbd "C-c C-i") 'haskell-process-do-info)
+      (evil-define-key 'normal haskell-mode-map (kbd "C-c M-.") nil)
+      (evil-define-key 'normal haskell-mode-map (kbd "C-c C-d") nil))
+    )
+  )
+
+;;--------------------------------------------------------------------
+;; markdown language
+;;
+
+(use-package markdown-mode
+  :commands markdown-mode
+  :ensure markdown-mode
+  :init
+  (add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+  (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
+  (add-to-list 'auto-mode-alist '("\\.page\\'" . markdown-mode))
+  (add-hook 'markdown-mode-hook 'visual-line-mode))
+
+
+;; -*- lexical-binding: t; -*-
+(use-package js2-mode
+  :commands js2-mode
+  :ensure js2-mode
+  :mode "\\.js\\'")
+
+
+;;--------------------------------------------------------------------
+;; jade language
+;;
+;; Jade (HTML templating) editing.
+
+(use-package jade-mode
+  :ensure jade-mode
+  :commands jade-mode
+  :mode "\\.jade\\'")
+
+
+;;--------------------------------------------------------------------
+;; yaml
+;;
+
+(use-package yaml-mode
+  :ensure yaml-mode
+  :commands yaml-mode
+  :mode "\\.yml\\'")
+
+
+;;--------------------------------------------------------------------
+;; yasnippet - Emacs snippets for programming languages
+;;
+
+(use-package yasnippet
+  :ensure yasnippet)
+
+;; -*- lexical-binding: t; -*-
+(use-package dockerfile-mode
+  :commands dockerfile-mode
+  :ensure dockerfile-mode
+  :mode "\\Docker\\'")
+
+(use-package docker
+  :commands docker
+  :ensure docker)
+
+
+;; -------------------------------------------------------------------
+;; Nix language
+;;
+
+(require 'man)
+(when (eq Man-header-file-path t)
+    (setq Man-header-file-path nil))
+
+(use-package nix-haskell-mode
+  :commands (nix-haskell-mode)
+  :ensure nix-haskell-mode)
+
+(use-package nix-mode
+  :commands nix-mode
+  :ensure nix-mode
+  :mode "\\.nix\\'")
+
+
+(use-package graphviz-dot
+  :ensure graphviz-dot
+  :mode "\\dot\\'"
+  :init
+  (add-to-list 'auto-mode-alist '("\\.dot\\'" . graphviz-dot-mode)))
+
+
+(provide 'my-all-languages)
