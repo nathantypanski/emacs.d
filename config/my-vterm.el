@@ -41,10 +41,6 @@
   (after 'evil
     (evil-set-initial-state 'vterm-mode 'emacs))
 
-  ;; Key bindings for vterm
-  (define-key vterm-mode-map (kbd "C-q") 'vterm-send-next-key)
-  (define-key vterm-mode-map (kbd "C-c C-t") 'vterm-copy-mode)
-
   ;; Evil-specific vterm configuration
   (with-eval-after-load 'evil
     ;; Allow C-u in vterm (for shell commands)
@@ -103,8 +99,10 @@
       (select-window current-window)))
 
   ;; Key bindings - use custom split functions that preserve window layout
-  (global-set-key (kbd "C-c t") 'my-vterm-toggle-split-below) ; Split below
-  (global-set-key (kbd "C-c T") 'my-vterm-toggle-split-right) ; Split right
-  (global-set-key (kbd "C-c v") 'vterm)) ; Direct vterm fallback
+  (global-set-key (kbd "C-c v -") 'my-vterm-toggle-split-below) ; Split below
+  (global-set-key (kbd "C-c v \\") 'my-vterm-toggle-split-right) ; Split right
+  (global-set-key (kbd "C-c v t") 'claude-code-ide-toggle-window) ; show/hide
+  (global-set-key (kbd "C-c v t") 'vterm)  ; fallback
+  )
 
 (provide 'my-vterm)
