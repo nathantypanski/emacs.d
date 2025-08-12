@@ -376,6 +376,7 @@
 
 (use-package slime
   :straight nil
+  :mode ("\\.el\\'" . emacs-lisp-mode)
   :ensure slime)
 
 (use-package elisp-slime-nav
@@ -383,6 +384,7 @@
   :ensure elisp-slime-nav
   :commands my-jump-to-elisp-docs
   :diminish elisp-slime-nav-mode
+  :mode ("\\.el\\'" . elisp-slime-nav-mode)
   :init
     (defun my-lisp-hook ()
         (elisp-slime-nav-mode)
@@ -395,13 +397,6 @@
       (interactive (list (elisp-slime-nav--read-symbol-at-point)))
       (help-xref-interned (intern sym-name))))
 
-(defun my-setup-elisp-mode ()
-  "Commands to be run at the start of Emacs Lisp mode."
-  (eldoc-mode)
-  (my-coding-mode-eyecandy))
-
-(add-hook 'emacs-lisp-mode-hook 'my-setup-elisp-mode)
-
 (defun my-electric-lisp-comment ()
     "Autocomment things for lisp."
   (interactive)
@@ -411,13 +406,29 @@
       (insert ";; ")
     (insert ";")))
 
-(after 'evil
-  (evil-define-key 'insert emacs-lisp-mode-map ";" 'my-electric-lisp-comment)
-  (evil-define-key 'normal emacs-lisp-mode-map "\C-c\C-c" 'eval-defun))
 
+(use-package emacs
+  :straight nil
+  :after slime elisp-slime-nav
+  :config
+
+  (after 'evil
+    (evil-define-key 'insert emacs-lisp-mode-map ";" 'my-electric-lisp-comment)
+    (evil-define-key 'normal emacs-lisp-mode-map "\C-c\C-c" 'eval-defun))
+  (add-hook 'emacs-lisp-mode-hook 'my-setup-elisp-mode)
+
+  (defun my-setup-elisp-mode ()
+    "Commands to be run at the start of Emacs Lisp mode."
+    (eldoc-mode)
+    (my-coding-mode-eyecandy))
+
+  :hook (emacs-lisp-mode . my-setup-elisp-mode))
+
+;; XXX when do we actually use this? For anything?
 (use-package slime-company
   :straight t
   :after (slime company)
+  :defer t
   :custom
   (slime-company-completion 'fuzzy)
   (slime-company-after-completion 'slime-company-just-one-space))
@@ -437,7 +448,7 @@
       "Modified sentinel function run when godoc command completes.
 Doesn't jump to buffer automatically. Enters help mode on buffer."
       (with-current-buffer (process-buffer proc)
-        (cond ((string= event "finished\n")  ;; Successful exit.
+        (cond ((strin
                (goto-char (point-min))
                (view-mode 1)
                (help-mode)
@@ -539,6 +550,13 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
 (use-package python
   :ensure nil  ; builtin package
   :mode ("\\.py\\'" . python-mode)
+
+  :commands (python-shell-switch-to-shell
+               python-shell-send-region
+               python-shell-send-buffer
+               run-python
+               python-shell-interpreter)
+
   :hook ((python-mode . my-disable-insert-indent)
          (python-ts-mode . my-disable-insert-indent)
          (python-ts-mode . my-python-ts-mode-setup))
