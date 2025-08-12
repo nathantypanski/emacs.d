@@ -18,7 +18,17 @@
   (claude-code-ide-window-side 'right)
   ;; 1 char wider than previous
   (claude-code-ide-window-width 81)
-  :config (claude-code-ide-emacs-tools-setup))
+  :config
+  (claude-code-ide-emacs-tools-setup)
+
+  ;; Add helpful message for ediff sessions
+  (defun my-claude-ediff-help-message ()
+    "Show helpful message for navigating Claude Code ediff sessions."
+    (run-with-timer 0.5 nil
+                    (lambda ()
+                      (message "Ediff: [n]ext/[p]rev diff | [a]ccept original | [b]accept Claude's | [q]uit | [?]help"))))
+
+  (add-hook 'ediff-startup-hook 'my-claude-ediff-help-message))
 
 (use-package gptel
   :straight (:repo "karthink/gptel" :branch "state-tracking" :files ("*.el") :no-byte-compile t)
