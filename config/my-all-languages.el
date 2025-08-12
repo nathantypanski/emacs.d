@@ -237,7 +237,6 @@
   (progn
     ;; always eldoc in cider mode
     (add-hook 'cider-mode-hook 'cider-turn-on-eldoc-mode)
-    (add-hook 'cider-mode-hook '(paredit-mode +1))
 
     (after 'evil
     (defun my-evil-cider-repl-insert ()
@@ -448,7 +447,7 @@
       "Modified sentinel function run when godoc command completes.
 Doesn't jump to buffer automatically. Enters help mode on buffer."
       (with-current-buffer (process-buffer proc)
-        (cond ((strin
+        (cond ((string= event "finished\n")  ;; Successful exit.
                (goto-char (point-min))
                (view-mode 1)
                (help-mode)
@@ -817,6 +816,5 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
   :mode "\\dot\\'"
   :init
   (add-to-list 'auto-mode-alist '("\\.dot\\'" . graphviz-dot-mode)))
-
 
 (provide 'my-all-languages)

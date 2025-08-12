@@ -18,15 +18,7 @@
 
   (global-undo-tree-mode))
 
-(use-package smartparens
-  :demand t
-  :straight t
-  :init
-  (electric-pair-mode -1)
-  :config
-  (smartparens-global-mode)
-  :ensure t
-  :hook ((prog-mode . (turn-on-smartparens-mode))))
+;; Smartparens is now configured in my-smartparens.el
 
 ;; https://github.com/emacs-evil/evil-collection/issues/60
 (setq evil-want-integration t)
@@ -37,7 +29,7 @@
 (use-package evil
   :ensure evil
   :demand t
-  :after (consult key-chord general smartparens)
+  :after (consult key-chord general)
   :init
   (setq evil-emacs-state-cursor   '("#dfaf8f" box)
         evil-normal-state-cursor  '("#f8f893" box)
@@ -437,8 +429,5 @@ If LSP isn’t active here, signal a user‑friendly error."
   (add-to-list 'evil-collection-mode-list 'vterm)
   (evil-collection-init))
 
-(use-package paredit
-  :straight nil
-  :ensure paredit)
 
 (provide 'my-evil)
