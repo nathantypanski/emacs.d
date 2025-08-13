@@ -63,6 +63,6 @@
   (add-to-list 'desktop-modes-not-to-save 'Info-mode)
   (add-to-list 'desktop-modes-not-to-save 'info-lookup-mode)
   (add-to-list 'desktop-modes-not-to-save 'fundamental-mode)
-  (after 'gptel (add-to-list 'desktop-modes-not-to-save 'gptel-mode)))
+  (after 'gptel (add-to-list 'desktop-modes-not-to-save 'gptel-mode))
 
 (provide 'my-projects)

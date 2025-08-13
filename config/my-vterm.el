@@ -27,6 +27,7 @@
 
 (use-package vterm
   :ensure t
+  :after general
   :demand t
   :config
   ;; Performance optimizations for terminal mode
@@ -41,17 +42,15 @@
   (after 'evil
     (evil-set-initial-state 'vterm-mode 'emacs))
 
-  ;; Evil-specific vterm configuration
-  (with-eval-after-load 'evil
-    ;; Allow C-u in vterm (for shell commands)
-    (define-key vterm-mode-map (kbd "C-u") 'vterm-send-C-u)
-
-    ;; Make sure we can switch to normal mode for navigation
-    (evil-define-key 'emacs vterm-mode-map
-      (kbd "C-c C-k") 'evil-normal-state))
-
   ;; Copy mode integration with evil
   (with-eval-after-load 'evil
+    (general-define-key
+     :states '(normal)
+     :keymaps '(vterm-copy-mode-map)
+     (kbd "q")    'vterm-copy-mode-done
+     (kbd "RET")  'vterm-copy-mode-done
+     (kbd "y")    'vterm-copy-mode-done
+     )
     (evil-define-key 'normal vterm-copy-mode-map
       (kbd "q") 'vterm-copy-mode-done
       (kbd "RET") 'vterm-copy-mode-done
@@ -60,7 +59,7 @@
 ;; vterm-toggle for better workflow
 (use-package vterm-toggle
   :ensure t
-  :after vterm
+  :after vterm general
   :config
   (setq vterm-toggle-fullscreen-p nil)
   (setq vterm-toggle-scope 'project)
@@ -98,11 +97,12 @@
       (vterm-toggle-show)
       (select-window current-window)))
 
-  ;; Key bindings - use custom split functions that preserve window layout
-  (global-set-key (kbd "C-c v -") 'my-vterm-toggle-split-below) ; Split below
-  (global-set-key (kbd "C-c v \\") 'my-vterm-toggle-split-right) ; Split right
-  (global-set-key (kbd "C-c v t") 'claude-code-ide-toggle-window) ; show/hide
-  (global-set-key (kbd "C-c v t") 'vterm)  ; fallback
-  )
+  (general-define-key
+   (kbd "C-c v -") 'my-vterm-toggle-split-below
+   (kbd "C-c v \\") 'my-vterm-toggle-split-right
+   (kbd "C-c v t") 'my-vterm-toggle-split-right
+   (kbd "C-c v v") 'vterm))
+
+
 
 (provide 'my-vterm)
