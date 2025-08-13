@@ -12,16 +12,58 @@
 
 ;; better buffer names for duplicates
 (require 'uniquify)
+(require 'ibuffer)
+
 (setq uniquify-buffer-name-style 'forward
       uniquify-separator "/"
       uniquify-ignore-buffers-re "^\\*" ; leave special buffers alone
-      uniquify-after-kill-buffer-flag t)
+)
 
 (use-package ibuffer
   :commands ibuffer
   :custom
   (ibuffer-expert t)
-  :config
+  (ibuffer-show-empty-filter-groups nil)
+  :custom-face
+  ;; Dim the dividers and group names to be less prominent
+  (ibuffer-title-face ((t (:foreground "#5f5f5f"))))
+  (ibuffer-filter-group-name-face ((t (:foreground "#7f7f7f"))))
+  :init
+ (progn
+    (setq ibuffer-directory-abbrev-alist
+          '(("^/home/ndt/" . "~/")
+            ("^/home/ndt/src/" . "src/")
+            ("^/home/ndt/src/github.com" . "gh/")
+            ))
+    (let ((div (propertize " │ " 'face '(:foreground "#5f5f5f"))))
+      (setq ibuffer-formats
+            (list (list 'mark 'modified 'read-only 'locked div
+                        '(name 18 18 :left :elide) div
+                        '(size 9 -1 :left) div
+                        '(mode 16 16 :left :elide) div
+                        'filename-and-process)
+                  (list 'mark div
+                        '(name 16 -1) div
+                        'filename))))
+    ;; for testing
+    ;;    (with-current-buffer "*Ibuffer*"
+    ;;      (ibuffer-redisplay))
+    )
+
+  (defun my-ibuffer-format-line-with-indent ()
+  "Format ibuffer line with proper indentation for wrapped filenames."
+  (let* ((buffer-name-width 30)  ; Adjust to match your format
+         (indent-string (make-string (+ buffer-name-width 5) ?\s))) ; 5 for mark + spaces
+    ;; Override the default line formatting
+    (add-text-properties
+     0 (length indent-string)
+     '(wrap-prefix t line-prefix t)
+     indent-string)
+    ;; Apply to filename portion
+    (put-text-property (+ (point-at-bol) buffer-name-width 5)
+                       (point-at-eol)
+                       'wrap-prefix indent-string)))
+
   (defvar my-ibuffer-use-vc-groups t
     "Use filter groups detected from vc root when non-nil.
 This will be done with `ibuffer-vc-set-filter-groups-by-vc-root'
@@ -38,7 +80,7 @@ according to the values of `my-ibuffer-use-vc-groups' and
       (ibuffer-switch-to-saved-filter-groups "default")))
 
   (add-hook 'ibuffer-mode-hook 'my-ibuffer-setup)
-  (setq ibuffer-show-empty-filter-groups nil)
+
 
   (defun my-ibuffer-raise-other-window ()
     (interactive)
