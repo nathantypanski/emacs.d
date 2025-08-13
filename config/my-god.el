@@ -15,6 +15,14 @@
   (progn
     (after 'evil
       ;; from https://gist.github.com/gridaphobe/9765143#file-god-state-el-L1
+      (defun evil-god-start-hook ()
+        "Hook called upon entry to `god-state'."
+        (god-local-mode 1))
+
+      (defun evil-god-stop-hook ()
+        "Exit `god-state'."
+        (god-local-mode -1))
+
       (evil-define-state god
         "God state."
         :tag " <G> "
@@ -24,19 +32,36 @@
         :input-method t
         :intercept-esc nil)
 
-      (defun evil-god-start-hook ()
-        (diminish 'god-local-mode)
-        (god-local-mode 1))
-
-      (defun evil-god-stop-hook ()
-        (god-local-mode -1))
-
       (defvar evil-execute-in-god-state-buffer nil)
+      (defvar my-evil-god-state-active nil)
 
-      (defun evil-stop-execute-in-god-state ()
-        (when (and (not (eq this-command #'evil-execute-in-god-state))
+      (evil-define-command my-evil-execute-in-god-state ()
+        "Execute the next command in God state."
+        (setq my-evil-god-state-active t)
+        (add-hook 'post-command-hook #'my-evil-stop-execute-in-god-state t)
+
+        ;; (when (eq evil-execute-in-god-state-buffer (current-buffer)))
+
+        (setq evil-execute-in-god-state-buffer (current-buffer))
+        (cond
+         ((evil-visual-state-p)
+          (let ((mrk (mark))
+                (pnt (point)))
+            (evil-god-state)
+            (set-mark mrk)
+            (goto-char pnt)))
+         (t
+          (evil-god-state)))
+        (evil-echo "Switched to God state for the next command ..."))
+
+
+      (defun my-evil-stop-execute-in-god-state ()
+        "Finish executing in God state."
+        (when (and my-evil-god-state-active
+                   (not (eq this-command #'my-evil-execute-in-god-state))
                    (not (minibufferp)))
-          (remove-hook 'post-command-hook 'evil-stop-execute-in-god-state)
+          (setq my-evil-god-state-active nil)
+          (remove-hook 'post-command-hook 'my-evil-stop-execute-in-god-state)
           (when (buffer-live-p evil-execute-in-god-state-buffer)
             (with-current-buffer evil-execute-in-god-state-buffer
               (if (and (eq evil-previous-state 'visual)
@@ -45,22 +70,26 @@
                     (evil-change-to-previous-state)
                     (evil-exit-visual-state))
                 (evil-change-to-previous-state))))
-          (setq evil-execute-in-god-state-buffer nil)))
+          (setq evil-execute-in-god-state-buffer nil)
+          (evil-echo "... returning from God.")))
 
-      (evil-define-command evil-execute-in-god-state ()
-        "Execute the next command in God state."
-        (add-hook 'post-command-hook #'evil-stop-execute-in-god-state t)
-        (setq evil-execute-in-god-state-buffer (current-buffer))
-        (cond
-         ((evil-visual-state-p)
-          (let ((mrk (mark))
-                (pnt (point)))
-            (evil-god-state)
-            (set-mar mrk)
-            (goto-char pnt)))
-         (t
-          (evil-god-state)))
-        (evil-echo "Switched to God state for the next command ..."))
+      (defun my-return-from-god ()
+        "Toggle between normal and god state."
+        (interactive)
+        (my-evil-stop-execute-in-god-state))
 
-      (evil-define-key 'normal global-map (kbd "\\") 'evil-execute-in-god-state))))
+      (after 'general
+        (general-define-key
+         :states '(normal)
+         :keymap '(global-map)
+         (kbd "\\") 'my-evil-execute-in-god-state)
+
+        (general-define-key
+         :states '(god)
+         :keymap '(global-map)
+         ;; todo: won't toggle mid command
+         (kbd "C-\\") 'my-return-from-god)
+        ))))
+
+
 (provide 'my-god)
