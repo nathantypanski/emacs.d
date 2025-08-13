@@ -47,6 +47,10 @@
 ;; Always delete trailing whitespace on save
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
+;; Find file at point configuration
+(require 'ffap)
+(ffap-bindings)
+
 (defvar my-terminal-emulator
   "Terminal emulator to be spawned with my-spawn-terminal-here."
   (cond
