@@ -170,9 +170,9 @@
                 (go-mode . go-ts-mode)
                 (js-mode . js-ts-mode)
                 (typescript-mode . typescript-ts-mode)
-                (yaml-mode . yaml-ts-mode)))
-
-        (add-to-list 'major-mode-remap-alist '(sh-mode . bash-ts-mode)))
+                (bash-mode . bash-ts-mode)
+                (yaml-mode . yaml-ts-mode)
+                (sh-mdoe . bash-ts-mode))))
 
 
 ;;--------------------------------------------------------------------
@@ -558,7 +558,16 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
 
   :hook ((python-mode . my-disable-insert-indent)
          (python-ts-mode . my-disable-insert-indent)
-         (python-ts-mode . my-python-ts-mode-setup))
+         (python-ts-mode . my-python-ts-mode-setup)
+         (python-mode . my-python-mode-setup))
+  :custom
+  ;; REPL configuration
+  (python-shell-interpreter "python3")
+  (python-shell-interpreter-args "-i")
+  (python-shell-prompt-detect-failure-warning nil)
+  ;; Better indentation
+  (python-indent-offset 4)
+  (python-indent-guess-indent-offset-verbose nil)
   :config
   ;; Configure python-ts-mode indentation
   (when (treesit-available-p)

@@ -48,8 +48,6 @@
   "s /"        'consult-isearch-history
   "r"          'consult-register
 
-  "n"          'neotree-toggle
-
   "pf"         'projectile-find-file
   "ps"         'projectile-ag
   "pp"         'projectile-commander
