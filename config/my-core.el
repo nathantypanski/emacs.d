@@ -51,6 +51,8 @@
 (setq auto-revert-verbose t)                     ; Show messages when reverting
 (setq revert-without-query nil)                  ; Always prompt before reverting
 (setq auto-revert-avoid-polling t)               ; Use file system notifications
+(setq auto-revert-check-vc-info t)               ; Check version control info when reverting
+(global-auto-revert-mode 1)                     ; Enable auto-revert globally (with prompting)
 
 ;; Find file at point configuration
 (require 'ffap)
@@ -211,9 +213,32 @@
 
 ;; Fix minibuffer messages disappearing too quickly
 (setq minibuffer-message-timeout 10)     ; Keep messages for 10 seconds
-(setq eldoc-idle-delay 1.0)              ; Wait 1 second before showing eldoc
+(setq eldoc-idle-delay 2.0)              ; Wait 2 seconds before showing eldoc (longer delay)
 (setq eldoc-echo-area-display-truncation-message nil) ; Don't truncate
-(setq eldoc-print-after-edit t)          ; Don't spam during typing
+(setq eldoc-print-after-edit nil)        ; Don't show eldoc while typing
+
+;; Prevent eldoc from clearing important messages
+(defvar my-important-message-active nil
+  "Flag to indicate an important message is being displayed.")
+
+(defun my-protect-important-messages (orig-fun &rest args)
+  "Advice to prevent eldoc from clearing important messages."
+  (let ((msg (and args (car args))))
+    ;; Mark important messages
+    (when (and msg (stringp msg)
+               (or (string-match-p "changed on disk" msg)
+                   (string-match-p "really edit" msg)
+                   (string-match-p "revert" msg)
+                   (string-match-p "(y, n, r" msg)))
+      (setq my-important-message-active t)
+      ;; Clear the flag after a reasonable time
+      (run-with-timer 30 nil (lambda () (setq my-important-message-active nil))))
+    ;; Don't let eldoc clear important messages
+    (unless (and my-important-message-active
+                 (or (null msg) (string-empty-p msg)))
+      (apply orig-fun args))))
+
+(advice-add 'message :around #'my-protect-important-messages)
 
 ;; Debug function to track what's clearing the minibuffer
 (defun my-debug-minibuffer-clear ()
