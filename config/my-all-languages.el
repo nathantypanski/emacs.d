@@ -3,7 +3,6 @@
 ;; Integrations between emacs and programming languages.
 ;;
 
-
 ;;--------------------------------------------------------------------
 ;; LSP - language server protocol
 ;;
@@ -544,64 +543,93 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
 ;; Python language
 ;;
 
-;; The package is python" but the mode is "python-mode":
 
+
+;; Better REPL integration
+(defun my-python-send-line ()
+  "Send current line to Python shell."
+  (interactive)
+  (python-shell-send-region (line-beginning-position) (line-end-position))
+  (forward-line))
+
+(defun my-python-send-paragraph ()
+  "Send current paragraph to Python shell."
+  (interactive)
+  (save-excursion
+    (mark-paragraph)
+    (python-shell-send-region (region-beginning) (region-end))))
+
+(defun my-python-common-setup ()
+  "Common Python configuration."
+  (setq-local python-indent-offset 4
+              python-indent-guess-indent-offset-verbose nil
+              indent-tabs-mode nil)
+  ;; Disable evil auto-indent for python-ts-mode
+  (my-disable-insert-indent)
+
+  (setq python-shell-interpreter "python3")
+  (setq python-shell-interpreter-args "-i")
+  (setq python-shell-prompt-detect-failure-warning nil)
+  ;; Better indentation
+  (setq python-indent-offset 4)
+  (setq python-indent-guess-indent-offset-verbose nil))
+
+;; Setup function for python-mode
+(defun my-python-mode-setup ()
+  "Configure python-mode settings."
+  (interactive)
+  (my-python-common-setup)
+  )
+
+(defun my-python-ts-mode-setup ()
+  "Configure python-ts-mode settings."
+  (my-python-common-setup)
+
+  (setq-local python-indent-guess-indent-offset-verbose nil)
+  (setq-local indent-tabs-mode nil))
+
+;; Debug function to check if insert indent is disabled
+(defun my-debug-python-indent ()
+  "Debug python indentation settings."
+  (interactive)
+  (message "my-should-insert-indent: %s, major-mode: %s"
+           my-should-insert-indent major-mode))
+
+(use-package python-ts-mode
+;mimi
+
+  :straight nil
+  :when (treesit-available-p)
+  :ensure nil
+  :custom
+  (python-indent-offset 4)
+  (python-indent-guess-indent-offset t)
+  :mode (("\\.py\\'" . python-ts-mode)
+         ("\\.pyi\\'" . python-ts-mode))
+  :hook ((python-ts-mode . my-disable-insert-indent)
+         (python-ts-mode . my-python-ts-mode-setup)
+         (python-ts-mode . my-disable-insert-indent))
+  :config
+  ;; Setup function for python-ts-mode
+  (minibuffer-message "entering python-ts-mode!"))
+
+;; Fallback Python mode.
+;;
+;; The package is python" but the mode is "python-mode".
 (use-package python
+  :when (not (bound-and-true-p treesit-available-p))
   :ensure nil  ; builtin package
   :mode ("\\.py\\'" . python-mode)
 
   :commands (python-shell-switch-to-shell
-               python-shell-send-region
-               python-shell-send-buffer
-               run-python
-               python-shell-interpreter)
+             python-shell-send-region
+             python-shell-send-buffer
+             run-python
+             python-shell-interpreter)
 
   :hook ((python-mode . my-disable-insert-indent)
-         (python-ts-mode . my-disable-insert-indent)
-         (python-ts-mode . my-python-ts-mode-setup)
          (python-mode . my-python-mode-setup))
-  :custom
-  ;; REPL configuration
-  (python-shell-interpreter "python3")
-  (python-shell-interpreter-args "-i")
-  (python-shell-prompt-detect-failure-warning nil)
-  ;; Better indentation
-  (python-indent-offset 4)
-  (python-indent-guess-indent-offset-verbose nil)
   :config
-  ;; Configure python-ts-mode indentation
-  (when (treesit-available-p)
-    (setq python-ts-mode-indent-offset 4))
-
-  ;; Setup function for python-ts-mode
-  (defun my-python-ts-mode-setup ()
-    "Configure python-ts-mode settings."
-    (setq-local python-indent-offset 4)
-    (setq-local python-indent-guess-indent-offset-verbose nil)
-    (setq-local indent-tabs-mode nil)
-    ;; Disable evil auto-indent for python-ts-mode
-    (my-disable-insert-indent))
-
-  ;; Setup function for python-mode
-  (defun my-python-mode-setup ()
-    "Configure python-mode settings."
-    (setq-local python-indent-offset 4)
-    (setq-local python-indent-guess-indent-offset-verbose nil)
-    (setq-local indent-tabs-mode nil))
-
-  ;; Better REPL integration
-  (defun my-python-send-line ()
-    "Send current line to Python shell."
-    (interactive)
-    (python-shell-send-region (line-beginning-position) (line-end-position))
-    (forward-line))
-
-  (defun my-python-send-paragraph ()
-    "Send current paragraph to Python shell."
-    (interactive)
-    (save-excursion
-      (mark-paragraph)
-      (python-shell-send-region (region-beginning) (region-end))))
 
   ;; Key bindings for Python mode
   (after 'evil
@@ -614,14 +642,7 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
       (kbd ", f") 'python-shell-send-file)
 
     (evil-define-key 'visual python-mode-map
-      (kbd ", r") 'python-shell-send-region))
-
-  ;; Debug function to check if insert indent is disabled
-  (defun my-debug-python-indent ()
-    "Debug python indentation settings."
-    (interactive)
-    (message "my-should-insert-indent: %s, major-mode: %s"
-             my-should-insert-indent major-mode)))
+      (kbd ", r") 'python-shell-send-region)))
 
 ;; Python testing with pytest
 (use-package python-pytest
