@@ -12,10 +12,13 @@
   :config
   ;; Load default smartparens config with sane defaults
   (require 'smartparens-config)
-  
-  ;; Evil-collection integration (no manual setup needed)
-  (after 'evil-collection
-    (add-to-list 'evil-collection-mode-list 'smartparens)
-    (evil-collection-init '(smartparens))))
+
+  ;; Basic Evil integration for smartparens
+  (after 'evil
+    ;; Make smartparens work well with Evil
+    (sp-use-paredit-bindings)
+    ;; Optional: Add some Evil-friendly bindings
+    (define-key evil-normal-state-map (kbd "M-(") 'sp-wrap-round)
+    (define-key evil-normal-state-map (kbd "M-[") 'sp-wrap-square)
 
 (provide 'my-smartparens)

@@ -63,6 +63,7 @@
 (require 'my-eshell)
 (require 'my-ielm)
 (require 'my-package-list)
+(require 'my-smartparens)
 (require 'my-evil)
 (require 'my-age)
 (require 'my-gpt)
