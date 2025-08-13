@@ -77,7 +77,7 @@
   (org-capture-restore-windows-after-quit    t)
   (org-refile-restore-windows-after-quit     t)
   :config
-  (defface org-block-begin-line '((t ( org-meta-line :background "gray27" :overline "gray20" :underline "gray20" :height 0.8)))
+  (defface org-block-begin-line '((t (:inherit org-meta-line :background "gray27" :overline "gray20" :underline "gray20" :height 0.8)))
     "Face used for the line delimiting the begin of source blocks.")
 
   (defface org-block-background
@@ -85,7 +85,7 @@
     "Face used for the source block background.")
 
   (defface org-block-end-line
-    '((t ( org-meta-line :background "gray27" :overline "gray20" :underline "gray20" :height 0.8)))
+    '((t (:inherit org-meta-line :background "gray27" :overline "gray20" :underline "gray20" :height 0.8)))
     "Face used for the line delimiting the end of source blocks.")
 
   ;; better default
