@@ -28,7 +28,49 @@
                     (lambda ()
                       (message "Ediff: [n]ext/[p]rev diff | [a]ccept original | [b]accept Claude's | [q]uit | [?]help"))))
 
-  (add-hook 'ediff-startup-hook 'my-claude-ediff-help-message))
+  (add-hook 'ediff-startup-hook 'my-claude-ediff-help-message)
+
+  ;; fix red font hangover from ediff sessions
+  (defun my-claude-reset-faces-after-ediff ()
+    "Reset faces to prevent color hangover after ediff sessions."
+    ;; Reset default face properties that might be stuck
+    (when (current-local-map)
+      (face-remap-reset-base 'default))
+    ;; Clear any lingering face remappings
+    (setq face-remapping-alist nil)
+    ;; Force font-lock refresh
+    (when font-lock-mode
+      (font-lock-refresh-defaults)
+      (font-lock-fontify-buffer)))
+
+  (add-hook 'ediff-cleanup-hook 'my-claude-reset-faces-after-ediff)
+
+  ;; Terminal-friendly keybindings using general
+  (after 'general
+    (general-define-key
+     :prefix "C-c"
+     "C-j" 'claude-code-ide-insert-newline   ; Alternative to S-return
+     "C-e" 'claude-code-ide-send-escape      ; Alternative if C-escape fails
+     "C-t" 'claude-code-ide-toggle           ; Quick toggle
+     "C-p" 'claude-code-ide-send-prompt))    ; Send prompt directly
+
+  ;; Fix window configuration after ediff
+  (defun my-claude-fix-windows-after-ediff ()
+    "Fix ultra-wide side window after ediff closes."
+    (when claude-code-ide-use-side-window
+      ;; Delete existing side windows and recreate properly
+      (dolist (window (window-list))
+        (when (window-parameter window 'window-side)
+          (delete-window window)))
+      ;; Find claude buffer and redisplay it properly
+      (when-let* ((claude-buffer-name (claude-code-ide--get-buffer-name))
+                  (claude-buffer (get-buffer claude-buffer-name))
+                  (claude-window (get-buffer-window claude-buffer)))
+        (when claude-window
+          (delete-window claude-window))
+        (claude-code-ide--display-buffer-in-side-window claude-buffer))))
+
+  (add-hook 'ediff-cleanup-hook 'my-claude-fix-windows-after-ediff))
 
 (use-package gptel
   :straight (:repo "karthink/gptel" :branch "state-tracking" :files ("*.el") :no-byte-compile t)

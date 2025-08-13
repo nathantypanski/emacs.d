@@ -13,12 +13,13 @@
   ">"          'find-file-at-point
   "\\"         'split-window-horizontally
   "-"          'split-window-vertically
-  "e"          'pp-eval-last-sexp
-  "E"          'eval-last-sexp
+  "e"          'eval-last-sexp
+  "E"          'pp-eval-last-sexp
   "TAB"        'my-hop-around-buffers
   "RET"        'my-spawn-terminal-here
   "<SPC>RET"   'my-tmux-new-frame
   "<SPC>-"     'my-tmux-new-pane
+
   "B"          'ibuffer
   ","          'other-window
   "/"          'evilnc-comment-or-uncomment-lines
@@ -103,6 +104,13 @@
   "ae"         'my-gptel-explain
   "ar"         'my-gptel-review
   "at"         'my-gptel-check-tokens
+
+  ;; claude-code-ide
+  "ai i"       'claude-code-ide-menu
+  "ai t"       'claude-code-ide-toggle
+  "ai w"       'claude-code-ide-toggle-window
+  "ai d"       'claude-code-ide-debug-menu
+  "ai q"       'claude-code-ide-quit
 
   ;; org bindings
   "o a"        'org-agenda
