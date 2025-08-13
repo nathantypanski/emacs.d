@@ -47,6 +47,11 @@
 ;; Always delete trailing whitespace on save
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
+;; Prompt about reverting buffers when files change on disk
+(setq auto-revert-verbose t)                     ; Show messages when reverting
+(setq revert-without-query nil)                  ; Always prompt before reverting
+(setq auto-revert-avoid-polling t)               ; Use file system notifications
+
 ;; Find file at point configuration
 (require 'ffap)
 (ffap-bindings)
