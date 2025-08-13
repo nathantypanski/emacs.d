@@ -582,12 +582,59 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
     ;; Disable evil auto-indent for python-ts-mode
     (my-disable-insert-indent))
 
+  ;; Setup function for python-mode
+  (defun my-python-mode-setup ()
+    "Configure python-mode settings."
+    (setq-local python-indent-offset 4)
+    (setq-local python-indent-guess-indent-offset-verbose nil)
+    (setq-local indent-tabs-mode nil))
+
+  ;; Better REPL integration
+  (defun my-python-send-line ()
+    "Send current line to Python shell."
+    (interactive)
+    (python-shell-send-region (line-beginning-position) (line-end-position))
+    (forward-line))
+
+  (defun my-python-send-paragraph ()
+    "Send current paragraph to Python shell."
+    (interactive)
+    (save-excursion
+      (mark-paragraph)
+      (python-shell-send-region (region-beginning) (region-end))))
+
+  ;; Key bindings for Python mode
+  (after 'evil
+    (evil-define-key 'normal python-mode-map
+      (kbd ", r") 'run-python
+      (kbd ", s") 'python-shell-switch-to-shell
+      (kbd ", l") 'my-python-send-line
+      (kbd ", p") 'my-python-send-paragraph
+      (kbd ", b") 'python-shell-send-buffer
+      (kbd ", f") 'python-shell-send-file)
+
+    (evil-define-key 'visual python-mode-map
+      (kbd ", r") 'python-shell-send-region))
+
   ;; Debug function to check if insert indent is disabled
   (defun my-debug-python-indent ()
     "Debug python indentation settings."
     (interactive)
     (message "my-should-insert-indent: %s, major-mode: %s"
              my-should-insert-indent major-mode)))
+
+;; Python testing with pytest
+(use-package python-pytest
+  :ensure t
+  :after python
+  :config
+  (after 'evil
+    (evil-define-key 'normal python-mode-map
+      (kbd ", t t") 'python-pytest
+      (kbd ", t f") 'python-pytest-file
+      (kbd ", t k") 'python-pytest-function
+      (kbd ", t r") 'python-pytest-repeat
+      (kbd ", t p") 'python-pytest-popup)))
 
 ;;--------------------------------------------------------------------
 ;; rust language
