@@ -9,16 +9,27 @@
          (scheme-mode . smartparens-strict-mode)
          (clojure-mode . smartparens-strict-mode)
          (cider-repl-mode . smartparens-strict-mode))
+  :custom
+  (sp-autoskip-closing-pair 'always)
   :config
   ;; Load default smartparens config with sane defaults
   (require 'smartparens-config)
 
-  ;; Basic Evil integration for smartparens
-  (after 'evil
-    ;; Make smartparens work well with Evil
-    (sp-use-paredit-bindings)
-    ;; Optional: Add some Evil-friendly bindings
-    (define-key evil-normal-state-map (kbd "M-(") 'sp-wrap-round)
-    (define-key evil-normal-state-map (kbd "M-[") 'sp-wrap-square)
+  (show-paren-mode -1)            ;; conflict
+  (show-paren-local-mode -1)      ;; conflict
+  (show-smartparens-mode -1)         ;; alternative to show-paren-mode
+
+  ;; (setq sp-autoinsert-pair t)
+  ;; (setq sp-autoskip-closing-pair 'always)
+  ;; (setq sp-cancel-autoskip-on-backward-movement t)
+  ;; (setq sp-autoescape-string-quote t)
+  ;; (setq sp-autoinsert-quote-if-followed-by-closing-pair t)
+
+  ;; (setq sp-autodelete-pair t)
+  ;; (setq sp-autodelete-wrap t)
+  ;; (setq sp-autodelete-closing-pair t)
+  ;; (setq sp-autodelete-opening-pair t)
+  )
+
 
 (provide 'my-smartparens)

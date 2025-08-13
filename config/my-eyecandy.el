@@ -20,9 +20,6 @@
 ;; otherwise just highlight matching paren
 (set-variable show-paren-style 'mixed)
 
-;; Show parentheses
-(show-paren-mode 1)
-
 ;; show whitespace
 (require 'whitespace)
 (setq whitespace-style '(trailing))
@@ -66,16 +63,6 @@
 (use-package rainbow-mode
   :ensure rainbow-mode)
 
-(use-package rainbow-delimiters
-  :ensure rainbow-delimiters
-  :init
-  (progn
-    (rainbow-delimiters-mode-enable)))
-
-(defun my-coding-mode-eyecandy ()
-  "Eyecandy specific to programming text editing modes."
-  (rainbow-delimiters-mode-enable))
-
 ;; half-riffed from
 ;; https://gist.github.com/b7r6/23cfacbf181c9b0447841c798345a793
 (defun my-clean-window-dividers-with-fringe ()
@@ -103,6 +90,43 @@
      standard-display-table 'vertical-border
      (make-glyph-code ?│))))
 
+(use-package idle-highlight-mode
+  :ensure t
+  :straight t
+  :config
+  (global-idle-highlight-mode t))
+
+(use-package highlight-parentheses
+  :ensure t
+  :straight t
+  :config
+
+  ;; disable show-paren-mode
+  (show-paren-mode -1)
+  (global-highlight-parentheses-mode 1)
+  (add-hook 'minibuffer-setup-hook #'highlight-parentheses-minibuffer-setup))
+
+(use-package rainbow-delimiters
+  :ensure rainbow-delimiters
+  :init
+  (rainbow-delimiters-mode-enable))
+
+(use-package highlight-escape-sequences
+  :ensure t
+  :straight t
+  :config
+  (hes-mode t))
+
+(defun my-coding-mode-eyecandy ()
+  "Eyecandy specific to programming text editing modes."
+  (interactive)
+  (rainbow-delimiters-mode-enable)
+  (show-paren-mode -1)
+  (rainbow-delimiters-mode t)
+  (highlight-parentheses-mode 1)
+  (turn-on-hes-mode))
+
+(add-hook 'prog-mode-hook #'my-coding-mode-eyecandy)
 
 (my-clean-window-dividers-with-fringe)
 
