@@ -131,7 +131,20 @@ Not buffer-local, so it really is per frame.")
 
   ;; Simple transient integration - minimal interference approach
   (with-eval-after-load 'transient
-    (add-to-list 'evil-emacs-state-modes 'transient-mode))
+    (add-to-list 'evil-emacs-state-modes 'transient-mode)
+    
+    ;; Fix keymap conflicts with transient buffers
+    (defun my-transient-setup-hook ()
+      "Setup transient buffer to avoid keymap conflicts."
+      (when (bound-and-true-p transient--prefix)
+        ;; Disable evil-mode completely in transient buffers
+        (evil-local-mode -1)
+        ;; Clear any conflicting keymaps
+        (use-local-map (make-sparse-keymap))
+        ;; Set up clean transient keymap
+        (set-keymap-parent (current-local-map) transient-map)))
+    
+    (add-hook 'transient-setup-buffer-hook #'my-transient-setup-hook))
 
   (evil-define-text-object my-evil-next-match (count &optional beg end type)
     "Select next match."
@@ -145,12 +158,14 @@ Not buffer-local, so it really is per frame.")
     (evil-ex-search-previous count)
     (list evil-ex-search-match-beg evil-ex-search-match-end))
 
-  (general-define-key
-   :keymaps '(minibuffer-local-map
-              minibuffer-local-ns-map
-              minibuffer-local-completion-map
-              minibuffer-local-must-match-map)
-   [escape] 'my-minibuffer-keyboard-quit)
+  ;; More selective escape binding - avoid transient conflicts
+  (with-eval-after-load 'minibuffer
+    (general-define-key
+     :keymaps '(minibuffer-local-map
+                minibuffer-local-ns-map
+                minibuffer-local-completion-map
+                minibuffer-local-must-match-map)
+     [escape] 'my-minibuffer-keyboard-quit))
 
   (defun my-delete-trailing-whitespace-at-line ()
     "Delete trailing whitespace on the current line only."

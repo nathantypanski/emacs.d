@@ -38,16 +38,23 @@
                     :rope_completion (:enabled t)
                     :jedi_completion (:include_params t :include_class_objects t)
                     :jedi_hover (:enabled t)
-                    :jedi_signatures (:enabled t)))
+                    :jedi_signatures (:enabled t)
+                    :jedi_definition (:enabled t)
+                    :jedi_references (:enabled t)
+                    :pylint (:enabled t)
+                    :flake8 (:enabled t)))
                   :rust-analyzer
                   (:cargo
                    (:buildScripts (:enable t))
                    :procMacro (:enable t)
-                   :diagnostics (:disabled ["unresolved-proc-macro" "unresolved-macro-call"]))))
+                   :diagnostics (:disabled
+                                 ["unresolved-proc-macro"
+                                  "unresolved-macro-call"]))))
 
   ;; Helper to find project python executable
   (defun my-python-find-executable ()
     "Find the appropriate Python executable for the current project."
+    (interactive)
     (or
      ;; Check for venv in common locations relative to project root
      (when-let* ((project (project-current))
@@ -61,10 +68,22 @@
   ;; Helper function to build pylsp command
   (defun my-pylsp-command (&rest _ignored)
     "Return pylsp command with appropriate Python executable."
+    (interactive)
     (list (my-python-find-executable) "-m" "pylsp"))
 
+  ;; Debug eglot startup
+  (defun my-debug-eglot ()
+    "Debug eglot startup issues."
+    (interactive)
+    (message "Python mode: %s, Eglot managed: %s, LSP server: %s"
+             (derived-mode-p 'python-mode)
+             (bound-and-true-p eglot--managed-mode)
+             (when (bound-and-true-p eglot--managed-mode)
+               (eglot-current-server))))
+
   ;; Explicitly set language servers with dynamic python path
-  (add-to-list 'eglot-server-programs '(python-mode . my-pylsp-command))
+  (add-to-list 'eglot-server-programs
+               '(python-mode . my-pylsp-command))
   (add-to-list 'eglot-server-programs
                '(python-ts-mode . my-pylsp-command))
   (add-to-list 'eglot-server-programs
@@ -97,15 +116,65 @@
               (eldoc-mode 1)
               (setq-local eldoc-idle-delay 1.0)))
 
-  ;; Debug eglot startup
-  (defun my-debug-eglot ()
-    "Debug eglot startup issues."
+  ;; Documentation buffer names for different modes
+  (defconst my-doc-buffer-names
+    '((python-mode . "*Python Doc*")
+      (python-ts-mode . "*Python Doc*")
+      (go-mode . "*godoc*")
+      (go-ts-mode . "*godoc*")
+      (rust-mode . "*rust-doc*")
+      (rust-ts-mode . "*rust-doc*")
+      (emacs-lisp-mode . "*Help*")
+      (lisp-interaction-mode . "*Help*"))
+    "Alist mapping major modes to their documentation buffer names.")
+
+(defconst my-language-doc-functions
+  '((python-mode . my-python-pydoc-help)
+    (python-ts-mode . my-python-pydoc-help)
+    (go-mode . godoc-at-point)
+    (go-ts-mode . godoc-at-point)
+    (rust-mode . rust-doc)
+    (rust-ts-mode . rust-doc)
+    (emacs-lisp-mode . my-doc-at-point)
+    (lisp-interaction-mode . my-doc-at-point))
+  "Alist mapping major modes to their documentation display functions.")
+
+
+  (defun my-eldoc-doc-buffer-popup (&optional arg)
+    "Show eldoc documentation in a popup buffer.
+With prefix ARG, force refresh."
+    (interactive "P")
+    (eldoc)
+    (my-popup-buffer (eldoc-doc-buffer)))
+
+  (defun my-eldoc-enhanced-help (&optional arg)
+    "Show enhanced documentation with language-specific behavior.
+With prefix ARG, use mode-specific documentation if available."
+    (interactive "P")
+    (if-let ((doc-fn (and arg (alist-get major-mode my-language-doc-functions))))
+        (cond
+         ;; Special case: Elisp uses our custom doc function
+       ((memq major-mode '(emacs-lisp-mode lisp-interaction-mode))
+        (my-doc-at-point))
+       ;; Other languages: call their function and popup result
+       ((fboundp doc-fn)
+        (let ((display-buffer-alist '((".*" . (display-buffer-no-window)))))
+          (funcall doc-fn))
+        (when-let ((buffer-name (alist-get major-mode my-doc-buffer-names)))
+          (my-popup-buffer buffer-name)))
+       (t (message "Documentation function %s not available" doc-fn)))
+    ;; Default: popup eldoc
+    (my-eldoc-doc-buffer-popup)))
+
+  (defun my-python-pydoc-help ()
+    "Show detailed Python help using pydoc."
     (interactive)
-    (message "Python mode: %s, Eglot managed: %s, LSP server: %s"
-             (derived-mode-p 'python-mode)
-             (bound-and-true-p eglot--managed-mode)
-             (when (bound-and-true-p eglot--managed-mode)
-               (eglot-current-server)))))
+    (let* ((symbol (thing-at-point 'symbol))
+           (python-exe (my-python-find-executable))
+           (cmd (format "%s -c \"import pydoc; help('%s')\"" python-exe symbol)))
+      (with-output-to-temp-buffer "*Python Help*"
+        (shell-command cmd "*Python Help*")))))
+
 
 ;; Shows eldoc popups in a child frame/box, makes multiline docstrings
 ;; readable.
@@ -116,9 +185,11 @@
     :config
     (general-define-key
      :keymaps 'prog-mode-map
-     "C-c d" #'eldoc-doc-buffer))
+     "C-c d" #'eldoc-doc-buffer)
 
-;; -*- lexical-binding: t; -*-
+    (eldoc-box-hover-mode 1))
+
+(eldoc-box-hover-at-point-mode)
 
 (use-package treesit
   :straight (:type built-in)  ; treesit is built into Emacs 29+
@@ -149,7 +220,8 @@
         ;;   (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
 
         ;; Auto-install missing grammars
-        (defun my/treesit-install-all-languages ()
+
+        (defun my-treesit-install-all-languages ()
           "Install all configured tree-sitter languages."
           (interactive)
           (dolist (lang-config treesit-language-source-alist)
@@ -172,7 +244,6 @@
                 (bash-mode . bash-ts-mode)
                 (yaml-mode . yaml-ts-mode)
                 (sh-mdoe . bash-ts-mode))))
-
 
 ;;--------------------------------------------------------------------
 ;; shell (bash, zsh, ...)
@@ -708,6 +779,7 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
 ;; haskell language
 ;;
 
+(require 'haskell-mode)
 (use-package haskell-mode
   :ensure haskell-mode
   :commands haskell-mode

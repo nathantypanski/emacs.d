@@ -21,7 +21,6 @@
   "<SPC>-"     'my-tmux-new-pane
 
   "B"          'ibuffer
-  ","          'other-window
   "/"          'evilnc-comment-or-uncomment-lines
   "jf"         'ffap
   "jb"         'find-buffer
@@ -31,7 +30,7 @@
   "`"          'visit-term-buffer
   "cc"         'projectile-compile-project
   "f"          'find-file
-  "k"          'kill-buffer
+  "k"          'my-eldoc-doc-buffer-popup
   "x"          'execute-extended-command
   "X"          'consult-complex-command
   "s r"        'ag-regexp
@@ -117,10 +116,11 @@
   "o T"        'org-todo-list
   "o p"        'org-priority
   "o c"        'org-capture
-  "o l"        'org-store-link)
+  "o l"        'org-store-link
+
+  (kbd ".")    'elisp-slime-nav-find-elisp-thing-at-point
+  ","          'other-window)
 
 (evil-leader/set-key-for-mode 'git-commit-mode "qq" 'git-commit-abort)
 (evil-leader/set-key-for-mode 'git-commit-mode "C" 'with-editor-finish)
-(evil-leader/set-key-for-mode 'emacs-lisp-mode "." 'elisp-slime-nav-find-elisp-thing-at-point)
-
 (provide 'my-leader-keys)

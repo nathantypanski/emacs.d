@@ -38,6 +38,38 @@
           "build")))
 
 (require 'desktop)
+
+
+
+;; Use a whitelist approach - only save these safe modes
+(setq desktop-modes-not-to-save nil) ; Clear the default blacklist
+(setq desktop-buffers-not-to-save "^$") ; Only exclude empty buffer names
+
+;; Define safe modes that work well with desktop restoration
+(setq desktop-modes-to-save
+      '(text-mode
+        org-mode
+        markdown-mode
+        emacs-lisp-mode
+        python-mode
+        js-mode
+        css-mode
+        html-mode
+        prog-mode)) ; Add other programming modes you use
+
+;; Override desktop's mode saving to use whitelist
+(defun my-desktop-save-buffer-p (buffer-name buffer-mode)
+  "Only save buffers with modes in our whitelist."
+  (memq buffer-mode desktop-modes-to-save))
+
+(setq desktop-save-buffer 'my-desktop-save-buffer-p)
+
+;; Conservative settings
+(setq desktop-dirname user-emacs-directory)
+(setq desktop-load-locked-desktop t)
+(setq desktop-restore-eager 3) ; Only restore first 3 buffers
+(setq desktop-auto-save-timeout nil) ; Disable auto-save to prevent corruption
+
 ;; Enable desktop-save-mode for session persistence
 (setq desktop-dirname user-emacs-directory)
 (setq desktop-path (list desktop-dirname))
@@ -45,11 +77,8 @@
 (setq desktop-auto-save-timeout 600) ; Auto-save every 10 minutes
 
 ;; Add error handling to prevent broken desktop files
-(setq desktop-save 'ask-if-new)
+(setq desktop-save 'ask)
 (setq desktop-restore-eager 5) ; Only restore first 5 buffers immediately
-
-;; Desktop mode is disabled - remove problematic save hook
-(desktop-save-mode -1)
 
   ;; Don't save scratch and other special buffers
   (setq desktop-buffers-not-to-save

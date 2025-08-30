@@ -201,41 +201,80 @@ of the current visual line and point."
   (let ((completion-in-region-function #'completion--in-region))
     (funcall fn)))
 
-(defun my-doc-at-point (&optional pos)
-  "Describe the thing at POS via man, slime, describe-symbol, or
-woman, and select its window. With `C-u` prefix, prompt for a
-position; otherwise use point."
-    (interactive "d")  ; reads POS or prompts if prefix given
-    (let* ((symbol (save-excursion
-                     (goto-char pos)
-                     (thing-at-point 'symbol t)))
-           (man-spec (and symbol (concat "1 " symbol))))
-      (cond
-       ;; 1) Shell-script or interactive shell → pop man(1)
-       ((and symbol
-             (derived-mode-p 'sh-mode
-                             'shell-mode 'eshell-mode
-                             'term-mode  'comint-mode))
-        (if (executable-find "man")
-            (let ((buf (man man-spec)))
-              (pop-to-buffer buf))
-          (user-error "No ‘man’ executable found to look up %s" symbol)))
+(defun my-get-symbol-at-point (&optional pos)
+  "Get the symbol at POS (or point)."
+  (save-excursion
+    (goto-char (or pos (point)))
+    (thing-at-point 'symbol t)))
 
-       ;; 2) Try elisp-slime-nav
-       ((and (fboundp #'elisp-slime-nav-describe-elisp-thing-at-point)
+(defun my-shell-man-help (symbol)
+  "Show man page for SYMBOL in shell/terminal modes.
+Returns non-nil if successful."
+  (when (and symbol
+             (derived-mode-p 'sh-mode 'shell-mode 'eshell-mode
+                             'term-mode 'comint-mode)
+             (executable-find "man"))
+    (man (concat "1 " symbol))
+    t))
+
+(defun my-elisp-slime-nav-help (symbol)
+  "Try elisp-slime-nav for SYMBOL.
+Returns non-nil if successful."
+  (when (and symbol
+             (fboundp 'elisp-slime-nav-describe-elisp-thing-at-point)
              (bound-and-true-p elisp-slime-nav-mode))
-        (elisp-slime-nav-describe-elisp-thing-at-point symbol))
+    (elisp-slime-nav-describe-elisp-thing-at-point symbol)
+    t))
 
-       ;; 3) Try describe-symbol
-       ((and symbol
-             (or (fboundp (intern symbol))
-                 (boundp (intern symbol))))
-        (funcall #'describe-symbol (intern symbol)))
+(defun my-describe-symbol-help (symbol)
+  "Use `describe-symbol' for SYMBOL if it's a known function/variable.
+Returns non-nil if successful."
+  (when-let* ((symbol)
+              (sym (intern-soft symbol))
+              ((or (fboundp sym) (boundp sym))))
+    (describe-symbol sym)
+    t))
 
-       ;; 4) Nothing found → friendly error
-       (t
+(defun my-doc-at-point (&optional pos)
+  "Describe the thing at POS via various documentation methods.
+Tries shell man pages, elisp-slime-nav, and describe-symbol in order."
+  (interactive "d")
+  (let* ((pos (or pos (point)))
+         (symbol (my-get-symbol-at-point pos)))
+    ;; Try documentation methods, suppressing display
+    (let ((display-buffer-alist '((".*" . (display-buffer-no-window)))))
+      (unless (or (my-shell-man-help symbol)
+                  (my-elisp-slime-nav-help symbol)
+                  (my-describe-symbol-help symbol))
         (user-error "No documentation available for %s"
-                    (or symbol "<nothing>"))))))
+                    (or symbol "<nothing>"))))
+    ;; Then popup the result
+    (my-popup-buffer "*Help*")))
+
+(defun my-popup-buffer (buffer-or-name)
+  "Display BUFFER-OR-NAME in a popup at the bottom with consistent styling.
+Returns the window displaying the buffer, or nil if buffer doesn't exist."
+   (interactive)
+  (when-let ((buf (get-buffer buffer-or-name)))
+    (let ((window (display-buffer
+                   buf
+                   '((display-buffer-below-selected)
+                     (window-height . 0.15)
+                     (window-parameters . ((transient . t)
+                                          (no-delete-other-windows . t)))))))
+      ;; Add convenient key bindings
+      (with-current-buffer buf
+        (local-set-key (kbd "q") 'quit-window)
+        (local-set-key (kbd "<escape>") 'quit-window))
+      window)))
+
+(defun my-popup-command (command buffer-name)
+  "Execute shell COMMAND and display output in BUFFER-NAME as popup."
+   (interactive)
+  (with-output-to-temp-buffer buffer-name
+    (shell-command command buffer-name))
+  (my-popup-buffer buffer-name))
+
 
 (defun my-eval-region-and-insert (start end)
   "Evaluate region and insert the result after it."
@@ -258,6 +297,11 @@ position; otherwise use point."
     "Extend DEFAULT-LIST with ADDITIONAL-ITEMS, removing duplicates."
     (seq-uniq (append default-list additional-items) #'equal))
 
+(defun my-insert-shell-command-output (command)
+  "Run `command', insert output at point."
+  (interactive)
+  (insert (shell-command-to-string command)))
+
 (defmacro my-extend-custom-default (var-symbol additional-items)
   "Extend the default value of VAR-SYMBOL with ADDITIONAL-ITEMS and set it."
   `(setq ,var-symbol
@@ -269,5 +313,6 @@ position; otherwise use point."
                (my-unique-append default-value ,additional-items))
            ;; If variable isn't bound yet, just use the additional items
            ,additional-items)))
+
 
 (provide 'my-functions)
