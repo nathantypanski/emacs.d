@@ -60,6 +60,7 @@
 (require 'my-env)
 (require 'my-core)
 (require 'my-functions)
+(require 'my-debug)
 (require 'my-eyecandy)
 (require 'my-keychain)
 (require 'my-dired)

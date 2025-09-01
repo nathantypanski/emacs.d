@@ -79,8 +79,6 @@ Not buffer-local, so it really is per frame.")
     (when (and (not (display-graphic-p))
                (bound-and-true-p evil-local-mode)
                ;; Don't send escapes during potentially problematic states
-               (not (and (boundp 'transient--prefix) transient--prefix))
-               (not (and (boundp 'transient--stack) transient--stack))
                (not (minibuffer-window-active-p (minibuffer-window)))
                (not executing-kbd-macro)
                (not defining-kbd-macro)
@@ -129,22 +127,6 @@ Not buffer-local, so it really is per frame.")
   (evil-set-initial-state 'vterm-copy-mode 'normal)
   (evil-set-initial-state 'transient-mode 'emacs)
 
-  ;; Simple transient integration - minimal interference approach
-  (with-eval-after-load 'transient
-    (add-to-list 'evil-emacs-state-modes 'transient-mode)
-    
-    ;; Fix keymap conflicts with transient buffers
-    (defun my-transient-setup-hook ()
-      "Setup transient buffer to avoid keymap conflicts."
-      (when (bound-and-true-p transient--prefix)
-        ;; Disable evil-mode completely in transient buffers
-        (evil-local-mode -1)
-        ;; Clear any conflicting keymaps
-        (use-local-map (make-sparse-keymap))
-        ;; Set up clean transient keymap
-        (set-keymap-parent (current-local-map) transient-map)))
-    
-    (add-hook 'transient-setup-buffer-hook #'my-transient-setup-hook))
 
   (evil-define-text-object my-evil-next-match (count &optional beg end type)
     "Select next match."
@@ -158,7 +140,7 @@ Not buffer-local, so it really is per frame.")
     (evil-ex-search-previous count)
     (list evil-ex-search-match-beg evil-ex-search-match-end))
 
-  ;; More selective escape binding - avoid transient conflicts
+  ;; Escape bindings for minibuffer
   (with-eval-after-load 'minibuffer
     (general-define-key
      :keymaps '(minibuffer-local-map
@@ -329,8 +311,6 @@ If LSP isn’t active here, signal a user‑friendly error."
    "C-j"            'evil-window-down
    "C-k"            'evil-window-up
    "C-l"            'evil-window-right
-   ;; TEMPORARILY DISABLED: Testing gptel-menu crash fix
-   ;; "-"              'evil-delete-whole-line
    "a"              'evil-append
    "A"              'my-electric-append-with-indent
    "$"              'my-smart-end

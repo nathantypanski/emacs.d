@@ -73,7 +73,7 @@
   (add-hook 'ediff-cleanup-hook 'my-claude-fix-windows-after-ediff))
 
 (use-package gptel
-  :straight (:repo "karthink/gptel" :branch "state-tracking" :files ("*.el") :no-byte-compile t)
+  :straight (:repo "karthink/gptel" :branch "state-tracking" :files ("*.el"))
   :custom-face
   (gptel-user-header ((t (:foreground "#dca3a3" :weight bold))))
   (gptel-assistant-header ((t (:foreground "#7f9f7f" :weight bold))))
