@@ -49,6 +49,7 @@
   "r"          'consult-register
 
   "pf"         'projectile-find-file
+  "pc"         'projectile-invalidate-cache
   "ps"         'projectile-ag
   "pp"         'projectile-commander
   "pv"         'projectile-vc
