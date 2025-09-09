@@ -38,14 +38,14 @@
                 '(:pylsp
                   (:plugins
                    (:pydocstyle (:enabled t)
-                    :rope_completion (:enabled t)
-                    :jedi_completion (:include_params t :include_class_objects t)
-                    :jedi_hover (:enabled t)
-                    :jedi_signatures (:enabled t)
-                    :jedi_definition (:enabled t)
-                    :jedi_references (:enabled t)
-                    :pylint (:enabled t)
-                    :flake8 (:enabled t)))
+                                :rope_completion (:enabled t)
+                                :jedi_completion (:include_params t :include_class_objects t)
+                                :jedi_hover (:enabled t)
+                                :jedi_signatures (:enabled t)
+                                :jedi_definition (:enabled t)
+                                :jedi_references (:enabled t)
+                                :pylint (:enabled t)
+                                :flake8 (:enabled t)))
                   :rust-analyzer
                   (:cargo
                    (:buildScripts (:enable t))
@@ -136,16 +136,16 @@
       (lisp-interaction-mode . "*Help*"))
     "Alist mapping major modes to their documentation buffer names.")
 
-(defconst my-language-doc-functions
-  '((python-mode . my-python-pydoc-help)
-    (python-ts-mode . my-python-pydoc-help)
-    (go-mode . godoc-at-point)
-    (go-ts-mode . godoc-at-point)
-    (rust-mode . rust-doc)
-    (rust-ts-mode . rust-doc)
-    (emacs-lisp-mode . my-doc-at-point)
-    (lisp-interaction-mode . my-doc-at-point))
-  "Alist mapping major modes to their documentation display functions.")
+  (defconst my-language-doc-functions
+    '((python-mode . my-python-pydoc-help)
+      (python-ts-mode . my-python-pydoc-help)
+      (go-mode . godoc-at-point)
+      (go-ts-mode . godoc-at-point)
+      (rust-mode . rust-doc)
+      (rust-ts-mode . rust-doc)
+      (emacs-lisp-mode . my-doc-at-point)
+      (lisp-interaction-mode . my-doc-at-point))
+    "Alist mapping major modes to their documentation display functions.")
 
 
   (defun my-eldoc-doc-buffer-popup (&optional arg)
@@ -162,17 +162,17 @@ With prefix ARG, use mode-specific documentation if available."
     (if-let ((doc-fn (and arg (alist-get major-mode my-language-doc-functions))))
         (cond
          ;; Special case: Elisp uses our custom doc function
-       ((memq major-mode '(emacs-lisp-mode lisp-interaction-mode))
-        (my-doc-at-point))
-       ;; Other languages: call their function and popup result
-       ((fboundp doc-fn)
-        (let ((display-buffer-alist '((".*" . (display-buffer-no-window)))))
-          (funcall doc-fn))
-        (when-let ((buffer-name (alist-get major-mode my-doc-buffer-names)))
-          (my-popup-buffer buffer-name)))
-       (t (message "Documentation function %s not available" doc-fn)))
-    ;; Default: popup eldoc
-    (my-eldoc-doc-buffer-popup)))
+         ((memq major-mode '(emacs-lisp-mode lisp-interaction-mode))
+          (my-doc-at-point))
+         ;; Other languages: call their function and popup result
+         ((fboundp doc-fn)
+          (let ((display-buffer-alist '((".*" . (display-buffer-no-window)))))
+            (funcall doc-fn))
+          (when-let ((buffer-name (alist-get major-mode my-doc-buffer-names)))
+            (my-popup-buffer buffer-name)))
+         (t (message "Documentation function %s not available" doc-fn)))
+      ;; Default: popup eldoc
+      (my-eldoc-doc-buffer-popup)))
 
   (defun my-python-pydoc-help ()
     "Show detailed Python help using pydoc."
@@ -187,15 +187,15 @@ With prefix ARG, use mode-specific documentation if available."
 ;; Shows eldoc popups in a child frame/box, makes multiline docstrings
 ;; readable.
 (use-package eldoc-box
-    :after (eldoc general)
-    :custom
-    (eldoc-echo-area-use-multiline-p t)
-    :config
-    (general-define-key
-     :keymaps 'prog-mode-map
-     "C-c d" #'eldoc-doc-buffer)
+  :after (eldoc general)
+  :custom
+  (eldoc-echo-area-use-multiline-p t)
+  :config
+  (general-define-key
+   :keymaps 'prog-mode-map
+   "C-c d" #'eldoc-doc-buffer)
 
-    (eldoc-box-hover-mode 1))
+  (eldoc-box-hover-mode 1))
 
 (eldoc-box-hover-at-point-mode)
 
@@ -216,42 +216,42 @@ With prefix ARG, use mode-specific documentation if available."
             (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")))))
 
 
-        ;; (setq treesit-language-source-alist ())
-        ;; '((bash "https://github.com/tree-sitter/tree-sitter-bash")
-        ;;   (c "https://github.com/tree-sitter/tree-sitter-c")
-        ;;   (cpp "https://github.com/tree-sitter/tree-sitter-cpp")
-        ;;   (python "https://github.com/tree-sitter/tree-sitter-python")
-        ;;   (rust "https://github.com/tree-sitter/tree-sitter-rust")
-        ;;   (go "https://github.com/tree-sitter/tree-sitter-go")
-        ;;   (javascript "https://github.com/tree-sitter/tree-sitter-javascript")
-        ;;   (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
-        ;;   (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
+  ;; (setq treesit-language-source-alist ())
+  ;; '((bash "https://github.com/tree-sitter/tree-sitter-bash")
+  ;;   (c "https://github.com/tree-sitter/tree-sitter-c")
+  ;;   (cpp "https://github.com/tree-sitter/tree-sitter-cpp")
+  ;;   (python "https://github.com/tree-sitter/tree-sitter-python")
+  ;;   (rust "https://github.com/tree-sitter/tree-sitter-rust")
+  ;;   (go "https://github.com/tree-sitter/tree-sitter-go")
+  ;;   (javascript "https://github.com/tree-sitter/tree-sitter-javascript")
+  ;;   (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
+  ;;   (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
 
-        ;; Auto-install missing grammars
+  ;; Auto-install missing grammars
 
-        (defun my-treesit-install-all-languages ()
-          "Install all configured tree-sitter languages."
-          (interactive)
-          (dolist (lang-config treesit-language-source-alist)
-            (let ((lang (car lang-config)))
-              (unless (treesit-language-available-p lang)
-                (message "Installing tree-sitter grammar for %s" lang)
-                (treesit-install-language-grammar lang)))))
+  (defun my-treesit-install-all-languages ()
+    "Install all configured tree-sitter languages."
+    (interactive)
+    (dolist (lang-config treesit-language-source-alist)
+      (let ((lang (car lang-config)))
+        (unless (treesit-language-available-p lang)
+          (message "Installing tree-sitter grammar for %s" lang)
+          (treesit-install-language-grammar lang)))))
 
-        ;; Set up auto-mode-alist for tree-sitter modes
-        (setq major-mode-remap-alist
-              '((bash-mode . bash-ts-mode)
-                (sh-mode . bash-ts-mode)
-                (c-mode . c-ts-mode)
-                (c++-mode . c++-ts-mode)
-                (python-mode . python-ts-mode)
-                (rust-mode . rust-ts-mode)
-                (go-mode . go-ts-mode)
-                (js-mode . js-ts-mode)
-                (typescript-mode . typescript-ts-mode)
-                (bash-mode . bash-ts-mode)
-                (yaml-mode . yaml-ts-mode)
-                (sh-mdoe . bash-ts-mode))))
+  ;; Set up auto-mode-alist for tree-sitter modes
+  (setq major-mode-remap-alist
+        '((bash-mode . bash-ts-mode)
+          (sh-mode . bash-ts-mode)
+          (c-mode . c-ts-mode)
+          (c++-mode . c++-ts-mode)
+          (python-mode . python-ts-mode)
+          (rust-mode . rust-ts-mode)
+          (go-mode . go-ts-mode)
+          (js-mode . js-ts-mode)
+          (typescript-mode . typescript-ts-mode)
+          (bash-mode . bash-ts-mode)
+          (yaml-mode . yaml-ts-mode)
+          (sh-mdoe . bash-ts-mode))))
 
 ;;--------------------------------------------------------------------
 ;; shell (bash, zsh, ...)
@@ -293,10 +293,10 @@ With prefix ARG, use mode-specific documentation if available."
 (add-hook 'c++-mode-hook 'my-c++-mode-setup)
 
 (after 'evil
-    (evil-define-key 'normal c-mode-map (kbd "K")   'my-woman-entry)
-    (evil-define-key 'insert c-mode-map (kbd "<backspace>") 'backward-delete-char-untabify)
-    (evil-define-key 'normal c++-mode-map (kbd "K")   'my-woman-entry)
-    (evil-define-key 'insert c++-mode-map (kbd "<backspace>") 'backward-delete-char-untabify))
+  (evil-define-key 'normal c-mode-map (kbd "K")   'my-woman-entry)
+  (evil-define-key 'insert c-mode-map (kbd "<backspace>") 'backward-delete-char-untabify)
+  (evil-define-key 'normal c++-mode-map (kbd "K")   'my-woman-entry)
+  (evil-define-key 'insert c++-mode-map (kbd "<backspace>") 'backward-delete-char-untabify))
 
 ;;--------------------------------------------------------------------
 ;; clojure
@@ -317,42 +317,42 @@ With prefix ARG, use mode-specific documentation if available."
     (add-hook 'cider-mode-hook 'cider-turn-on-eldoc-mode)
 
     (after 'evil
-    (defun my-evil-cider-repl-insert ()
-      "Enter insert mode at the prompt, if we're behind the prompt."
-      (interactive)
-      (if (> cider-repl-input-start-mark (point))
-          (goto-char cider-repl-input-start-mark))
-      (evil-insert-state))
+      (defun my-evil-cider-repl-insert ()
+        "Enter insert mode at the prompt, if we're behind the prompt."
+        (interactive)
+        (if (> cider-repl-input-start-mark (point))
+            (goto-char cider-repl-input-start-mark))
+        (evil-insert-state))
 
-    (defun my-evil-cider-repl-append ()
-      "Enter insert mode at the prompt, if we're behind the prompt."
-      (interactive)
-      (if (> cider-repl-input-start-mark (point))
-          (goto-char cider-repl-input-start-mark))
-      (evil-append))
+      (defun my-evil-cider-repl-append ()
+        "Enter insert mode at the prompt, if we're behind the prompt."
+        (interactive)
+        (if (> cider-repl-input-start-mark (point))
+            (goto-char cider-repl-input-start-mark))
+        (evil-append))
 
-    (defun my-cider-on-prompt-line ()
-      "Returns t if point is on the same line as the current prompt."
-      (my-same-line (point) (cider-repl-input-start-mark)))
+      (defun my-cider-on-prompt-line ()
+        "Returns t if point is on the same line as the current prompt."
+        (my-same-line (point) (cider-repl-input-start-mark)))
 
-    (defun my-evil-cider-repl-bol ()
-      "Perform cider-bol, but never go before the prompt."
-      (interactive)
-      (cider-bol)
-      (if (> cider-repl-input-start-mark (point))
-          (goto-char cider-repl-input-start-mark)))
+      (defun my-evil-cider-repl-bol ()
+        "Perform cider-bol, but never go before the prompt."
+        (interactive)
+        (cider-bol)
+        (if (> cider-repl-input-start-mark (point))
+            (goto-char cider-repl-input-start-mark)))
 
-    ;; http://blog.jenkster.com/2013/12/a-cider-excursion.html
-    (defun cider-namespace-refresh ()
-     "Reset the Clojure namespace."
-      (interactive)
-      (cider-interactive-eval
-       "(require 'clojure.tools.namespace.repl)
+      ;; http://blog.jenkster.com/2013/12/a-cider-excursion.html
+      (defun cider-namespace-refresh ()
+        "Reset the Clojure namespace."
+        (interactive)
+        (cider-interactive-eval
+         "(require 'clojure.tools.namespace.repl)
         (clojure.tools.namespace.repl/refresh)"))
 
 
-    (setq nrepl-hide-special-buffers t)
-    (evil-define-key 'insert cider-repl-mode-map
+      (setq nrepl-hide-special-buffers t)
+      (evil-define-key 'insert cider-repl-mode-map
         (kbd "<up>") 'cider-repl-previous-input
         (kbd "<down>") 'cider-repl-next-input
         (kbd "C-c C-d") 'cider-doc-map
@@ -393,10 +393,10 @@ With prefix ARG, use mode-specific documentation if available."
         (kbd "C-x C-e") 'cider-eval-last-sexp
         (kbd "C-c C-r") 'cider-eval-region
         )
-    (evil-define-key 'visual cider-repl-mode-map
+      (evil-define-key 'visual cider-repl-mode-map
         (kbd "0") 'cider-repl-bol
-      )
-    (evil-define-key 'normal cider-repl-mode-map
+        )
+      (evil-define-key 'normal cider-repl-mode-map
         (kbd "i") 'my-evil-cider-repl-insert
         (kbd "<up>") 'cider-repl-previous-input
         (kbd "<down>") 'cider-repl-next-input
@@ -461,19 +461,19 @@ With prefix ARG, use mode-specific documentation if available."
   :commands my-jump-to-elisp-docs
   :diminish elisp-slime-nav-mode
   :init
-    (defun my-lisp-hook ()
-        (elisp-slime-nav-mode)
-        (turn-on-eldoc-mode))
-    (add-hook 'emacs-lisp-mode-hook 'my-lisp-hook)
-    (add-hook 'lisp-interaction-mode-hook 'my-lisp-hook)
-    (add-hook 'ielm-mode-hook 'my-lisp-hook)
-    (defun my-jump-to-elisp-docs (sym-name)
-      "Jump to a pane and do elisp-slime-nav-describe-elisp-thing-at-point"
-      (interactive (list (elisp-slime-nav--read-symbol-at-point)))
-      (help-xref-interned (intern sym-name))))
+  (defun my-lisp-hook ()
+    (elisp-slime-nav-mode)
+    (turn-on-eldoc-mode))
+  (add-hook 'emacs-lisp-mode-hook 'my-lisp-hook)
+  (add-hook 'lisp-interaction-mode-hook 'my-lisp-hook)
+  (add-hook 'ielm-mode-hook 'my-lisp-hook)
+  (defun my-jump-to-elisp-docs (sym-name)
+    "Jump to a pane and do elisp-slime-nav-describe-elisp-thing-at-point"
+    (interactive (list (elisp-slime-nav--read-symbol-at-point)))
+    (help-xref-interned (intern sym-name))))
 
 (defun my-electric-lisp-comment ()
-    "Autocomment things for lisp."
+  "Autocomment things for lisp."
   (interactive)
   ;; we can get away with autocommenting on empty lines.
   ;; not so much on regular ones - that's more likely to be a mistake.
@@ -534,25 +534,25 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
                  (message (concat "godoc: " output)))))))
 
 
-        (defun my-jump-to-go-docs ()
-          "Jump to a pane and do godoc"
-          (interactive)
-          (let ((query (thing-at-point 'word)))
-            (if (set-process-sentinel
-                 (start-process-shell-command "godoc" (godoc--get-buffer query)
-                                              (concat "godoc " query))
-                 'my-godoc--buffer-sentinel)
-                nil)
-            (let ((helpdoc (-first
-                            (lambda (e) (string-match ".*godoc.*" (buffer-name e)))
-                            (buffer-list))))
-              (pop-to-buffer (buffer-name helpdoc)))))
+    (defun my-jump-to-go-docs ()
+      "Jump to a pane and do godoc"
+      (interactive)
+      (let ((query (thing-at-point 'word)))
+        (if (set-process-sentinel
+             (start-process-shell-command "godoc" (godoc--get-buffer query)
+                                          (concat "godoc " query))
+             'my-godoc--buffer-sentinel)
+            nil)
+        (let ((helpdoc (-first
+                        (lambda (e) (string-match ".*godoc.*" (buffer-name e)))
+                        (buffer-list))))
+          (pop-to-buffer (buffer-name helpdoc)))))
 
-        (add-hook 'go-mode-hook (lambda ()
-                                  (setq evil-shift-width 8)
-                                  (setq indent-tabs-mode t)
+    (add-hook 'go-mode-hook (lambda ()
+                              (setq evil-shift-width 8)
+                              (setq indent-tabs-mode t)
 
-        (evil-define-key 'normal go-mode-map (kbd "K") 'my-jump-to-go-docs)))))
+                              (evil-define-key 'normal go-mode-map (kbd "K") 'my-jump-to-go-docs)))))
 
 
 ;;  -*- lexical-binding: t; -*-
@@ -673,7 +673,7 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
            my-should-insert-indent major-mode))
 
 (use-package python-ts-mode
-;mimi
+                                        ;mimi
 
   :straight nil
   :when (treesit-available-p)
@@ -779,7 +779,7 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
   (progn
     (setq scss-compile-at-save nil)
     )
-)
+  )
 
 ;; -------------------------------------------------------------------
 ;; haskell language
@@ -816,8 +816,8 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
 
     (defun my-haskell-interactive-maybe-jump-to-prompt ()
       "Go to the prompt if it's after POINT. Otherwise do nothing."
-        (if (> haskell-interactive-mode-prompt-start (point))
-            (my-haskell-interactive-jump-to-prompt)))
+      (if (> haskell-interactive-mode-prompt-start (point))
+          (my-haskell-interactive-jump-to-prompt)))
 
     (defun my-haskell-interactive-evil-insert ()
       "If the λ prompt is before point, enter insert state. Otherwise, insert after the prompt"
@@ -849,7 +849,7 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
           (progn
             (goto-char (point-max))
             (evil-insert-state))
-          (evil-append-line count vcount)))
+        (evil-append-line count vcount)))
 
     (defun my-haskell-interactive-history-previous (arg)
       "Go to the prompt if we're before it. Then cycle through previous history."
@@ -1006,7 +1006,7 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
 
 (require 'man)
 (when (eq Man-header-file-path t)
-    (setq Man-header-file-path nil))
+  (setq Man-header-file-path nil))
 
 (use-package nix-haskell-mode
   :commands (nix-haskell-mode)
