@@ -453,7 +453,6 @@ With prefix ARG, use mode-specific documentation if available."
 
 (use-package slime
   :straight nil
-  :mode ("\\.el\\'" . emacs-lisp-mode)
   :ensure slime)
 
 (use-package elisp-slime-nav
@@ -461,7 +460,6 @@ With prefix ARG, use mode-specific documentation if available."
   :ensure elisp-slime-nav
   :commands my-jump-to-elisp-docs
   :diminish elisp-slime-nav-mode
-  :mode ("\\.el\\'" . elisp-slime-nav-mode)
   :init
     (defun my-lisp-hook ()
         (elisp-slime-nav-mode)
