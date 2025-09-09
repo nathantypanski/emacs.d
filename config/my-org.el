@@ -135,9 +135,9 @@
      "SPC"             '(:ignore t :which-key "org")
      "SPC ["           #'org-metaup
      "SPC ]"           #'org-metadown
+     "SPC j"           #'org-insert-subheading
      "SPC h"           #'org-insert-heading
-     "SPC s"           #'org-insert-subheading
-     "SPC <ret>"       #'org-insert-heading-after-current
+     "SPC RET"         #'org-insert-heading-after-current
      "SPC }"           #'org-do-demote
      "SPC {"           #'org-do-promote
      "SPC d"           #'org-deadline
