@@ -314,5 +314,10 @@ Returns the window displaying the buffer, or nil if buffer doesn't exist."
            ;; If variable isn't bound yet, just use the additional items
            ,additional-items)))
 
+(defun my-add-hook (hook function &optional append local)
+  "Add `function' to `hook' idempotently. For `append' and `local',
+see docs for `add-hook'."
+  (remove-hook hook function local)
+  (add-hook hook function append local))
 
 (provide 'my-functions)

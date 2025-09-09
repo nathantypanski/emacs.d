@@ -100,10 +100,10 @@ Not buffer-local, so it really is per frame.")
             (send-string-to-terminal esc))))))
 
   ;; Re-enable cursor updates for key state changes only
-  (add-hook 'evil-mode-hook #'my-tty-cursor-update)
-  (add-hook 'evil-local-mode-hook #'my-tty-cursor-update)
-  (add-hook 'after-make-frame-functions #'my-tty-cursor-update)
-  (add-hook 'focus-in-hook #'my-tty-cursor-update)
+  (my-add-hook 'evil-mode-hook #'my-tty-cursor-update)
+  (my-add-hook 'evil-local-mode-hook #'my-tty-cursor-update)
+  (my-add-hook 'after-make-frame-functions #'my-tty-cursor-update)
+  (my-add-hook 'focus-in-hook #'my-tty-cursor-update)
 
   ;; Hook into major state changes (but not every command)
   (advice-add 'evil-insert-state :after #'my-tty-cursor-update)
@@ -111,10 +111,19 @@ Not buffer-local, so it really is per frame.")
   (advice-add 'evil-replace-state :after #'my-tty-cursor-update)
   (advice-add 'evil-visual-state :after #'my-tty-cursor-update)
 
+  ;; when the selected window changes, update the cursor.
+  (my-add-hook 'window-selection-change-functions #'my-tty-cursor-update)
+  ;; when window layout changes in a major way
+  (my-add-hook 'window-configuration-change-hook #'my-tty-cursor-update)
+  ;; Catch buffer switches
+  (my-add-hook 'buffer-list-update-hook #'my-tty-cursor-update)
+  ;; Catch when new windows are created/deleted
+  (my-add-hook 'window-size-change-functions #'my-tty-cursor-update)
+
   ;; God-mode integration
   (with-eval-after-load 'god-mode
-    (add-hook 'god-mode-enabled-hook #'my-tty-cursor-update)
-    (add-hook 'god-mode-disabled-hook #'my-tty-cursor-update))
+    (my-add-hook 'god-mode-enabled-hook #'my-tty-cursor-update)
+    (my-add-hook 'god-mode-disabled-hook #'my-tty-cursor-update))
 
   (evil-set-initial-state 'flycheck-error-list-mode 'normal)
   (evil-set-initial-state 'git-commit-mode 'insert)
@@ -126,7 +135,6 @@ Not buffer-local, so it really is per frame.")
   (evil-set-initial-state 'vterm-mode 'emacs)
   (evil-set-initial-state 'vterm-copy-mode 'normal)
   (evil-set-initial-state 'transient-mode 'emacs)
-
 
   (evil-define-text-object my-evil-next-match (count &optional beg end type)
     "Select next match."
@@ -220,8 +228,8 @@ Not buffer-local, so it really is per frame.")
     (define-key evil-insert-state-map (kbd "TAB") 'indent-for-tab-command))
 
   ;; exiting insert mode -> delete trailing whitespace
-  (add-hook 'evil-insert-state-exit-hook 'my-exit-insert-state)
-  (add-hook 'evil-insert-state-entry-hook 'my-enter-insert-state)
+  (my-add-hook 'evil-insert-state-exit-hook 'my-exit-insert-state)
+  (my-add-hook 'evil-insert-state-entry-hook 'my-enter-insert-state)
 
   (evil-ex-define-cmd "Q"  'evil-quit)
   (evil-ex-define-cmd "Qa" 'evil-quit-all)
