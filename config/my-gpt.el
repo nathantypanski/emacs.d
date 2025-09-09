@@ -280,7 +280,14 @@
                      (and props-end (re-search-forward "^:GPTEL_" props-end t))))
           (gptel-mode 1)))))
 
+  (defun my-corfu-disable-ispell-completion ()
+    "Remove ispell-completion-at-point in modes where it causes issues."
+    (setq-local completion-at-point-functions
+                (remove 'ispell-completion-at-point
+                        completion-at-point-functions)))
+
   (add-hook 'find-file-hook 'my-auto-enable-gptel-mode)
+  (add-hook 'gptel-mode-hook 'my-corfu-disable-ispell-completion)
 
   ;; Auto-setup tools when gptel loads
   (my-gptel-enable-tools))
