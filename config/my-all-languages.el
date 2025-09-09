@@ -24,6 +24,9 @@
   (add-hook 'python-ts-mode-hook 'eglot-ensure)
   (add-hook 'rust-mode-hook 'eglot-ensure)
   (add-hook 'go-mode-hook 'eglot-ensure)
+  (add-hook 'nix-mode-hook 'eglot-ensure)
+  (add-hook 'ruby-mode-hook 'eglot-ensure)
+  (add-hook 'ruby-ts-mode-hook 'eglot-ensure)
   :custom
   ;; be more responsive
   (eglot-send-changes-idle-time 0.1)
@@ -86,8 +89,13 @@
                '(python-mode . my-pylsp-command))
   (add-to-list 'eglot-server-programs
                '(python-ts-mode . my-pylsp-command))
+  (add-to-list 'eglot-server-programs '(go-mode . ("gopls")))
+  (add-to-list 'eglot-server-programs '(nix-mode . ("nixd")))
+  ;; Ruby language server - use ruby-lsp from Nix
   (add-to-list 'eglot-server-programs
-               '(go-mode . ("gopls"))))
+               '(ruby-mode . ("ruby-lsp")))
+  (add-to-list 'eglot-server-programs
+               '(ruby-ts-mode . ("ruby-lsp"))))
 
 
 ;;--------------------------------------------------------------------
@@ -941,6 +949,58 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
   :commands docker
   :ensure docker)
 
+
+;; -------------------------------------------------------------------
+;; ruby language
+;;
+
+(use-package ruby-mode
+  :ensure ruby-mode
+  :commands ruby-mode
+  :mode ("\\.rb\\'" "\\.rake\\'" "Rakefile\\'" "Gemfile\\'" "\\.gemspec\\'")
+  :config
+  (progn
+    ;; Ruby indentation and formatting
+    (setq ruby-indent-level 2
+          ruby-indent-tabs-mode nil
+          ruby-deep-indent-paren nil
+          ruby-bounce-deep-indent nil)
+
+    ;; Helper functions
+    (defun my-ruby-find-executable ()
+      "Find the appropriate Ruby executable for the current project."
+      (or
+       ;; Check for project-specific Ruby (rbenv, rvm, etc.)
+       (when-let* ((project (project-current))
+                   (root (project-root project)))
+         (or (executable-find (expand-file-name "bin/ruby" root))))
+       ;; Fall back to system ruby
+       (executable-find "ruby")))
+
+    ;; Sorbet integration
+    (defun my-ruby-sorbet-typecheck ()
+      "Run Sorbet type checker on current project."
+      (interactive)
+      (if-let ((project-root (project-root (project-current))))
+          (let ((default-directory project-root))
+            (compile "bundle exec srb tc"))
+        (message "Not in a project directory")))
+
+    (defun my-ruby-sorbet-init ()
+      "Initialize Sorbet in current project."
+      (interactive)
+      (if-let ((project-root (project-root (project-current))))
+          (let ((default-directory project-root))
+            (shell-command "bundle exec srb init"))
+        (message "Not in a project directory")))
+
+    ;; Key bindings
+    (after 'evil
+      (evil-define-key 'normal ruby-mode-map
+        (kbd ", t") 'my-ruby-sorbet-typecheck
+        (kbd ", i") 'my-ruby-sorbet-init
+        (kbd ", r") 'ruby-send-region
+        (kbd ", b") 'ruby-send-buffer))))
 
 ;; -------------------------------------------------------------------
 ;; Nix language
