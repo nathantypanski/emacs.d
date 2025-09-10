@@ -88,23 +88,23 @@
   (interactive)
   (menu-bar-mode 1)
   (tool-bar-mode -1)
-    (add-hook 'after-make-frame-functions 'my-use-default-font)
-    (setq pop-up-frames nil)
-    (setq display-buffer-alist ()
-          ;;'(("\\*Help\\*" display-buffer-pop-up-frame)
-          ;;  ("\\*Completions\\*" display-buffer-pop-up-frame)
-          ;; Add more rules as desired
-          )
+  (setq ediff-window-setup-function 'ediff-setup-windows-multiframe)
+  (add-hook 'after-make-frame-functions 'my-use-default-font)
+  (setq pop-up-frames nil)
+  (setq display-buffer-alist ()
+        ;;'(("\\*Help\\*" display-buffer-pop-up-frame)
+        ;;  ("\\*Completions\\*" display-buffer-pop-up-frame)
+        ;; Add more rules as desired
+        )
 
-    (my-use-default-font))
+  (my-use-default-font))
 
 (defun my-terminal-ui-setup ()
   "Do setup for non-graphical terminals, like disabling the toolbar."
   (interactive)
   (menu-bar-mode -1)
   (tool-bar-mode -1)
-
-
+  (setq ediff-window-setup-function 'ediff-setup-windows-plain)
   ;; try to make scrolling smooth in terminal
   (setq scroll-preserve-screen-position t))
 
@@ -158,9 +158,8 @@
 ;; Disable vertical scrollbars in all frames.
 (when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 
-;; Ediff with horizontal splits.
-(after 'ediff
-  (setq ediff-split-window-function 'split-window-horizontally))
+;; Ediff with horizontal splits
+(setq ediff-split-window-function 'split-window-horizontally)
 
 (defun my-home-path (&rest components)
   "Join COMPONENTS relative to `user-home-directory`, even if some start with '/'."
