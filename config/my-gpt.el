@@ -14,7 +14,7 @@
   (claude-code-ide-focus-on-open t)
   (claude-code-ide-show-claude-window-in-ediff t)
   (claude-code-ide-system-prompt nil)
-  (claude-code-ide-use-side-window t)
+  (claude-code-ide-use-side-window nil)
   (claude-code-ide-window-side 'right)
   ;; 1 char wider than previous
   (claude-code-ide-window-width 81)
@@ -82,7 +82,7 @@
   :hook ((gptel-mode . my-gptel-setup-behavior))
   :custom
   (gptel-track-response t)
-  (gptel-log-level 'error)
+  (gptel-log-level 'debug)
   (gptel-use-curl t)
   (gptel-stream t)
   (gptel-use-header-line t)
@@ -90,7 +90,7 @@
   (gptel-response-prefix-alist '((org-mode . "** Assistant\n")))
   (gptel-model 'claude-sonnet-4-20250514)
   (gptel-max-tokens 3000)
-  (gptel-use-tools nil)
+  (gptel-use-tools t)
   (gptel-expert-commands t)
   (gptel-enable-enhanced-state-tracking t)
   (gptel-auto-repair-invalid-state t)
@@ -245,21 +245,27 @@
         (setq gptel-tools
               (list
                (gptel-make-tool
-                :function (lambda (path) (claude-agent--tool-read-file `((path . ,path))))
+                :function (lambda (&rest args)
+                           (let ((path (plist-get args :path)))
+                             (claude-agent--tool-read-file `((path . ,path)))))
                 :name "read_file"
                 :description "Read contents of a file"
                 :args (list (list :name "path" :type "string" :description "File path"))
                 :category "filesystem")
 
                (gptel-make-tool
-                :function (lambda (path) (claude-agent--tool-list-files `((path . ,path))))
+                :function (lambda (&rest args)
+                           (let ((path (plist-get args :path)))
+                             (claude-agent--tool-list-files `((path . ,path)))))
                 :name "list_files"
                 :description "List files in directory"
                 :args (list (list :name "path" :type "string" :description "Directory path"))
                 :category "filesystem")
 
                (gptel-make-tool
-                :function (lambda (command) (claude-agent--tool-bash `((command . ,command))))
+                :function (lambda (&rest args)
+                           (let ((command (plist-get args :command)))
+                             (claude-agent--tool-bash `((command . ,command)))))
                 :name "bash"
                 :description "Execute shell command"
                 :args (list (list :name "command" :type "string" :description "Shell command"))
