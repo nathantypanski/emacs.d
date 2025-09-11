@@ -2,6 +2,8 @@
 ;;
 ;; Helper functions that don't fit nicely anywhere else.
 
+(require 'ansi-color)
+
 (use-package s
   :ensure t
   :straight t)
@@ -319,5 +321,72 @@ Returns the window displaying the buffer, or nil if buffer doesn't exist."
 see docs for `add-hook'."
   (remove-hook hook function local)
   (add-hook hook function append local))
+
+(defun my-run-process-in-buffer-unsafe (cmd)
+  "Run shell `cmd' asynchronously in a new buffer, showing live colored output."
+  (interactive (list (read-shell-command "$ ")))
+  (let* ((name-frag (string-trim (if (> (length cmd) 40)
+                                     (concat (substring cmd 0 40) "…")
+                                   cmd)))
+         (buf (generate-new-buffer (format "*cmd:%s*" name-frag))))
+    (with-current-buffer buf
+      (setq-local buffer-read-only t)
+      (setq-local truncate-lines t)
+      (special-mode))                     ; gives you 'q' to quit, etc.
+    (let ((proc (start-process-shell-command name-frag buf cmd)))
+      ;; Filter to apply ANSI colors and append incrementally.
+      (set-process-filter
+       proc
+       (lambda (p chunk)
+         (when (buffer-live-p (process-buffer p))
+           (with-current-buffer (process-buffer p)
+             (let ((inhibit-read-only t))
+               (goto-char (point-max))
+               (insert (ansi-color-apply chunk)))))))
+      ;; Sentinel to append exit status footer and lock buffer.
+      (set-process-sentinel
+       proc
+       (lambda (p event)
+         (when (memq (process-status p) '(exit signal))
+           (with-current-buffer (process-buffer p)
+             (let ((inhibit-read-only t))
+               (goto-char (point-max))
+               (insert (format "\n\n[%s at %s]\n"
+                               (string-trim event)
+                               (format-time-string "%Y-%m-%d %H:%M:%S"))))
+             (read-only-mode 1))))))
+    (pop-to-buffer buf)))
+
+(defun my-compile-cmd-unsafe (cmd)
+  "Run CMD under `compilation-mode` in a new buffer for error navigation."
+  (interactive (list (read-shell-command "Compile cmd: ")))
+  ;; `compilation-start` always creates/uses a buffer; it’s async by default.
+  (let ((default-directory (or (when-let ((prj (ignore-errors (project-current))))
+                                 (project-root prj))
+                               default-directory)))
+    (compilation-start cmd 'compilation-mode
+                       (lambda (_) (format "*compile:%s*" cmd)))))
+;; Tip: M-g n / M-g p to jump between errors; RET on a file:line opens it.
+
+(defun my-run-prog-async-safe (prog args)
+  "Run PROG with list ARGS asynchronously in a new buffer (no shell)."
+  (interactive
+   (let* ((prog (read-file-name "Program: " nil nil t))
+          (args (split-string-and-unquote (read-string "Args: "))))
+     (list prog args)))
+  (let* ((name (format "%s %s" (file-name-nondirectory prog)
+                       (mapconcat #'identity args " ")))
+         (buf  (generate-new-buffer (format "*proc:%s*" name)))
+         (proc (apply #'start-process name buf prog args)))
+    (with-current-buffer buf (special-mode))
+    (set-process-sentinel
+     proc (lambda (p e)
+            (when (memq (process-status p) '(exit signal))
+              (with-current-buffer (process-buffer p)
+                (let ((inhibit-read-only t))
+                  (goto-char (point-max))
+                  (insert (format "\n\n[%s]" (string-trim e))))
+                (read-only-mode 1)))))
+    (pop-to-buffer buf)))
 
 (provide 'my-functions)
