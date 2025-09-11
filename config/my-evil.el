@@ -325,7 +325,8 @@ If LSP isn’t active here, signal a user‑friendly error."
    "0"              'my-smart-home
    "/"              'evil-search-forward
    "Y"              "y$"
-   "P"              'consult-yank-from-kill-ring)
+   "P"              'consult-yank-from-kill-ring
+   "gQ"             'fill-region)
 
   (general-define-key
    :states 'insert
