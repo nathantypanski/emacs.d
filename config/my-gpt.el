@@ -78,7 +78,7 @@
   (gptel-user-header ((t (:foreground "#dca3a3" :weight bold))))
   (gptel-assistant-header ((t (:foreground "#7f9f7f" :weight bold))))
   (gptel-response ((t (:foreground "#9fc59f"))))
-  :commands (gptel gptel-menu gptel-send gptel-request my-gptel-review my-gptel-explain my-gptel-claude my-gptel-openai my-gptel-check-tokens)
+  :commands (gptel gptel-menu gptel-send gptel-request my-gptel-review my-gptel-explain my-gptel-switch-model)
   :hook ((gptel-mode . my-gptel-setup-behavior))
   :custom
   (gptel-track-response t)
@@ -91,6 +91,8 @@
   (gptel-model 'claude-sonnet-4-20250514)
   (gptel-max-tokens 3000)
   (gptel-use-tools t)
+  ;; lets us use `-n' to track number of responses, `-T' to set
+  ;; temperature, etc.
   (gptel-expert-commands t)
   (gptel-enable-enhanced-state-tracking t)
   (gptel-auto-repair-invalid-state t)
@@ -114,50 +116,36 @@
   (setq gptel-default-mode 'org-mode)
   (setq gptel-directives (append my-gptel-directives gptel-directives))
 
-  ;; Model-specific token configuration
-  (defun my-gptel-configure-tokens ()
-    "Configure response length and max tokens based on current model."
-    (pcase gptel-model
-      ('claude-opus-4-20250514
-       (setq gptel-response-length 16384 gptel-max-tokens 4096))
-      ('claude-sonnet-4-20250514
-       (setq gptel-response-length 16384 gptel-max-tokens 4096))
-      ('claude-3-7-sonnet-20250219
-       (setq gptel-response-length 16384 gptel-max-tokens 4096))
-      ('claude-3-opus-20240229
-       (setq gptel-response-length 8192 gptel-max-tokens 8192))
-      ('claude-3-5-sonnet-20241022
-       (setq gptel-response-length 8192 gptel-max-tokens 8192))
-      ('claude-3-5-haiku-20241022
-       (setq gptel-response-length 4096 gptel-max-tokens 8192))
-      ('gpt-4o
-       (setq gptel-response-length 4096 gptel-max-tokens 4096))
-      ('gpt-4o-mini
-       (setq gptel-response-length 16384 gptel-max-tokens 16384))
-      ('o1-preview
-       (setq gptel-response-length 32768 gptel-max-tokens 32768))
-      (_
-       (setq gptel-response-length 4096 gptel-max-tokens 4096))))
+  ;; Simple model switcher
+  (defvar my-gptel-models
+    '(("Claude Sonnet" . (claude-sonnet-4-20250514 anthropic))
+      ("Claude Opus" . (claude-opus-4-20250514 anthropic))
+      ("GPT-4o" . (gpt-4o openai))
+      ("GPT-4o Mini" . (gpt-4o-mini openai))))
 
-  ;; Token usage estimator
-  (defun my-gptel-check-tokens ()
-    "Check estimated token usage before sending."
+  (defun my-gptel-switch-model ()
+    "Switch gptel model and backend."
     (interactive)
-    (let* ((content (if (use-region-p)
-                        (buffer-substring-no-properties (region-beginning) (region-end))
-                      (buffer-string)))
-           (estimated-tokens (/ (length content) 4))
-           (total (+ estimated-tokens gptel-response-length)))
-      (message "Estimated: %d input + %d output = %d total (query limit: %dK)"
-               estimated-tokens gptel-response-length total
-               (round (/ gptel-max-tokens 1000.0)))))
-
-  ;; Auto-configure tokens when model changes
-  (advice-add 'my-gptel-claude :after (lambda (&rest _) (my-gptel-configure-tokens)))
-  (advice-add 'my-gptel-openai :after (lambda (&rest _) (my-gptel-configure-tokens)))
-
-  ;; Configure initial tokens
-  (my-gptel-configure-tokens)
+    (let* ((choice (completing-read "Model: " (mapcar #'car my-gptel-models)))
+           (model-info (cdr (assoc choice my-gptel-models)))
+           (model (car model-info))
+           (provider (cadr model-info)))
+      (pcase provider
+        ('anthropic
+         (require 'gptel-anthropic)
+         (let ((key (or (getenv "ANTHROPIC_API_KEY")
+                        (read-passwd "Anthropic API Key: "))))
+           (setq gptel-model model
+                 gptel-backend (gptel-make-anthropic "Claude" :key key :stream t)
+                 gptel-api-key key)))
+        ('openai
+         (let* ((key (or (getenv "OPENAI_API_KEY")
+                         (read-passwd "OpenAI API Key: ")))
+                (backend (cdr (assoc "ChatGPT" gptel--known-backends))))
+           (setq gptel-model model
+                 gptel-backend backend
+                 gptel-api-key key))))
+      (message "Switched to %s" choice)))
 
   ;; Buffer behavior
   (defun my-gptel-setup-behavior ()
@@ -166,37 +154,6 @@
     (setq-local auto-save-timeout 60)
     (setq-local auto-save-visited-mode nil))
 
-  ;; Provider switching
-  (defun my-gptel-claude (model)
-    "Switch to Claude backend with MODEL selection."
-    (interactive
-     (list (completing-read "Claude Model: "
-                            '("claude-opus-4-20250514" "claude-sonnet-4-20250514" "claude-3-7-sonnet-20250219" "claude-3-opus-20240229" "claude-3-5-sonnet-20241022" "claude-3-5-haiku-20241022")
-                            nil t nil nil "claude-opus-4-20250514")))
-    (require 'gptel-anthropic)
-    (let ((key (or (getenv "ANTHROPIC_API_KEY")
-                   (read-passwd "Anthropic API Key: "))))
-      (setq gptel-model (intern model)
-            gptel-backend (gptel-make-anthropic "Claude" :key key :stream t)
-            gptel-api-key key)
-      (message "Switched to Claude %s" model)))
-
-  (defun my-gptel-openai (model)
-    "Switch to OpenAI backend with MODEL selection."
-    (interactive
-     (list (completing-read "OpenAI Model: "
-                            '("gpt-4o" "gpt-4o-mini" "gpt-4-turbo" "o1-preview" "o1-mini")
-                            nil t nil nil "gpt-4o-mini")))
-    (let* ((key (or (getenv "OPENAI_API_KEY")
-                    (read-passwd "OpenAI API Key: ")))
-           (backend (cdr (assoc "ChatGPT" gptel--known-backends)))
-           (model-obj (cl-find model (gptel-backend-models backend)
-                               :test (lambda (name model)
-                                       (string= name (gptel--model-name model))))))
-      (setq gptel-model model-obj
-            gptel-backend backend
-            gptel-api-key key)
-      (message "Switched to OpenAI %s" model)))
 
   ;; Core commands
   (defun my-gptel-explain ()
@@ -227,58 +184,125 @@
           (message "Added files to context"))
       (message "No project found")))
 
-  ;; Simplified tool integration
-  (defvar my-gptel-tools-enabled nil)
+  ;; Clean tool implementations for gptel
+  (defvar my-gptel-blocked-paths
+    '("/etc/" "/usr/" "/bin/" "/sbin/" "/root/")
+    "System paths where AI tools are NOT allowed to operate.")
 
-  (defun my-gptel-enable-tools ()
-    "Enable claude-agent tools for gptel."
-    (interactive)
-    (unless my-gptel-tools-enabled
-      (add-to-list 'load-path (expand-file-name "pkg/claude-agent" user-emacs-directory))
-      (when (locate-library "claude-agent")
-        (unless (locate-library "request")
-          (when (fboundp 'straight-use-package)
-            (straight-use-package 'request)))
-        (require 'claude-agent)
+  (defvar my-gptel-blocked-patterns
+    '("\\.ssh/" "\\.gnupg/" "\\.aws/" "\\.kube/" "\\.docker/"
+      "\\.password-store/" "\\.authinfo" "\\.netrc")
+    "Patterns for sensitive directories/files to block.")
 
-        ;; Register tools directly with gptel
-        (setq gptel-tools
-              (list
-               (gptel-make-tool
-                :function (lambda (&rest args)
-                           (let ((path (plist-get args :path)))
-                             (claude-agent--tool-read-file `((path . ,path)))))
-                :name "read_file"
-                :description "Read contents of a file"
-                :args (list (list :name "path" :type "string" :description "File path"))
-                :category "filesystem")
+  (defun my-gptel-path-allowed-p (path)
+    "Check if PATH is safe to access - block system and sensitive directories."
+    (let ((expanded (expand-file-name path)))
+      ;; Block if path contains sensitive patterns or is in blocked directories
+      (not (or
+            ;; Check for sensitive file names
+            (string-match-p "\\(id_rsa\\|id_ed25519\\|private.*key\\|\\.pem\\|\\.key\\|wallet\\|\\.gpg\\)" expanded)
+            ;; Check for system directories
+            (cl-some (lambda (blocked)
+                       (string-prefix-p blocked expanded))
+                     my-gptel-blocked-paths)
+            ;; Check for sensitive directories anywhere in path
+            (cl-some (lambda (pattern)
+                       (string-match-p pattern expanded))
+                     my-gptel-blocked-patterns)))))
 
-               (gptel-make-tool
-                :function (lambda (&rest args)
-                           (let ((path (plist-get args :path)))
-                             (claude-agent--tool-list-files `((path . ,path)))))
-                :name "list_files"
-                :description "List files in directory"
-                :args (list (list :name "path" :type "string" :description "Directory path"))
-                :category "filesystem")
+  ;; Simple read file tool
+  (defun my-gptel-tool-read-file (path)
+    "Read contents of file at PATH with safety checks."
+    (let ((expanded-path (expand-file-name path)))
+      (cond
+       ((not (my-gptel-path-allowed-p expanded-path))
+        (format "Error: Path '%s' is outside allowed directories" path))
+       ((not (file-exists-p expanded-path))
+        (format "Error: File '%s' does not exist" path))
+       ((file-directory-p expanded-path)
+        (format "Error: '%s' is a directory, not a file" path))
+       ((> (file-attribute-size (file-attributes expanded-path)) (* 1024 1024))
+        "Error: File too large (>1MB)")
+       (t
+        (with-temp-buffer
+          (insert-file-contents expanded-path)
+          (buffer-string))))))
 
-               (gptel-make-tool
-                :function (lambda (&rest args)
-                           (let ((command (plist-get args :command)))
-                             (claude-agent--tool-bash `((command . ,command)))))
-                :name "bash"
-                :description "Execute shell command"
-                :args (list (list :name "command" :type "string" :description "Shell command"))
-                :category "system"
-                :confirm t)))
+  ;; Simple list files tool
+  (defun my-gptel-tool-list-files (path)
+    "List files in directory at PATH with safety checks."
+    (let ((expanded-path (expand-file-name (or path "."))))
+      (cond
+       ((not (my-gptel-path-allowed-p expanded-path))
+        (format "Error: Path '%s' is outside allowed directories" path))
+       ((not (file-exists-p expanded-path))
+        (format "Error: Directory '%s' does not exist" path))
+       ((not (file-directory-p expanded-path))
+        (format "Error: '%s' is not a directory" path))
+       (t
+        (mapconcat #'identity
+                   (directory-files expanded-path nil "^[^.]" t)
+                   "\n")))))
 
-        (setq my-gptel-tools-enabled t)
-        (message "Enhanced gptel tools enabled"))))
+  ;; Simple bash tool with restrictions
+  (defun my-gptel-tool-bash (command)
+    "Execute safe bash COMMAND with restrictions."
+    (cond
+     ;; Block dangerous commands
+     ((string-match-p "\\(sudo\\|rm -rf\\|dd if=\\|mkfs\\|\\bsudo\\b\\)" command)
+      (format "Error: Dangerous command blocked: %s" command))
+     ;; Allow pipes and redirects but warn about rm
+     ((string-match-p "\\brm\\b" command)
+      (if (yes-or-no-p (format "Execute command with 'rm'? %s" command))
+          (shell-command-to-string command)
+        "Command cancelled by user"))
+     (t
+      (let ((output (shell-command-to-string command)))
+        (if (string-empty-p output)
+            "(Command completed with no output)"
+          output)))))
+
+  ;; Register tools with gptel
+  (defun my-gptel-setup-tools ()
+    "Setup working gptel tools."
+    (when (fboundp 'gptel-make-tool)
+      (setq gptel-tools
+            (list
+             ;; Read file tool
+             (gptel-make-tool
+              :function #'my-gptel-tool-read-file
+              :name "read_file"
+              :description "Read contents of a file"
+              :args (list (list :name "path" :type "string" :description "File path to read"))
+              :category "file")
+
+             ;; List files tool
+             (gptel-make-tool
+              :function #'my-gptel-tool-list-files
+              :name "list_files"
+              :description "List files in a directory"
+              :args (list (list :name "path" :type "string" :description "Directory path"))
+              :category "file")
+
+             ;; Bash command tool
+             (gptel-make-tool
+              :function #'my-gptel-tool-bash
+              :name "bash"
+              :description "Execute a shell command"
+              :args (list (list :name "command" :type "string" :description "Command to execute"))
+              :category "system"
+              :confirm t)))
+      (message "Clean gptel tools configured")))
+
+  ;; Setup tools after gptel loads
+  (with-eval-after-load 'gptel
+    (my-gptel-setup-tools))
+
   ;; Load fix for gptel-menu transient crashes (keymapp 2 error)
-  (with-eval-after-load 'gptel-transient
-    (let ((fix-file (expand-file-name "config/gptel-menu-fix.el" user-emacs-directory)))
-      (when (file-exists-p fix-file)
-        (load-file fix-file))))
+  ;; Load immediately - no need to wait for gptel-transient
+  (let ((fix-file (expand-file-name "config/gptel-menu-fix.el" user-emacs-directory)))
+    (when (file-exists-p fix-file)
+      (load-file fix-file)))
 
   ;; Auto-enable gptel-mode for org files with GPTEL properties
   (defun my-auto-enable-gptel-mode ()
@@ -300,7 +324,8 @@
   (add-hook 'find-file-hook 'my-auto-enable-gptel-mode)
   (add-hook 'gptel-mode-hook 'my-corfu-disable-ispell-completion)
 
-  ;; Auto-setup tools when gptel loads
-  (my-gptel-enable-tools))
+  ;; DISABLED: Auto-setup tools - causes transient crashes
+  ;; (my-gptel-enable-tools)
+  )
 
 (provide 'my-gpt)

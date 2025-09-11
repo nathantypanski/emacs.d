@@ -99,8 +99,7 @@
   "am"         'gptel-menu
   "a RET"      'gptel-send
   "ag"         'gptel
-  "ac"         'my-gptel-claude
-  "a4"         'my-gptel-openai
+  "ac"         'my-gptel-switch-model
   "ae"         'my-gptel-explain
   "ar"         'my-gptel-review
   "at"         'my-gptel-check-tokens
