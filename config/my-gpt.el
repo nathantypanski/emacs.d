@@ -274,6 +274,11 @@
 
         (setq my-gptel-tools-enabled t)
         (message "Enhanced gptel tools enabled"))))
+  ;; Load fix for gptel-menu transient crashes (keymapp 2 error)
+  (with-eval-after-load 'gptel-transient
+    (let ((fix-file (expand-file-name "config/gptel-menu-fix.el" user-emacs-directory)))
+      (when (file-exists-p fix-file)
+        (load-file fix-file))))
 
   ;; Auto-enable gptel-mode for org files with GPTEL properties
   (defun my-auto-enable-gptel-mode ()
