@@ -3,10 +3,6 @@
 ;; Debugging utilities for tracking transient keymap corruption
 
 ;; Skip native compilation for transient to avoid keymap corruption bug
-(when (and (fboundp 'native-comp-available-p) (native-comp-available-p))
-  (unless (boundp 'native-comp-skip-packages)
-    (setq native-comp-skip-packages nil))
-  (add-to-list 'native-comp-skip-packages "transient"))
 
 (defun debug-transient-redisplay-map (orig-fun &rest args)
   "Debug wrapper for transient--make-redisplay-map"
