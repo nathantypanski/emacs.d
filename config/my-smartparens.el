@@ -25,10 +25,10 @@
   ;; (setq sp-autoescape-string-quote t)
   ;; (setq sp-autoinsert-quote-if-followed-by-closing-pair t)
 
-  ;; (setq sp-autodelete-pair t)
-  ;; (setq sp-autodelete-wrap t)
-  ;; (setq sp-autodelete-closing-pair t)
-  ;; (setq sp-autodelete-opening-pair t)
+  (setq sp-autodelete-pair t)
+  (setq sp-autodelete-wrap t)
+  (setq sp-autodelete-closing-pair t)
+  (setq sp-autodelete-opening-pair t)
   )
 
 
