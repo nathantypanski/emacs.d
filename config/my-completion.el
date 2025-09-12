@@ -121,6 +121,7 @@
   (corfu-quit-at-boundary nil)
   (corfu-quit-no-match 'separator)
   (corfu-preview-current nil)
+  (global-corfu-modes '((not org-mode) t))
   :config
   (global-corfu-mode))
 

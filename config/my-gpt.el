@@ -265,7 +265,6 @@
   ;; Register tools with gptel
   (defun my-gptel-setup-tools ()
     "Setup working gptel tools."
-    (when (fboundp 'gptel-make-tool)
       (setq gptel-tools
             (list
              ;; Read file tool
@@ -292,11 +291,12 @@
               :args (list (list :name "command" :type "string" :description "Command to execute"))
               :category "system"
               :confirm t)))
-      (message "Clean gptel tools configured")))
+      (message "Clean gptel tools configured"))
 
   ;; Setup tools after gptel loads
   (with-eval-after-load 'gptel
-    (my-gptel-setup-tools))
+    (when (fboundp 'gptel-make-tool)
+    (my-gptel-setup-tools)))
 
   ;; Load fix for gptel-menu transient crashes (keymapp 2 error)
   ;; Load immediately - no need to wait for gptel-transient
@@ -315,14 +315,23 @@
                      (and props-end (re-search-forward "^:GPTEL_" props-end t))))
           (gptel-mode 1)))))
 
-  (defun my-corfu-disable-ispell-completion ()
-    "Remove ispell-completion-at-point in modes where it causes issues."
+  (defun my-gptel-clean-completion ()
+    "Disable auto-completion and remove text-focused completions in gptel buffers."
+    (interactive)
+    ;; Disable corfu auto-popup in gptel buffers
+    (corfu-mode -1)
+
+    ;; Keep useful completions like file paths, but remove text-focused ones
     (setq-local completion-at-point-functions
-                (remove 'ispell-completion-at-point
-                        completion-at-point-functions)))
+                (cl-remove-if (lambda (fn)
+                                (memq fn '(ispell-completion-at-point
+                                           org-completion-at-point
+                                           pcomplete-completions-at-point
+                                           comint-completion-at-point)))
+                              completion-at-point-functions)))
 
   (add-hook 'find-file-hook 'my-auto-enable-gptel-mode)
-  (add-hook 'gptel-mode-hook 'my-corfu-disable-ispell-completion)
+  (add-hook 'gptel-mode-hook 'my-gptel-clean-completion)
 
   ;; DISABLED: Auto-setup tools - causes transient crashes
   ;; (my-gptel-enable-tools)
