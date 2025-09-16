@@ -75,6 +75,28 @@ globally breaks Evil's keybindings."
     (evil-define-key 'normal eshell-mode-map (kbd "G") 'my-eshell-hop-to-bottom)
     (evil-define-key 'normal eshell-mode-map (kbd "G") 'my-eshell-hop-to-bottom))
 
+
+  ;; Keep command completion but disable file/directory pcomplete
+  (defun my-eshell-disable-file-completion ()
+    "Disable file/directory completion in eshell while keeping command completion."
+    (interactive)
+    ;; Keep command name completion but remove file/directory pcomplete
+    (setq-local completion-at-point-functions
+                (cl-remove-if (lambda (fn)
+                                (memq fn '(pcomplete-completions-at-point
+                                           eshell-complete-host-reference
+                                           eshell-complete-history-reference
+                                           eshell-complete-user-reference)))
+                              completion-at-point-functions))
+
+    ;; Disable file completion in pcomplete
+    (setq-local pcomplete-autolist nil)
+    (setq-local pcomplete-cycle-completions nil)
+    (setq-local eshell-cmpl-dir-ignore ".*"))  ; Ignore all directories
+
+  (with-eval-after-load 'eshell
+    (add-hook 'eshell-mode-hook 'my-eshell-disable-file-completion))
+
   (add-hook 'eshell-mode-hook 'my-setup-eshell))
 
 (provide 'my-eshell)
