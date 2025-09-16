@@ -19,17 +19,19 @@
   (show-paren-local-mode -1)      ;; conflict
   (show-smartparens-mode -1)         ;; alternative to show-paren-mode
 
-  ;; (setq sp-autoinsert-pair t)
-  ;; (setq sp-autoskip-closing-pair 'always)
-  ;; (setq sp-cancel-autoskip-on-backward-movement t)
-  ;; (setq sp-autoescape-string-quote t)
-  ;; (setq sp-autoinsert-quote-if-followed-by-closing-pair t)
-
   (setq sp-autodelete-pair t)
   (setq sp-autodelete-wrap t)
   (setq sp-autodelete-closing-pair t)
-  (setq sp-autodelete-opening-pair t)
-  )
+  (setq sp-autodelete-opening-pair t))
+
+;; Evil integration for smartparens
+(use-package evil-smartparens
+  :ensure t
+  :hook (smartparens-enabled . evil-smartparens-mode)
+  :config
+  ;; Fix Ruby-specific smartparens issues
+  (add-hook 'ruby-mode-hook #'evil-smartparens-mode)
+  (add-hook 'ruby-ts-mode-hook #'evil-smartparens-mode))
 
 
 (provide 'my-smartparens)
