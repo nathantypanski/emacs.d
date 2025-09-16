@@ -68,7 +68,7 @@
 
   ;; tabs
   "tt"         'tab-bar-switch-to-tab
-  "t <TAB>"    'tab-bar-switch-to-last-tab
+  "T"          'tab-switch
   "tl"         'tab-list
   "tc"         'tab-bar-new-tab
   "tq"         'tab-bar-close-tab
