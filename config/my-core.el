@@ -38,6 +38,9 @@
 (setq warning-minimum-level :error)
 (setq warning-minimum-log-level :error)
 
+;; keep more messages (default 1000)
+(setq message-log-max 10000)
+
 ;; Security: Disable file-local variables and eval headers
 ;; This prevents malicious files from executing code when opened
 (setq enable-local-variables nil)      ; Disable all file-local variables
@@ -64,57 +67,17 @@
     ((eq system-type 'gnu/linux) "foot")
     ((eq system-type 'darwin) "open -a Terminal")))
 
-(defvar my-graphical-font
-  (cond
-    ((eq system-type 'darwin) "Monaco 12")
-    ((eq system-type 'gnu/linux) "Terminus (TTF)-10"))
-  "Font used for graphical editing sessions.")
-
-(defun my-general-ui-setup ()
-  "Do setup for both terminal and non-graphical modes."
-  (tab-bar-mode 1)
-  ;; don't break long lines at word boundaries
-  (global-visual-line-mode 1)
-  ;; bar cursor
-  (setq cursor-type 'box)
-  ;; number columns in the status bar
-  (column-number-mode)
-  (setq-default scroll-margin 5)
-
-  )
-
-(defun my-graphical-ui-setup ()
-  "Do setup for graphical terminals, like enabling the menu bar."
-  (interactive)
-  (menu-bar-mode 1)
-  (tool-bar-mode -1)
-  (setq ediff-window-setup-function 'ediff-setup-windows-multiframe)
-  (add-hook 'after-make-frame-functions 'my-use-default-font)
-  (setq pop-up-frames nil)
-  (setq display-buffer-alist ()
-        ;;'(("\\*Help\\*" display-buffer-pop-up-frame)
-        ;;  ("\\*Completions\\*" display-buffer-pop-up-frame)
-        ;; Add more rules as desired
-        )
-
-  (my-use-default-font))
-
-(defun my-terminal-ui-setup ()
-  "Do setup for non-graphical terminals, like disabling the toolbar."
-  (interactive)
-  (menu-bar-mode -1)
-  (tool-bar-mode -1)
-  (setq ediff-window-setup-function 'ediff-setup-windows-plain)
-  ;; try to make scrolling smooth in terminal
-  (setq scroll-preserve-screen-position t))
-
 (defun my-macos-setup ()
   "Do macos-specific setup. Caller must ensure `my-system-is-mac'."
   (require 'ls-lisp)
   (setq ls-lisp-use-insert-directory-program nil))
 
 ;; split at end of buffer in programming mode buffers
-(add-hook 'prog-mode-hook (lambda () (setq truncate-lines t)))
+(defun my-enable-truncate-lines ()
+  "Enable truncate-lines in programming modes."
+  (setq truncate-lines t))
+
+(add-hook 'prog-mode-hook 'my-enable-truncate-lines)
 
 ;; lockfiles are evil.
 (setq create-lockfiles nil)
@@ -323,43 +286,10 @@ name of the buffer."
   (interactive)
   (start-process my-terminal-emulator nil my-terminal-emulator))
 
-(defun my-set-window-font (font)
-  "Set the frame font to FONT.
-FONT is the name of a xft font, like `Monospace-10'."
-  (interactive "sFont: ")
-  ;; (set-face-attribute 'default nil :height 125 :family "Fira Mono"))
-  (set-face-attribute 'fixed-pitch nil :font font)
-  (set-face-attribute 'default nil :font font)
-  ;; (set-face-attribute 'variable-pitch nil :font font)
-  ;; (set-face-attribute 'fringe nil :family "Terminus")
-  (set-frame-font font nil t))
-
-
-(defun my-use-default-font (&optional frame)
-  "Set the frame font to the font name in the variable my-graphical-font.
-  This command only has an effect on graphical frames."
-  (interactive)
-  (my-set-window-font my-graphical-font))
-
 (global-set-key (kbd "C-x C-b") 'ibuffer)
 (global-set-key (kbd "C-x C-k") 'kill-this-buffer)
 (global-set-key (kbd "C-x g") 'my-google)
 (global-set-key (kbd "C-c e") 'my-eval-and-replace)
-
-(defun my-enable-line-numbers ()
-  "Enable line numbers in a smart way."
-  (interactive)
-  (unless (or (minibufferp)
-              (member major-mode '(org-mode
-                                   eshell-mode
-                                   shell-mode
-                                   term-mode
-                                   vterm-mode
-                                   eshell-mode)))
-    (display-line-numbers-mode)))
-
-(add-hook 'prog-mode-hook #'my-enable-line-numbers)
-(add-hook 'text-mode-hook #'my-enable-line-numbers)
 
 ;; Set undo-limit to a large value (e.g., 100 MB of changes)
 (setq undo-limit 100000000) ; 100,000,000 characters
@@ -393,13 +323,6 @@ FONT is the name of a xft font, like `Monospace-10'."
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 (set-language-environment   'utf-8)
-
-(my-general-ui-setup)
-(if (display-graphic-p)
-    ;; graphical mode
-    (my-graphical-ui-setup)
-  ;; terminal mode
-  (my-terminal-ui-setup))
 
 (if (my-system-is-mac) (my-macos-setup))
 

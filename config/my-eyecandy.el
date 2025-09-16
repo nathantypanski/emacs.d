@@ -1,9 +1,17 @@
 ;; -*- lexical-binding: t; -*-
 
+(defvar my-graphical-font
+  (cond
+    ((eq system-type 'darwin) "Monaco 12")
+    ((eq system-type 'gnu/linux) "Terminus (TTF)-12"))
+  "Font used for graphical editing sessions.")
+
 (use-package zenburn-theme
   :ensure zenburn-theme
   :config
   (unless noninteractive
+    ;; Disable any existing themes first
+    (mapc #'disable-theme custom-enabled-themes)
     (load-theme 'zenburn t)))
 
 ;; I never look at right-side fringes. Do you?
@@ -129,5 +137,87 @@
 (add-hook 'prog-mode-hook #'my-coding-mode-eyecandy)
 
 (my-clean-window-dividers-with-fringe)
+
+(defun my-enable-line-numbers ()
+  "Enable line numbers in a smart way."
+  (interactive)
+  (unless (or (minibufferp)
+              (member major-mode '(org-mode
+                                   eshell-mode
+                                   shell-mode
+                                   term-mode
+                                   vterm-mode
+                                   eshell-mode)))
+    (display-line-numbers-mode)))
+
+(add-hook 'prog-mode-hook #'my-enable-line-numbers)
+(add-hook 'text-mode-hook #'my-enable-line-numbers)
+
+(defun my-set-window-font (font)
+  "Set the frame font to FONT.
+FONT is the name of a xft font, like `Monospace-10'."
+  (interactive "sFont: ")
+  ;; (set-face-attribute 'default nil :height 125 :family "Fira Mono"))
+  (set-face-attribute 'fixed-pitch nil :font font)
+  (set-face-attribute 'default nil :font font)
+  ;; (set-face-attribute 'variable-pitch nil :font font)
+  ;; (set-face-attribute 'fringe nil :family "Terminus")
+  (set-frame-font font nil t))
+
+
+(defun my-use-default-font (&optional frame)
+  "Set the frame font to the font name in the variable my-graphical-font.
+  This command only has an effect on graphical frames."
+  (interactive)
+  (my-set-window-font my-graphical-font))
+
+(defun my-general-ui-setup ()
+  "Do setup for both terminal and non-graphical modes."
+  (tab-bar-mode 1)
+  ;; don't break long lines at word boundaries
+  (global-visual-line-mode 1)
+  ;; bar cursor
+  (setq cursor-type 'box)
+  ;; number columns in the status bar
+  (column-number-mode)
+  (setq-default scroll-margin 5))
+
+(defun my-graphical-ui-setup ()
+  "Do setup for graphical terminals, like enabling the menu bar."
+  (interactive)
+  (message "running graphical setup")
+  (menu-bar-mode t)
+  (tool-bar-mode -1)
+  (setq ediff-window-setup-function 'ediff-setup-windows-multiframe)
+  (add-hook 'after-make-frame-functions 'my-use-default-font)
+  (setq pop-up-frames nil)
+  (setq display-buffer-alist ()
+        ;;'(("\\*Help\\*" display-buffer-pop-up-frame)
+        ;;  ("\\*Completions\\*" display-buffer-pop-up-frame)
+        ;; Add more rules as desired
+        )
+  ;; Complete removal of title bar
+  (add-to-list 'default-frame-alist '(undecorated . t))
+  (setq x-gtk-use-system-tooltips nil)
+  (setq x-gtk-use-old-file-dialog t)
+  ;; Most importantly - disable GTK menu bar
+  (setq x-gtk-use-system-menu-bar nil)
+  (my-use-default-font))
+
+(defun my-terminal-ui-setup ()
+  "Do setup for non-graphical terminals, like disabling the toolbar."
+  (interactive)
+  (menu-bar-mode -1)
+  (tool-bar-mode -1)
+  (setq ediff-window-setup-function 'ediff-setup-windows-plain)
+  ;; try to make scrolling smooth in terminal
+  (setq scroll-preserve-screen-position t))
+
+(my-general-ui-setup)
+(if (display-graphic-p)
+    ;; graphical mode
+    (my-graphical-ui-setup)
+  ;; terminal mode
+  (my-terminal-ui-setup))
 
 (provide 'my-eyecandy)
