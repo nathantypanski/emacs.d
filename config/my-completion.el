@@ -3,6 +3,8 @@
 ;;
 ;;; Code:
 
+(require 'tempo)
+
 (use-package vertico
   :ensure t
   :demand t
@@ -98,7 +100,8 @@
           (apply fun args))
       ;; Else, follow normal behavior
       (apply fun args)))
-  (advice-add 'company-idle-begin :around #'my-company-inhibit-in-comments))
+  (advice-add 'company-idle-begin :around #'my-company-inhibit-in-comments)
+  (global-company-mode -1))
 
 ;; better sorting for both minibuffer & company
 (use-package prescient
@@ -109,8 +112,6 @@
   :straight t
   :after (company prescient)
   :config (company-prescient-mode 1))
-
-(require 'tempo)
 
 (use-package corfu
   :straight t
@@ -132,6 +133,23 @@
   ;; Enable corfu-terminal for TTY support
   (unless (display-graphic-p)
     (corfu-terminal-mode +1)))
+
+;; Global pcomplete settings - less aggressive
+(setq pcomplete-ignore-case t)
+(setq pcomplete-autolist nil)
+(setq pcomplete-cycle-completions nil)
+
+;; Disable ALL completion in git commit messages - it's useless there
+(defun my-disable-completion-in-git-commit ()
+  "Disable all completion in git-commit buffers."
+  (setq-local completion-at-point-functions nil)
+  (when (bound-and-true-p company-mode)
+    (company-mode -1))
+  (when (bound-and-true-p corfu-mode)
+    (corfu-mode -1))
+  (message "Disabled completion in git-commit buffer"))
+
+(add-hook 'git-commit-mode-hook 'my-disable-completion-in-git-commit)
 
 (provide 'my-completion)
 ;;; my-completion.el ends here
