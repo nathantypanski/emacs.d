@@ -91,12 +91,8 @@
   (gptel-model 'claude-sonnet-4-20250514)
   (gptel-max-tokens 3000)
   (gptel-use-tools t)
-  ;; lets us use `-n' to track number of responses, `-T' to set
-  ;; temperature, etc.
-  (gptel-expert-commands t)
   (gptel-enable-enhanced-state-tracking t)
   (gptel-auto-repair-invalid-state t)
-
   :init
   ;; Core prompts
   (defvar my-gptel-system-prompt
@@ -115,6 +111,10 @@
     (setq gptel-api-key (getenv "OPENAI_API_KEY")))
   (setq gptel-default-mode 'org-mode)
   (setq gptel-directives (append my-gptel-directives gptel-directives))
+
+  ;; lets us use `-n' to track number of responses, `-T' to set
+  ;; temperature, etc.
+  (setq gptel-expert-commands t)
 
   ;; Simple model switcher
   (defvar my-gptel-models
