@@ -160,6 +160,7 @@
      "SPC a"           #'org-agenda
      "SPC t"           #'org-todo-list
      "SPC c"           #'org-capture
+     "SPC RET"         #'org-babel-execute-maybe
      "[ ["             #'org-previous-visible-heading
      "] ]"             #'org-next-visible-heading)))
 
