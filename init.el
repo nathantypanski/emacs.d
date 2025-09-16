@@ -97,15 +97,7 @@
 (require 'my-sessions)
 (require 'my-leader-keys)
 
-;; ● Smartparens should load after Evil/evil-collection.
-;;
-;;   Smartparens needs to see Evil's keymaps and states to integrate properly.
-;;    Loading it before Evil can cause the conflicts you're experiencing -
-;;   smartparens sets up its own bindings that then get overridden or conflict
-;;    when Evil loads later.
-;;
-;;   So: Evil → Evil-collection → Smartparens
-(require 'my-smartparens)
+(require 'my-parens)
 
 (after 'evil (my-tty-cursor-update))
 

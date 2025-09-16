@@ -1,37 +1,52 @@
 ;; -*- lexical-binding: t; -*-
-;; Smartparens for structured editing of Lisp and other languages
+;; Modern pairing solution: electric-pair-mode (Evil-friendly)
 
+;; Use built-in electric-pair-mode for most modes (works great with Evil)
+(use-package electric
+  :straight (:type built-in)
+  :hook ((ruby-mode . electric-pair-local-mode)
+         (ruby-ts-mode . electric-pair-local-mode)
+         (python-mode . electric-pair-local-mode)
+         (python-ts-mode . electric-pair-local-mode)
+         (go-mode . electric-pair-local-mode)
+         (rust-mode . electric-pair-local-mode)
+         (js-mode . electric-pair-local-mode)
+         (typescript-mode . electric-pair-local-mode)
+         (nix-mode . electric-pair-local-mode))
+  :config
+  ;; Show matching parens
+  (show-paren-mode 1)
+  (setq show-paren-delay 0.1)
+  (setq show-paren-style 'parenthesis)
+
+  ;; Ruby-specific electric-pair configuration
+  (defun my-ruby-electric-setup ()
+    "Configure electric-pair-mode for Ruby - less aggressive for symbols."
+    ;; Don't pair single quotes (used for symbols like :foo)
+    ;; Be smarter about when to pair braces
+    (setq-local electric-pair-inhibit-predicate
+                (lambda (c)
+                  (cond
+                   ;; Don't pair single quotes in Ruby (symbols)
+                   ((char-equal c ?\') t)
+                   ;; Use conservative pairing for other cases
+                   (t (electric-pair-conservative-inhibit c))))))
+
+  (add-hook 'ruby-mode-hook #'my-ruby-electric-setup)
+  (add-hook 'ruby-ts-mode-hook #'my-ruby-electric-setup))
+
+;; Keep smartparens ONLY for Lisp modes where it's genuinely better
 (use-package smartparens
   :ensure t
-  :hook ((prog-mode . smartparens-mode)
-         (emacs-lisp-mode . smartparens-strict-mode)
+  :hook ((emacs-lisp-mode . smartparens-strict-mode)
          (lisp-mode . smartparens-strict-mode)
          (scheme-mode . smartparens-strict-mode)
          (clojure-mode . smartparens-strict-mode)
          (cider-repl-mode . smartparens-strict-mode))
-  :custom
-  (sp-autoskip-closing-pair 'always)
   :config
-  ;; Load default smartparens config with sane defaults
-  (require 'smartparens-config)
+  ;; Only load minimal smartparens, not the problematic language configs
+  (require 'smartparens)
+  ;; Disable show-smartparens to avoid conflicts with show-paren-mode
+  (show-smartparens-mode -1))
 
-  (show-paren-mode -1)            ;; conflict
-  (show-paren-local-mode -1)      ;; conflict
-  (show-smartparens-mode -1)         ;; alternative to show-paren-mode
-
-  (setq sp-autodelete-pair t)
-  (setq sp-autodelete-wrap t)
-  (setq sp-autodelete-closing-pair t)
-  (setq sp-autodelete-opening-pair t))
-
-;; Evil integration for smartparens
-(use-package evil-smartparens
-  :ensure t
-  :hook (smartparens-enabled . evil-smartparens-mode)
-  :config
-  ;; Fix Ruby-specific smartparens issues
-  (add-hook 'ruby-mode-hook #'evil-smartparens-mode)
-  (add-hook 'ruby-ts-mode-hook #'evil-smartparens-mode))
-
-
-(provide 'my-smartparens)
+(provide 'my-parens)
