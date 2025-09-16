@@ -72,7 +72,10 @@
   (defun my-pylsp-command (&rest _ignored)
     "Return pylsp command with appropriate Python executable."
     (interactive)
-    (list (my-python-find-executable) "-m" "pylsp"))
+    (executable-find "pylsp")
+    (let ((name "pylsp")) (start-process-shell-command name (get-buffer-create name) (list (my-python-find-executable) "-m" name)))
+
+    )
 
   ;; Debug eglot startup
   (defun my-debug-eglot ()
@@ -91,11 +94,28 @@
                '(python-ts-mode . my-pylsp-command))
   (add-to-list 'eglot-server-programs '(go-mode . ("gopls")))
   (add-to-list 'eglot-server-programs '(nix-mode . ("nixd")))
-  ;; Ruby language server - use ruby-lsp from Nix
+  ;; Ruby language server - use bundle exec ruby-lsp for proper project context
   (add-to-list 'eglot-server-programs
-               '(ruby-mode . ("ruby-lsp")))
+               '(ruby-mode . ("bundle" "exec" "ruby-lsp")))
   (add-to-list 'eglot-server-programs
-               '(ruby-ts-mode . ("ruby-lsp"))))
+               '(ruby-ts-mode . ("bundle" "exec" "ruby-lsp")))
+
+  ;; Sorbet LSP (alternative Ruby type checker LSP)
+  ;; Use this for projects with Sorbet type annotations
+  ;; To use: M-x my-ruby-use-sorbet-lsp in a Ruby buffer
+  (defun my-ruby-use-sorbet-lsp ()
+    "Switch to using Sorbet LSP for current Ruby project."
+    (interactive)
+    (setq-local eglot-server-programs
+                (cons '(ruby-mode . ("bundle" "exec" "srb" "--lsp" "."))
+                      (cons '(ruby-ts-mode . ("bundle" "exec" "srb" "--lsp" "."))
+                            (seq-filter (lambda (entry)
+                                          (not (memq (car entry) '(ruby-mode ruby-ts-mode))))
+                                        eglot-server-programs))))
+    (when (eglot-current-server)
+      (eglot-shutdown (eglot-current-server)))
+    (eglot-ensure)
+    (message "Switched to Sorbet LSP")))
 
 
 ;;--------------------------------------------------------------------
@@ -132,6 +152,8 @@
       (go-ts-mode . "*godoc*")
       (rust-mode . "*rust-doc*")
       (rust-ts-mode . "*rust-doc*")
+      (ruby-mode . "*Ruby Doc*")
+      (ruby-ts-mode . "*Ruby Doc*")
       (emacs-lisp-mode . "*Help*")
       (lisp-interaction-mode . "*Help*"))
     "Alist mapping major modes to their documentation buffer names.")
@@ -143,6 +165,8 @@
       (go-ts-mode . godoc-at-point)
       (rust-mode . rust-doc)
       (rust-ts-mode . rust-doc)
+      (ruby-mode . my-ruby-ri-help)
+      (ruby-ts-mode . my-ruby-ri-help)
       (emacs-lisp-mode . my-doc-at-point)
       (lisp-interaction-mode . my-doc-at-point))
     "Alist mapping major modes to their documentation display functions.")
@@ -181,7 +205,15 @@ With prefix ARG, use mode-specific documentation if available."
            (python-exe (my-python-find-executable))
            (cmd (format "%s -c \"import pydoc; help('%s')\"" python-exe symbol)))
       (with-output-to-temp-buffer "*Python Help*"
-        (shell-command cmd "*Python Help*")))))
+        (shell-command cmd "*Python Help*"))))
+
+  (defun my-ruby-ri-help ()
+    "Show Ruby documentation using ri."
+    (interactive)
+    (let* ((symbol (thing-at-point 'symbol))
+           (cmd (format "ri %s" symbol)))
+      (with-output-to-temp-buffer "*Ruby Doc*"
+        (shell-command cmd "*Ruby Doc*")))))
 
 
 ;; Shows eldoc popups in a child frame/box, makes multiline docstrings
@@ -249,6 +281,7 @@ With prefix ARG, use mode-specific documentation if available."
           (go-mode . go-ts-mode)
           (js-mode . js-ts-mode)
           (typescript-mode . typescript-ts-mode)
+          (ruby-mode . ruby-ts-mode)
           (bash-mode . bash-ts-mode)
           (yaml-mode . yaml-ts-mode)
           (sh-mdoe . bash-ts-mode))))
@@ -952,8 +985,29 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
 ;; ruby language
 ;;
 
+;; Tree-sitter Ruby mode (preferred)
+(use-package ruby-ts-mode
+  :straight (:type built-in)
+  :when (treesit-available-p)
+  :ensure nil
+  :mode ("\\.rb\\'" "\\.rake\\'" "Rakefile\\'" "Gemfile\\'" "\\.gemspec\\'")
+  :config
+  ;; Ruby indentation and formatting
+  (setq ruby-indent-level 2
+        ruby-indent-tabs-mode nil)
+
+  ;; Key bindings for ruby-ts-mode
+  (after 'evil
+    (evil-define-key 'normal ruby-ts-mode-map
+      (kbd ", t") 'my-ruby-sorbet-typecheck
+      (kbd ", i") 'my-ruby-sorbet-init
+      (kbd ", r") 'ruby-send-region
+      (kbd ", b") 'ruby-send-buffer)))
+
+;; Fallback Ruby mode (when tree-sitter not available)
 (use-package ruby-mode
   :ensure ruby-mode
+  :when (not (treesit-available-p))
   :commands ruby-mode
   :mode ("\\.rb\\'" "\\.rake\\'" "Rakefile\\'" "Gemfile\\'" "\\.gemspec\\'")
   :config
