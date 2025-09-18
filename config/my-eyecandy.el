@@ -186,7 +186,7 @@ FONT is the name of a xft font, like `Monospace-10'."
   "Do setup for graphical terminals, like enabling the menu bar."
   (interactive)
   (message "running graphical setup")
-  (menu-bar-mode t)
+  (menu-bar-mode -1)
   (tool-bar-mode -1)
   (setq ediff-window-setup-function 'ediff-setup-windows-multiframe)
   (add-hook 'after-make-frame-functions 'my-use-default-font)
