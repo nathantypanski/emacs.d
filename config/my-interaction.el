@@ -28,19 +28,6 @@
        )
       :ensure ace-jump-buffer)))
 
-
-(use-package guide-key
-  :ensure guide-key
-  :diminish guide-key-mode
-  :config
-  (progn
-    (setq guide-key/guide-key-sequence '("C-x" "C-c"))
-    (setq guide-key/recursive-key-sequence-flag t)
-    (guide-key-mode 1)
-    (setq guide-key/idle-delay 1.5)
-    (setq guide-key/popup-window-position 'top)))
-
-
 (use-package expand-region
   :ensure expand-region
   :init
