@@ -94,11 +94,62 @@
                '(python-ts-mode . my-pylsp-command))
   (add-to-list 'eglot-server-programs '(go-mode . ("gopls")))
   (add-to-list 'eglot-server-programs '(nix-mode . ("nixd")))
-  ;; Ruby language server - use bundle exec ruby-lsp for proper project context
+  ;; Helper function to find project root reliably
+  (defun my-find-project-root (&optional dir)
+    "Find project root by looking for .git directory or using project.el.
+Starts from DIR or current directory if DIR is nil."
+    (let ((start-dir (or dir default-directory)))
+      (or
+       ;; Try project.el first
+       (when-let ((project (project-current nil start-dir)))
+         (project-root project))
+       ;; Fallback: look for .git directory
+       (locate-dominating-file start-dir ".git")
+       ;; Last resort: current directory
+       start-dir)))
+
+  ;; Helper function to check if Gemfile contains ruby-lsp
+  (defun my-gemfile-contains-ruby-lsp-p (gemfile-path)
+    "Check if GEMFILE-PATH contains ruby-lsp gem."
+    (when (and gemfile-path (file-exists-p gemfile-path))
+      (with-temp-buffer
+        (insert-file-contents gemfile-path)
+        (goto-char (point-min))
+        (re-search-forward "gem ['\"]ruby-lsp['\"]" nil t))))
+
+  ;; Smart Ruby LSP command that handles different gemfile locations
+  (defun my-ruby-lsp-server-command (&rest _ignored)
+    "Return Ruby LSP command with appropriate bundler setup.
+Detects project gemfile configuration and uses the right bundler command."
+    (interactive)
+    (let* ((project-root (my-find-project-root))
+           (ruby-lsp-gemfile (when project-root
+                              (expand-file-name ".ruby-lsp/Gemfile" project-root)))
+           (main-gemfile (when project-root
+                          (expand-file-name "Gemfile" project-root))))
+      (cond
+       ;; Main Gemfile exists and contains ruby-lsp - use standard bundle exec
+       ((and main-gemfile (my-gemfile-contains-ruby-lsp-p main-gemfile))
+        (list "bundle" "exec" "ruby-lsp"))
+       ;; .ruby-lsp/Gemfile exists - use it with explicit BUNDLE_GEMFILE
+       ((and ruby-lsp-gemfile (file-exists-p ruby-lsp-gemfile))
+        (list "env" (format "BUNDLE_GEMFILE=%s" ruby-lsp-gemfile)
+              "bundle" "exec" "ruby-lsp"))
+       ;; Main Gemfile exists but no ruby-lsp - try bundle exec anyway
+       ((and main-gemfile (file-exists-p main-gemfile))
+        (list "bundle" "exec" "ruby-lsp"))
+       ;; No bundler setup - try direct ruby-lsp
+       (t
+        (if (executable-find "ruby-lsp")
+            (list "ruby-lsp")
+          ;; Last fallback - try with bundle anyway
+          (list "bundle" "exec" "ruby-lsp"))))))
+
+  ;; Ruby language server - use smart command for proper project context
   (add-to-list 'eglot-server-programs
-               '(ruby-mode . ("bundle" "exec" "ruby-lsp")))
+               '(ruby-mode . my-ruby-lsp-server-command))
   (add-to-list 'eglot-server-programs
-               '(ruby-ts-mode . ("bundle" "exec" "ruby-lsp")))
+               '(ruby-ts-mode . my-ruby-lsp-server-command))
 
   ;; Sorbet LSP (alternative Ruby type checker LSP)
   ;; Use this for projects with Sorbet type annotations
@@ -165,8 +216,8 @@
       (go-ts-mode . godoc-at-point)
       (rust-mode . rust-doc)
       (rust-ts-mode . rust-doc)
-      (ruby-mode . my-ruby-ri-help)
-      (ruby-ts-mode . my-ruby-ri-help)
+      (ruby-mode . my-ruby-help)
+      (ruby-ts-mode . my-ruby-help)
       (emacs-lisp-mode . my-doc-at-point)
       (lisp-interaction-mode . my-doc-at-point))
     "Alist mapping major modes to their documentation display functions.")
@@ -207,13 +258,41 @@ With prefix ARG, use mode-specific documentation if available."
       (with-output-to-temp-buffer "*Python Help*"
         (shell-command cmd "*Python Help*"))))
 
-  (defun my-ruby-ri-help ()
-    "Show Ruby documentation using ri."
+  (defun my-ruby-help ()
+    "Show Ruby documentation for symbol at point using LSP server."
     (interactive)
-    (let* ((symbol (thing-at-point 'symbol))
-           (cmd (format "ri %s" symbol)))
-      (with-output-to-temp-buffer "*Ruby Doc*"
-        (shell-command cmd "*Ruby Doc*")))))
+    (if (and (fboundp 'eglot-current-server) (eglot-current-server))
+        (condition-case err
+            (eglot-help-at-point)
+          (error
+           ;; Fall back to eldoc if eglot-help-at-point fails
+           (message "LSP help failed (%s), trying eldoc..." (error-message-string err))
+           (eldoc)
+           (eldoc-doc-buffer)))
+      (message "No LSP server active")))
+
+  ;; Eldoc buffer display functions
+  (defun my-show-eldoc-buffer ()
+    "Display *eldoc* buffer in a side window."
+    (interactive)
+    (eldoc)  ; Trigger eldoc first
+    (when-let ((eldoc-buf (get-buffer "*eldoc*")))
+      (display-buffer-in-side-window
+       eldoc-buf
+       '((side . bottom) (window-height . 0.25)))))
+
+  (defun my-show-eldoc-transient ()
+    "Show *eldoc* buffer temporarily."
+    (interactive)
+    (eldoc)  ; Trigger eldoc first
+    (when-let ((eldoc-buf (get-buffer "*eldoc*")))
+      (let ((win (display-buffer-in-side-window
+                  eldoc-buf
+                  '((side . bottom) (window-height . 0.4))))
+            (map (make-sparse-keymap)))
+        ;; Any key closes it
+        (define-key map [t] (lambda () (interactive) (delete-window win)))
+        (set-transient-map map t)))))
 
 
 ;; Shows eldoc popups in a child frame/box, makes multiline docstrings
@@ -820,7 +899,7 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
 ;; haskell language
 ;;
 
-(require 'haskell-mode)
+;; haskell-mode is loaded by the use-package declaration below
 (use-package haskell-mode
   :ensure haskell-mode
   :commands haskell-mode
@@ -984,9 +1063,20 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
 
 
 ;; -------------------------------------------------------------------
-;; ruby language
+;; Ruby language support
 ;;
-
+;; Complete Ruby development environment with:
+;; - Tree-sitter syntax highlighting (ruby-ts-mode preferred)
+;; - LSP integration via ruby-lsp (bundle exec for project context)
+;; - Sorbet type checker support with custom functions
+;; - Evil-friendly delimiter pairing via electric-pair-mode
+;; - Eldoc documentation integration
+;;
+;; Setup requirements:
+;; - Ruby 3.x with ruby-lsp gem in project Gemfile
+;; - Optional: sorbet gems for type checking
+;; - Tree-sitter Ruby grammar (automatically installed)
+;;
 ;; Tree-sitter Ruby mode (preferred)
 (use-package ruby-ts-mode
   :straight (:type built-in)
@@ -1001,6 +1091,7 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
   ;; Key bindings for ruby-ts-mode
   (after 'evil
     (evil-define-key 'normal ruby-ts-mode-map
+      (kbd "K") 'my-ruby-help
       (kbd ", t") 'my-ruby-sorbet-typecheck
       (kbd ", i") 'my-ruby-sorbet-init
       (kbd ", r") 'ruby-send-region
@@ -1031,9 +1122,10 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
        ;; Fall back to system ruby
        (executable-find "ruby")))
 
-    ;; Sorbet integration
+    ;; Sorbet type checker integration
+    ;; Use M-x my-ruby-use-sorbet-lsp to switch from ruby-lsp to sorbet LSP
     (defun my-ruby-sorbet-typecheck ()
-      "Run Sorbet type checker on current project."
+      "Run Sorbet type checker on current project using bundle exec."
       (interactive)
       (if-let ((project-root (project-root (project-current))))
           (let ((default-directory project-root))
@@ -1041,7 +1133,7 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
         (message "Not in a project directory")))
 
     (defun my-ruby-sorbet-init ()
-      "Initialize Sorbet in current project."
+      "Initialize Sorbet configuration in current project."
       (interactive)
       (if-let ((project-root (project-root (project-current))))
           (let ((default-directory project-root))
@@ -1051,6 +1143,7 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
     ;; Key bindings
     (after 'evil
       (evil-define-key 'normal ruby-mode-map
+        (kbd "K") 'my-ruby-help
         (kbd ", t") 'my-ruby-sorbet-typecheck
         (kbd ", i") 'my-ruby-sorbet-init
         (kbd ", r") 'ruby-send-region
