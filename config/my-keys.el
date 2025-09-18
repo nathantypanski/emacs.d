@@ -35,19 +35,19 @@
       (push '((nil . "DEL") . (nil . "⌫")) which-key-replacement-alist)
       (push '((nil . "ESC") . (nil . "⎋")) which-key-replacement-alist)))
 
-  ;; Leader key descriptions (comma as leader)
+  ;; Leader key descriptions (comma as leader) - conditional on display type
   (which-key-add-key-based-replacements
-    "," "📋 leader"
-    ",a" "🤖 AI/GPT"
-    ",ai" "💡 claude-ide"
-    ",g" "🔀 magit"
-    ",p" "📁 project"
-    ",q" "❌ quit"
-    ",s" "🔍 search"
-    ",t" "🗂️  tabs"
-    ",o" "📝 org"
-    ",c" "🔧 code"
-    ",j" "🦘 jump"))
+    "," "leader"
+    ",a" "AI/GPT"
+    ",ai" "claude-ide"
+    ",g" "magit"
+    ",p" "project"
+    ",q" "quit"
+    ",s" "search"
+    ",t" "tabs"
+    ",o" "org"
+    ",c" "code"
+    ",j" "jump"))
 
 (use-package key-chord
   :ensure key-chord
