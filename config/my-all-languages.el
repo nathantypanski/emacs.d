@@ -179,21 +179,26 @@ Detects project gemfile configuration and uses the right bundler command."
   :custom
   (eldoc-echo-area-use-multiline-p t)
   (eldoc-echo-area-max-lines 8)
-  (eldoc-display-functions '(eldoc-display-in-echo-area
-                             eldoc-display-in-buffer))
-  (eldoc-documentation-strategy #'eldoc-documentation-compose)
+  (eldoc-documentation-strategy #'eldoc-documentation-default)
   :config
   (general-define-key
    :states     'normal
    :keymaps    'eglot-managed-mode-map
    "K"        #'eglot-help-at-point)
   ;; Disable automatic eldoc but keep it available for eglot
-  (global-eldoc-mode -1)
+  (global-eldoc-mode 1)
+  (defun my-configure-eldoc-mode ()
+    "Run eldoc mode setup."
+    (interactive)
+    (eldoc-mode 1)
+
+    (setq eldoc-display-functions
+          '(eldoc-display-in-echo-area eldoc-display-in-buffer))
+    (setq-local eldoc-idle-delay 0.5))
+
   ;; Enable eldoc only in eglot-managed buffers
   (add-hook 'eglot-managed-mode-hook
-            (lambda ()
-              (eldoc-mode 1)
-              (setq-local eldoc-idle-delay 1.0)))
+            'my-configure-eldoc-mode)
 
   ;; Documentation buffer names for different modes
   (defconst my-doc-buffer-names
@@ -300,15 +305,19 @@ With prefix ARG, use mode-specific documentation if available."
 (use-package eldoc-box
   :after (eldoc general)
   :custom
-  (eldoc-echo-area-use-multiline-p t)
+  (eldoc-box-use-child-frame (display-graphic-p))  ; Use child frames in GUI, overlays in terminal
+      (set-face-attribute 'eldoc-box-body nil
+                          :family "DepartureMono Nerd Font" :height 0.7)
+
+
+  (eldoc-box-clear-with-C-g t)                     ; Allow C-g to clear popups
+  (eldoc-box-max-pixel-width 800)                  ; Reasonable max width
+  (eldoc-box-max-pixel-height 400)                 ; Reasonable max height
   :config
-  (general-define-key
-   :keymaps 'prog-mode-map
-   "C-c d" #'eldoc-doc-buffer)
-
-  (eldoc-box-hover-mode 1))
-
-(eldoc-box-hover-at-point-mode)
+  (when (display-graphic-p)
+    (message "configuring eldoc-box for graphical mode")
+    (eldoc-box-hover-mode 1)
+    (eldoc-box-hover-at-point-mode 1)))
 
 (use-package treesit
   :straight (:type built-in)  ; treesit is built into Emacs 29+
@@ -325,20 +334,6 @@ With prefix ARG, use mode-specific documentation if available."
           '((typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master"
                         "typescript/src")
             (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")))))
-
-
-  ;; (setq treesit-language-source-alist ())
-  ;; '((bash "https://github.com/tree-sitter/tree-sitter-bash")
-  ;;   (c "https://github.com/tree-sitter/tree-sitter-c")
-  ;;   (cpp "https://github.com/tree-sitter/tree-sitter-cpp")
-  ;;   (python "https://github.com/tree-sitter/tree-sitter-python")
-  ;;   (rust "https://github.com/tree-sitter/tree-sitter-rust")
-  ;;   (go "https://github.com/tree-sitter/tree-sitter-go")
-  ;;   (javascript "https://github.com/tree-sitter/tree-sitter-javascript")
-  ;;   (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
-  ;;   (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
-
-  ;; Auto-install missing grammars
 
   (defun my-treesit-install-all-languages ()
     "Install all configured tree-sitter languages."
