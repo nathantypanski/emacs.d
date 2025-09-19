@@ -187,7 +187,58 @@
 (use-package org-modern
   :ensure t
   :straight (:repo "minad/org-modern")
+  :custom
+  (org-modern-block-name t)
   :config
-  (global-org-modern-mode))
+  (global-org-modern-mode)
+
+  (defun my-setup-org-faces (&optional height)
+    "Do the org face setup (code block style, etc.)."
+    (interactive)
+    (when (my-display-gui-p)
+      ;; Spice things up a bit. Use a classic computing style font for the
+      ;; src block headings.
+      (let ((font-height (if height height 100)))
+        ;; Spice things up a bit. Use a classic computing style font for the
+        ;; src block headings.
+        (set-face-attribute 'org-modern-block-name nil
+                            :family "DepartureMono Nerd Font"
+                            :height 100
+                            :weight 'bold) ;; For the language identifier
+        ;; src block headings.
+        (set-face-attribute 'org-block nil
+                            :family "DepartureMono Nerd Font"
+                            :height font-height
+                            :weight 'regular) ;; For the language identifier
+        (set-face-attribute 'org-block-begin-line nil
+                            :height font-height
+                            :font "DepartureMono Nerd Font")
+        (set-face-attribute 'org-block-end-line nil
+                            :height font-height
+                            :font "DepartureMono Nerd Font")
+        ;; (set-face-attribute 'org-modern-block nil)
+
+        (message "setting face height attribute to `%s'" font-height)
+        (set-face-attribute 'org-block nil
+                            :height font-height
+                            :font "DepartureMono Nerd Font"
+                            :weight 'regular)
+        (set-face-attribute 'org-block-begin-line nil
+                            :height font-height
+                            :font "DepartureMono Nerd Font")
+        (set-face-attribute 'org-block-end-line nil
+                            :height font-height
+                            :font "DepartureMono Nerd Font")
+        (set-face-attribute 'org-modern-block-name nil
+                            :family "DepartureMono Nerd Font"
+                            :height font-height
+                            :weight 'bold))
+      ;; For each org buffer, force-load the new faces.
+      (dolist (buf (buffer-list))
+        (with-current-buffer buf
+          (when (derived-mode-p 'org-mode)
+        (font-lock-flush))))))
+
+  (my-setup-org-faces))
 
 (provide 'my-org)
