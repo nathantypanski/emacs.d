@@ -66,10 +66,14 @@ Otherwise, returns nil."
   :after (dired)
   :hook (dired-mode . diredfl-mode))
 
-(add-hook 'dired-mode-hook 'hl-line-mode)
-(add-hook 'dired-mode-hook
-          (lambda ()
-            (setq truncate-lines nil)))
+(defun my-setup-dired ()
+  "Configure dired once it activates."
+  (setq truncate-lines nil)
+  (hl-line-mode)
+  ;; Improves highlighting etc.
+  (diredfl-mode))
+
+(add-hook 'dired-mode-hook 'my-setup-dired)
 
 (setq dired-use-ls-dired t)
 
