@@ -62,6 +62,13 @@
     (define-key evil-normal-state-map (kbd "P") 'consult-yank-from-kill-ring)
     (define-key evil-normal-state-map (kbd "SPC `") 'consult-mark)))
 
+(use-package embark
+  :ensure t
+  :commands (embark-act embark-act-all)
+  :config
+  (evil-leader/set-key
+    ">" 'embark-act))
+
 (use-package embark-consult
   :ensure t
   :after (consult)
