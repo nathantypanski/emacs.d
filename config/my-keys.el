@@ -81,7 +81,20 @@
   (general-define-key
    :override nil
    "C-c m" 'my-show-messages-transient
-   "C-c d" 'my-show-eldoc-transient)
-  )
+   "C-c d" 'describe-symbol               ; Full documentation with descriptions
+   "M-`"   'tmm-menubar
+   "C-c M" 'my-show-messages-buffer))
+
+(defun my-configure-gestures ()
+  "Setup mouse gestures.
+
+- Disable text-scale-pinch (too easy to trigger by accident)."
+  (interactive)
+
+  ;; undefine <pinch>
+  (global-unset-key (kbd "<pinch>"))
+  (global-unset-key [pinch]))
+
+(my-configure-gestures)
 
 (provide 'my-keys)

@@ -95,6 +95,7 @@
 (require 'my-help)
 (require 'my-god)
 (require 'my-sessions)
+;; load this last so we can bind keys against any loaded package
 (require 'my-leader-keys)
 
 (require 'my-parens)

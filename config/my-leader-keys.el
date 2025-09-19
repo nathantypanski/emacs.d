@@ -118,9 +118,11 @@
   "o c"        'org-capture
   "o l"        'org-store-link
 
-  (kbd ".")    'elisp-slime-nav-find-elisp-thing-at-point
+  (kbd ".")    'embark-act
+  "m"          'elisp-slime-nav-find-elisp-thing-at-point
   ","          'other-window)
 
 (evil-leader/set-key-for-mode 'git-commit-mode "qq" 'git-commit-abort)
 (evil-leader/set-key-for-mode 'git-commit-mode "C" 'with-editor-finish)
+
 (provide 'my-leader-keys)
