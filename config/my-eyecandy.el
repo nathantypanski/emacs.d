@@ -158,10 +158,15 @@
 FONT is the name of a xft font, like `Monospace-10'."
   (interactive "sFont: ")
   ;; (set-face-attribute 'default nil :height 125 :family "Fira Mono"))
-  (set-face-attribute 'fixed-pitch nil :font font)
-  (set-face-attribute 'default nil :font font)
-  ;; (set-face-attribute 'variable-pitch nil :font font)
-  ;; (set-face-attribute 'fringe nil :family "Terminus")
+  (set-face-attribute 'fixed-pitch nil
+                      :font font
+                      :height 100)
+  (set-face-attribute 'default nil
+                      :font font
+                      :height 100)
+  (set-face-attribute 'variable-pitch nil
+                      :font font
+                      :height 100)
   (set-frame-font font nil t))
 
 
@@ -169,7 +174,22 @@ FONT is the name of a xft font, like `Monospace-10'."
   "Set the frame font to the font name in the variable my-graphical-font.
   This command only has an effect on graphical frames."
   (interactive)
-  (my-set-window-font my-graphical-font))
+  (my-set-window-font my-graphical-font)
+  ;; Configure font fallbacks with matching metrics for Unicode
+  (when (display-graphic-p)
+    ;; Use monospace fonts with similar metrics to Terminus for Unicode fallback
+    (let ((font "DepartureMono Nerd Font Mono Regular-12"))
+      ;; Ensure box-drawing characters use consistent metrics
+      (let ((font "DepartureMono Nerd Font Mono Regular"))
+        (set-fontset-font t '(#x2500 . #x257F) font nil 'prepend)
+        ;; Arrows and symbols
+        (set-fontset-font t '(#x2190 . #x21FF) font nil 'prepend)
+        ;; Geometric shapes
+        (set-fontset-font t '(#x25A0 . #x25FF) font nil 'prepend)))))
+
+(defun my-display-gui-p ()
+  "Return t if running in GUI mode, nil if terminal."
+  (display-graphic-p))
 
 (defun my-general-ui-setup ()
   "Do setup for both terminal and non-graphical modes."
@@ -180,6 +200,9 @@ FONT is the name of a xft font, like `Monospace-10'."
   (setq cursor-type 'box)
   ;; number columns in the status bar
   (column-number-mode)
+  ;; Put ediff control panels in a separate frame in graphical mode.
+  ;; In terminal mode, ediff will do everything in one frame.
+  (setq ediff-window-setup-function 'ediff-setup-windows-default)
   (setq-default scroll-margin 5))
 
 (defun my-graphical-ui-setup ()
@@ -188,9 +211,9 @@ FONT is the name of a xft font, like `Monospace-10'."
   (message "running graphical setup")
   (menu-bar-mode -1)
   (tool-bar-mode -1)
-  (setq ediff-window-setup-function 'ediff-setup-windows-multiframe)
+  ;; Basic ediff setup - specific configurations are in my-gpt.el
+  (setq ediff-window-setup-function 'ediff-setup-windows-default)
   (add-hook 'after-make-frame-functions 'my-use-default-font)
-  (setq pop-up-frames nil)
   (setq display-buffer-alist ()
         ;;'(("\\*Help\\*" display-buffer-pop-up-frame)
         ;;  ("\\*Completions\\*" display-buffer-pop-up-frame)
@@ -209,7 +232,6 @@ FONT is the name of a xft font, like `Monospace-10'."
   (interactive)
   (menu-bar-mode -1)
   (tool-bar-mode -1)
-  (setq ediff-window-setup-function 'ediff-setup-windows-plain)
   ;; try to make scrolling smooth in terminal
   (setq scroll-preserve-screen-position t))
 
