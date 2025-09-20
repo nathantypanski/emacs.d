@@ -137,7 +137,6 @@
      "SPC ]"           #'org-metadown
      "SPC j"           #'org-insert-subheading
      "SPC h"           #'org-insert-heading
-     "SPC RET"         #'org-insert-heading-after-current
      "SPC }"           #'org-do-demote
      "SPC {"           #'org-do-promote
      "SPC d"           #'org-deadline
@@ -160,6 +159,7 @@
      "SPC a"           #'org-agenda
      "SPC t"           #'org-todo-list
      "SPC c"           #'org-capture
+     "SPC SPC RET"         #'org-insert-heading-after-current
      "SPC RET"         #'org-babel-execute-maybe
      "[ ["             #'org-previous-visible-heading
      "] ]"             #'org-next-visible-heading)))
