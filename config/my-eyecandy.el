@@ -167,6 +167,8 @@ FONT is the name of a xft font, like `Monospace-10'."
   (set-face-attribute 'variable-pitch nil
                       :font font
                       :height 100)
+  (set-face-attribute 'info-menu-header nil
+                      :height 100)
   (set-frame-font font nil t))
 
 
@@ -175,17 +177,22 @@ FONT is the name of a xft font, like `Monospace-10'."
   This command only has an effect on graphical frames."
   (interactive)
   (my-set-window-font my-graphical-font)
-  ;; Configure font fallbacks with matching metrics for Unicode
+  ;; Essential font fallback prevention - prevent wrong-sized fonts
   (when (display-graphic-p)
-    ;; Use monospace fonts with similar metrics to Terminus for Unicode fallback
-    (let ((font "DepartureMono Nerd Font Mono Regular-12"))
-      ;; Ensure box-drawing characters use consistent metrics
-      (let ((font "DepartureMono Nerd Font Mono Regular"))
-        (set-fontset-font t '(#x2500 . #x257F) font nil 'prepend)
-        ;; Arrows and symbols
-        (set-fontset-font t '(#x2190 . #x21FF) font nil 'prepend)
-        ;; Geometric shapes
-        (set-fontset-font t '(#x25A0 . #x25FF) font nil 'prepend)))))
+    ;; Prevent problematic fonts from being used as fallbacks
+    (dolist (bad-font '("Droid Sans" "Adwaita" "Cantarell" "DejaVu Sans"))
+      (when (find-font (font-spec :name bad-font))
+        ;; Override fallbacks to these fonts with our preferred font at correct size
+        (set-fontset-font t 'unicode "Terminus (TTF):pixelsize=12" nil 'prepend)))
+
+    ;; Scale down problematic fonts if they ever appear
+    (when (boundp 'face-font-rescale-alist)
+      (setq face-font-rescale-alist
+            (append '(("Droid Sans" . 0.75)
+                      ("Adwaita" . 0.75)
+                      ("Cantarell" . 0.75)
+                      ("DejaVu Sans" . 0.75))
+                    face-font-rescale-alist)))))
 
 (defun my-display-gui-p ()
   "Return t if running in GUI mode, nil if terminal."
