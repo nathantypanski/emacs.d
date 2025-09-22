@@ -30,20 +30,10 @@
 
   (add-hook 'ediff-startup-hook 'my-claude-ediff-help-message)
 
-  ;; fix red font hangover from ediff sessions
-  (defun my-claude-reset-faces-after-ediff ()
-    "Reset faces to prevent color hangover after ediff sessions."
-    ;; Reset default face properties that might be stuck
-    (when (current-local-map)
-      (face-remap-reset-base 'default))
-    ;; Clear any lingering face remappings
-    (setq face-remapping-alist nil)
-    ;; Force font-lock refresh
-    (when font-lock-mode
-      (font-lock-refresh-defaults)
-      (font-lock-fontify-buffer)))
-
-  (add-hook 'ediff-cleanup-hook 'my-claude-reset-faces-after-ediff)
+  ;; REMOVED: fix red font hangover from ediff sessions
+  ;; The my-claude-reset-faces-after-ediff function was causing intermittent
+  ;; syntax highlighting failures by aggressively clearing face remappings.
+  ;; Modern ediff should handle cleanup properly without custom intervention.
 
   ;; Terminal-friendly keybindings using general
   (after 'general
