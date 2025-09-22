@@ -57,6 +57,9 @@
 (setq auto-revert-check-vc-info t)               ; Check version control info when reverting
 (global-auto-revert-mode 1)                     ; Enable auto-revert globally (with prompting)
 
+;; Enable syntax highlighting globally
+(global-font-lock-mode 1)
+
 ;; Find file at point configuration
 (require 'ffap)
 (ffap-bindings)
