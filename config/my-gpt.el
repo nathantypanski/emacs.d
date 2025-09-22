@@ -12,7 +12,7 @@
   (claude-code-ide-cli-path "claude")
   (claude-code-ide-focus-claude-after-ediff t)
   (claude-code-ide-focus-on-open t)
-  (claude-code-ide-show-claude-window-in-ediff t)
+  (claude-code-ide-show-claude-window-in-ediff nil)
   (claude-code-ide-system-prompt nil)
   (claude-code-ide-use-side-window nil)
   (claude-code-ide-window-side 'right)
