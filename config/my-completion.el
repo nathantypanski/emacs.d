@@ -130,8 +130,12 @@
   (corfu-quit-no-match 'separator)
   (corfu-preview-current nil)
   (global-corfu-modes '((not org-mode) t))
+  ;; Popupinfo settings for docstrings
+  (corfu-popupinfo-delay '(0.25 . 0.1))
+  (corfu-popupinfo-hide nil)
   :config
-  (global-corfu-mode))
+  (global-corfu-mode)
+  (corfu-popupinfo-mode 1))
 
 (use-package corfu-terminal
   :straight t
