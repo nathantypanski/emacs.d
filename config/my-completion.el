@@ -71,7 +71,7 @@
 
 (use-package embark-consult
   :ensure t
-  :after (consult)
+  :after (consult embark)
   :bind (("C-." . embark-act)))
 
 (when (bound-and-true-p semantic-mode)
