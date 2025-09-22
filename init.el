@@ -54,7 +54,7 @@
       (goto-char (point-max))
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
-(setq straight-use-package-by-default :t)
+(setq straight-use-package-by-default t)
 (straight-use-package 'use-package)
 
 (require 'my-env)
