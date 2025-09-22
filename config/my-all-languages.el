@@ -1159,10 +1159,7 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
 (use-package nix-mode
   :commands nix-mode
   :ensure nix-mode
-  :mode "\\.nix\\'"
-  :config
-  (set-face-attribute 'nix-search-pname nil
-                      :height 1.4 :weight 'bold))
+  :mode "\\.nix\\'")
 
 (use-package graphviz-dot
   :ensure graphviz-dot
