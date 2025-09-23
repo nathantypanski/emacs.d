@@ -13,7 +13,7 @@
   ">"          'find-file-at-point
   "\\"         'split-window-horizontally
   "-"          'split-window-vertically
-  "e"          'eval-last-sexp
+  "e"          'elisp-eval-region-or-buffer
   "E"          'pp-eval-last-sexp
   "TAB"        'my-hop-around-buffers
   "RET"        'my-spawn-terminal-here
@@ -23,7 +23,8 @@
   "B"          'ibuffer
   "/"          'evilnc-comment-or-uncomment-lines
   "jf"         'ffap
-  "jb"         'find-buffer
+  "jb"         'switch-to-buffer
+  "jb"         'evil-collection-
   "cl"         'my-flycheck-list-errors
   "w"          'save-buffer
   "P"          'projectile-switch-project
@@ -34,6 +35,9 @@
   "x"          'execute-extended-command
   "X"          'consult-complex-command
   "s r"        'ag-regexp
+
+  ;;
+  "u v"        'vundo
 
   ;; consult
   "s R"        'consult-ripgrep
@@ -102,7 +106,9 @@
   "ac"         'my-gptel-switch-model
   "ae"         'my-gptel-explain
   "ar"         'my-gptel-review
-  "at"         'my-gptel-check-tokens
+  "aT"         'my-gptel-check-tokens
+  "ata"        'gptel-tool-confirm
+  "atr"        'gptel--reject-tool-calls
 
   ;; claude-code-ide
   "ai i"       'claude-code-ide-menu
