@@ -242,6 +242,20 @@ FONT is the name of a xft font, like `Monospace-10'."
   ;; try to make scrolling smooth in terminal
   (setq scroll-preserve-screen-position t))
 
+(defun my-enforce-consistent-font-height ()
+  "Force ALL faces to use the same height as default face, preserving other styling."
+  (interactive)
+  (let ((base-height (face-attribute 'default :height)))
+    ;; Only change height, preserve all other face attributes
+    (dolist (face (face-list))
+      (let ((current-height (face-attribute face :height nil t)))
+        (when (and current-height
+                   (not (eq current-height 'unspecified))
+                   (not (equal current-height base-height)))
+          ;; Only set :height, don't touch other attributes
+          (set-face-attribute face nil :height base-height))))
+    (message "Enforced height %s on all faces" base-height)))
+
 (my-general-ui-setup)
 (if (display-graphic-p)
     ;; graphical mode
