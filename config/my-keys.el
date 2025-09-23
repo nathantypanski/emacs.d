@@ -2,9 +2,9 @@
 (use-package which-key
   :ensure which-key
   :custom
-  (which-key-idle-delay 0.5)
+  (which-key-idle-delay 0.4)
   (which-key-side-window-location 'top)
-  (which-key-side-window-max-height 0.2)
+  (which-key-side-window-max-height 0.3)
   (which-key-min-display-lines 1)
   (which-key-popup-type (if (display-graphic-p) 'side-window 'minibuffer))
   (which-key-allow-evil-operators t)
@@ -15,7 +15,7 @@
   (which-key-add-column-padding 2)
   (which-key-sort-order 'which-key-key-order-alpha)
   (which-key-show-remaining-keys t)
-  (which-key-max-display-columns 4)
+  (setq which-key-max-display-columns 5)
   :config
   (which-key-mode)
   ;; Replace common keys with prettier symbols (conditional on display type)
@@ -84,6 +84,8 @@
    "C-c d" 'describe-symbol               ; Full documentation with descriptions
    "M-`"   'tmm-menubar
    "C-c M" 'my-show-messages-buffer))
+
+  ;; Clean undo system - no external packages needed
 
 (defun my-configure-gestures ()
   "Setup mouse gestures.
