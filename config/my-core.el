@@ -74,6 +74,19 @@
 
 ;; handling files which are modified on-disk while open in emacs
 (require 'autorevert)
+
+(defun my-smart-revert ()
+    "Revert buffer if unmodified, otherwise prompt."
+    (if (buffer-modified-p)
+        (when (y-or-n-p "Buffer modified, revert anyway? ")
+          (revert-buffer t t))
+      (revert-buffer t t t)))
+
+(defun my-revert-message ()
+  "Notify the user about reverted buffers.")
+()
+(add-hook 'after-revert-hook 'my-revert-message)
+
 (global-auto-revert-mode 1)
 (setq auto-revert-verbose t)                     ; Show messages when reverting
 (setq revert-without-query nil)                  ; Always prompt before reverting
