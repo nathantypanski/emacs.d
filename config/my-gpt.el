@@ -83,6 +83,8 @@
   (gptel-use-tools t)
   (gptel-enable-enhanced-state-tracking t)
   (gptel-auto-repair-invalid-state t)
+  (gptel-include-tool-results t)
+  (gptel-confirm-tool-calls t)
   :init
   ;; Core prompts
   (defvar my-gptel-system-prompt
