@@ -9,16 +9,10 @@
 ;; evil-collection requires this set before loading evil
 (setq evil-want-keybinding nil)
 
-(use-package undo-tree
+;; undo visualization tool
+(use-package vundo
   :ensure t
-  :config
-   (setq undo-tree-history-directory-alist
-         '(("." . "~/.emacs.d/undo-tree-history")))
-   (setq undo-tree-auto-save-history nil)
-
-  (global-undo-tree-mode))
-
-;; Smartparens is now configured in my-smartparens.el
+  :demand t)
 
 ;; https://github.com/emacs-evil/evil-collection/issues/60
 (setq evil-want-integration t)
@@ -51,7 +45,8 @@
   :config
   (evil-mode 1)
 
-  (evil-set-undo-system 'undo-tree)
+  ;; Use Emacs 28+ built-in undo-redo system (cleaner than undo-tree)
+  (evil-set-undo-system 'undo-redo)
 
   ;; DECSCUSR escapes  (CSI Ps SP q)  → block 2, underline 4, bar 6
   (defconst my-tty-cursor-escape-table
@@ -135,6 +130,12 @@ Not buffer-local, so it really is per frame.")
   (evil-set-initial-state 'vterm-mode 'emacs)
   (evil-set-initial-state 'vterm-copy-mode 'normal)
   (evil-set-initial-state 'transient-mode 'emacs)
+
+  (defun my-mode-line-update ()
+    "Update the modeline."
+    (force-mode-line-update))
+
+  (add-hook 'vterm-copy-mode-hook 'my-mode-line-update)
 
   (evil-define-text-object my-evil-next-match (count &optional beg end type)
     "Select next match."
@@ -431,7 +432,9 @@ If LSP isn’t active here, signal a user‑friendly error."
   :config
   ;; Include vterm in evil-collection
   (add-to-list 'evil-collection-mode-list 'vterm)
-  (evil-collection-init))
+  (evil-collection-init)
+  ;; corfu should be loaded because my-completion comes first.
+  (evil-collection-corfu-setup))
 
 
 (provide 'my-evil)
