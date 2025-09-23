@@ -47,16 +47,24 @@
   (sml/hidden-modes '(".*"))
   (mode-line-format
    (cons '(:eval (when (bound-and-true-p evil-local-mode)
-                   (my/evil-state-indicator)))
+                   (my-evil-state-indicator)))
          mode-line-format))
   :config
 
   (after 'evil
-    (defun my/evil-state-indicator ()
+    (defun my-evil-state-indicator ()
       (propertize
-       (concat "[" (upcase (symbol-name evil-state)) "]")
+       (cond
+        ;; Special case: vterm copy mode
+        ((and (boundp 'vterm-copy-mode) vterm-copy-mode)
+         "[VTERM-COPY]")
+        ;; Regular evil states
+        (t (concat "[" (upcase (symbol-name evil-state)) "]")))
        'face
        (cond
+        ;; Special highlighting for vterm copy mode
+        ((and (boundp 'vterm-copy-mode) vterm-copy-mode)
+         '(:foreground "yellow" :weight bold))
         ((eq evil-state 'normal)
          '(:foreground "green" :weight bold))
         ((eq evil-state 'insert)
