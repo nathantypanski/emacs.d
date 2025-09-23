@@ -46,15 +46,16 @@
   (with-eval-after-load 'evil
     (general-define-key
      :states '(normal)
+     :keymaps '(vterm-mode-map)
+     (kbd "C-a")    'vterm-copy-mode
+     )
+    (general-define-key
+     :states '(normal)
      :keymaps '(vterm-copy-mode-map)
      (kbd "q")    'vterm-copy-mode-done
      (kbd "RET")  'vterm-copy-mode-done
      (kbd "y")    'vterm-copy-mode-done
-     )
-    (evil-define-key 'normal vterm-copy-mode-map
-      (kbd "q") 'vterm-copy-mode-done
-      (kbd "RET") 'vterm-copy-mode-done
-      (kbd "y") 'vterm-copy-mode-done)))
+     )))
 
 ;; vterm-toggle for better workflow
 (use-package vterm-toggle
