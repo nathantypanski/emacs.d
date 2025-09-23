@@ -24,7 +24,7 @@
   "/"          'evilnc-comment-or-uncomment-lines
   "jf"         'ffap
   "jb"         'switch-to-buffer
-  "jb"         'evil-collection-
+  "jp"         'project-switch-to-buffer
   "cl"         'my-flycheck-list-errors
   "w"          'save-buffer
   "P"          'projectile-switch-project
