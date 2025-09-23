@@ -2,8 +2,8 @@
 
 (defvar my-graphical-font
   (cond
-    ((eq system-type 'darwin) "Monaco 12")
-    ((eq system-type 'gnu/linux) "Terminus (TTF)-12"))
+    ((my-system-is-mac) "Monaco 12")
+    ((my-system-is-linux) "Terminus (TTF)-12"))
   "Font used for graphical editing sessions.")
 
 (use-package zenburn-theme

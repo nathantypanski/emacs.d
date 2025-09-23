@@ -3,11 +3,33 @@
 ;; The big, beating heart of my little corner of Emacs.
 ;; General, mostly-plugin-independent settings go here.
 
+;; Thanks
+;; http://www.jesshamrick.com/2013/03/31/macs-and-emacs/
+(defun my-system-is-mac ()
+  "t when systm is a mac, else nil."
+  (interactive)
+  (eq system-type 'darwin))
+
+(defun my-system-is-linux ()
+  "t when systm is linux, else nil."
+  (interactive)
+  (or (eq system-type 'gnu/linux)
+      (eq system-type 'linux)))
+
+(defvar my-terminal-emulator
+(cond
+    ((my-system-is-linux) "foot")
+    ((my-system-is-mac) "open -a Terminal"))
+  "Terminal emulator to be spawned with my-spawn-terminal-here.")
+
 ;; ===================================================================
 ;; ## Performance
 ;; -------------------------------------------------------------------
 ;; 268,435,456
-(defvar my-gc-cons-threshold (* 256 1024 1024))
+(defvar my-gc-cons-threshold (* 256 1024 1024)
+  "Count of bytes until garbage collection runs. A higher value goes
+  longer without GC and results in lower average input latency. For
+  details, see `gc-cons-threshold'.")
 
 (setq
  gc-cons-threshold my-gc-cons-threshold
@@ -64,16 +86,10 @@
 (require 'ffap)
 (ffap-bindings)
 
-(defvar my-terminal-emulator
-  "Terminal emulator to be spawned with my-spawn-terminal-here."
-  (cond
-    ((eq system-type 'gnu/linux) "foot")
-    ((eq system-type 'darwin) "open -a Terminal")))
-
-(defun my-macos-setup ()
-  "Do macos-specific setup. Caller must ensure `my-system-is-mac'."
-  (require 'ls-lisp)
-  (setq ls-lisp-use-insert-directory-program nil))
+;; Use a pure elisp implementation of `ls', ensuring consistency
+;; between platforms.
+(require 'ls-lisp)
+(setq ls-lisp-use-insert-directory-program nil)
 
 ;; split at end of buffer in programming mode buffers
 (defun my-enable-truncate-lines ()
@@ -221,19 +237,6 @@
                       (advice-remove 'message 'my-debug-minibuffer-clear)
                       (message "Minibuffer debugging disabled")))))
 
-;; Thanks
-;; http://www.jesshamrick.com/2013/03/31/macs-and-emacs/
-(defun my-system-is-mac ()
-  "t when systm is a mac, else nil."
-  (interactive)
-  (string-equal system-type "darwin"))
-
-(defun my-system-is-linux ()
-  "t when systm is linux, else nil."
-  (interactive)
-   (or (string-equal system-type "gnu/linux")
-       (string-equal system-type "linux")))
-
 ;; Repurposed from
 ;; <https://github.com/bling/dotemacs/blob/master/config/init-core.el>
 (defun my-find-file-check-large-file ()
@@ -326,8 +329,6 @@ name of the buffer."
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 (set-language-environment   'utf-8)
-
-(if (my-system-is-mac) (my-macos-setup))
 
 (defun my-pair-delim (&optional ARG)
   "Set up pairing delim, e.g. disable `electiric-pair-mode' and eventually
