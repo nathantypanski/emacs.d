@@ -30,11 +30,6 @@
 
   (add-hook 'ediff-startup-hook 'my-claude-ediff-help-message)
 
-  ;; REMOVED: fix red font hangover from ediff sessions
-  ;; The my-claude-reset-faces-after-ediff function was causing intermittent
-  ;; syntax highlighting failures by aggressively clearing face remappings.
-  ;; Modern ediff should handle cleanup properly without custom intervention.
-
   ;; Terminal-friendly keybindings using general
   (after 'general
     (general-define-key
@@ -254,47 +249,97 @@
             "(Command completed with no output)"
           output)))))
 
+  ;; Add buffer/frame introspection functions
+  (defun my-gptel-get-buffer-info ()
+    "Get info about current buffer for gptel"
+    (list :buffer-name (buffer-name)
+          :major-mode major-mode
+          :point (point)
+          :mark (when (mark t) (mark t))
+          :buffer-size (buffer-size)
+          :modified-p (buffer-modified-p)))
+
+  (defun my-gptel-get-frame-info ()
+    "Get frame and window layout info"
+    (list :frames (length (frame-list))
+          :windows (length (window-list))
+          :current-window-edges (when (selected-window)
+                                   (window-edges (selected-window)))
+          :current-window-buffer (when (selected-window)
+                                   (buffer-name (window-buffer (selected-window))))
+          :frame-width (frame-width)
+          :frame-height (frame-height)))
+
+  (defun my-gptel-eval-elisp-safely (code)
+    "Safely evaluate elisp code for gptel"
+    (condition-case err
+        (eval (read code))
+      (error (format "Error: %s" err))))
+
+  (defun my-gptel-add-newline-after-tools (start end)
+    "Add newline after tool call responses"
+    (save-excursion
+      (goto-char start)  ; Use the provided start position
+      (while (re-search-forward "</invoke>" end t)  ; Search within the response region
+        (unless (looking-at "\n")
+          (insert "\n")))))
+
   ;; Register tools with gptel
   (defun my-gptel-setup-tools ()
     "Setup working gptel tools."
-      (setq gptel-tools
-            (list
-             ;; Read file tool
-             (gptel-make-tool
-              :function #'my-gptel-tool-read-file
-              :name "read_file"
-              :description "Read contents of a file"
-              :args (list (list :name "path" :type "string" :description "File path to read"))
-              :category "file")
+    (setq gptel-tools
+          (list
+           ;; Read file tool
+           (gptel-make-tool
+            :function #'my-gptel-tool-read-file
+            :name "read_file"
+            :description "Read contents of a file"
+            :args (list (list :name "path" :type "string" :description "File path to read"))
+            :category "file")
 
-             ;; List files tool
-             (gptel-make-tool
-              :function #'my-gptel-tool-list-files
-              :name "list_files"
-              :description "List files in a directory"
-              :args (list (list :name "path" :type "string" :description "Directory path"))
-              :category "file")
+           ;; List files tool
+           (gptel-make-tool
+            :function #'my-gptel-tool-list-files
+            :name "list_files"
+            :description "List files in a directory"
+            :args (list (list :name "path" :type "string" :description "Directory path"))
+            :category "file")
 
-             ;; Bash command tool
-             (gptel-make-tool
-              :function #'my-gptel-tool-bash
-              :name "bash"
-              :description "Execute a shell command"
-              :args (list (list :name "command" :type "string" :description "Command to execute"))
-              :category "system"
-              :confirm t)))
-      (message "Clean gptel tools configured"))
+           ;; Bash command tool
+           (gptel-make-tool
+            :function #'my-gptel-tool-bash
+            :name "bash"
+            :description "Execute a shell command"
+            :args (list (list :name "command" :type "string" :description "Command to execute"))
+            :category "system"
+            :confirm t)
+           (gptel-make-tool
+            :function #'my-gptel-get-buffer-info
+            :name "get_buffer_info"
+            :description "Get information about the current Emacs buffer"
+            :args nil
+            :category "emacs")
 
-  ;; Setup tools after gptel loads
-  (with-eval-after-load 'gptel
-    (when (fboundp 'gptel-make-tool)
-    (my-gptel-setup-tools)))
+           (gptel-make-tool
+            :function #'my-gptel-get-frame-info
+            :name "get_frame_info"
+            :description "Get information about Emacs frames and windows"
+            :args nil
+            :category "emacs")
+
+           (gptel-make-tool
+            :function #'my-gptel-eval-elisp-safely
+            :name "eval_elisp"
+            :description "Safely evaluate Emacs Lisp code"
+            :args (list (list :name "code" :type "string" :description "Elisp code to evaluate"))
+            :category "emacs"
+            :confirm t)
+           ))
+    (message "Clean gptel tools configured"))
 
   ;; Load fix for gptel-menu transient crashes (keymapp 2 error)
   ;; Load immediately - no need to wait for gptel-transient
-  (let ((fix-file (expand-file-name "config/gptel-menu-fix.el" user-emacs-directory)))
-    (when (file-exists-p fix-file)
-      (load-file fix-file)))
+  (require 'gptel-menu-fix)
 
   ;; Auto-enable gptel-mode for org files with GPTEL properties
   (defun my-auto-enable-gptel-mode ()
@@ -323,10 +368,9 @@
                               completion-at-point-functions)))
 
   (add-hook 'find-file-hook 'my-auto-enable-gptel-mode)
-  (add-hook 'gptel-mode-hook 'my-gptel-clean-completion)
+  (add-hook 'gptel-mode-hook 'my-gptel-clean-completion))
 
-  ;; DISABLED: Auto-setup tools - causes transient crashes
-  ;; (my-gptel-enable-tools)
-  )
+  ;; Setup tools after gptel loads
+  (my-gptel-setup-tools) ; Temporarily disabled to test MCP tools conflict
 
 (provide 'my-gpt)
