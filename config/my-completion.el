@@ -142,7 +142,7 @@
   :after corfu
   :config
   ;; Enable corfu-terminal for TTY support
-  (unless (display-graphic-p)
+  (unless (my-display-gui-p)
     (corfu-terminal-mode +1)))
 
 ;; Global pcomplete settings - less aggressive
