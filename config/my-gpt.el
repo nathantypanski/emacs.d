@@ -792,7 +792,7 @@
     (save-excursion
       (goto-char beg)
       (while (re-search-forward "#+begin_src elisp\\|#+begin_src emacs-lisp" end t)
-        (org-fontify-meta-lines-and-blocks-1)))))
+        (org-fontify-meta-lines-and-blocks-1 (- end beg))))))
 
 (add-hook 'gptel-post-response-functions #'my-gptel-fix-tool-call-rendering)
 
