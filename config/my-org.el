@@ -49,7 +49,6 @@
   (org-ellipsis "…")
 
   (org-startup-folded nil)
-  (org-src-fontify-natively t)
   (org-log-done t)
   (org-src-fontify-natively t)
 
@@ -239,6 +238,7 @@
           (when (derived-mode-p 'org-mode)
         (font-lock-flush))))))
 
-  (my-setup-org-faces))
+  (add-hook 'org-mode-hook 'my-setup-org-faces)
+  )
 
 (provide 'my-org)
