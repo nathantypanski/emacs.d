@@ -202,23 +202,49 @@ FONT is the name of a xft font, like `Monospace-10'."
                       ("DejaVu Sans" . 0.75))
                     face-font-rescale-alist)))))
 
+(defun my-enforce-consistent-font-height-ultimate ()
+  "Aggressively enforce consistent font height, including hooks to prevent changes"
+  (interactive)
+  (let ((base-height (face-attribute 'default :height)))
+    ;; First, set all face heights
+    (dolist (face (face-list))
+      (set-face-attribute face nil :height 'unspecified))
+
+    ;; Specifically target org faces
+    (dolist (face '(org-code org-block org-verbatim org-table
+                    org-inline-src-block org-block-begin-line
+                    org-block-end-line org-meta-line))
+      (when (facep face)
+        (set-face-attribute face nil :height 'unspecified)))
+
+    ;; Add advice to prevent height changes
+    (advice-add 'set-face-attribute :before
+                (lambda (face frame &rest args)
+                  (when (and (plist-member args :height)
+                            (not (equal (plist-get args :height) 'unspecified)))
+                    (message \"Blocking height change for %s\" face)
+                    (plist-put args :height 'unspecified)))
+                '((name . enforce-font-height)))
+
+    (message "Enforced consistent font heights and installed protection")))
+
 (defun my-display-gui-p ()
   "Return t if running in GUI mode, nil if terminal."
   (display-graphic-p))
 
-(defun my-general-ui-setup ()
-  "Do setup for both terminal and non-graphical modes."
-  (tab-bar-mode 1)
-  ;; don't break long lines at word boundaries
-  (global-visual-line-mode 1)
-  ;; bar cursor
-  (setq cursor-type 'box)
-  ;; number columns in the status bar
-  (column-number-mode)
-  ;; Put ediff control panels in a separate frame in graphical mode.
-  ;; In terminal mode, ediff will do everything in one frame.
-  (setq ediff-window-setup-function 'ediff-setup-windows-default)
-  (setq-default scroll-margin 5))
+(defun my-enforce-consistent-font-height ()
+  "Force ALL faces to use the same height as default face, preserving other styling."
+  (interactive)
+  (let ((base-height (face-attribute 'default :height)))
+    ;; Only change height, preserve all other face attributes
+    (dolist (face (face-list))
+      (let ((current-height (face-attribute face :height nil t)))
+        (when (and current-height
+                   (not (eq current-height 'unspecified))
+                   (not (equal current-height base-height)))
+          ;; Only set :height, don't touch other attributes
+          (set-face-attribute face nil :height base-height))))
+    (message "Enforced height %s on all faces" base-height)))
 
 (defun my-graphical-ui-setup ()
   "Do setup for graphical terminals, like enabling the menu bar."
@@ -240,7 +266,8 @@ FONT is the name of a xft font, like `Monospace-10'."
   (setq x-gtk-use-old-file-dialog t)
   ;; Most importantly - disable GTK menu bar
   (setq x-gtk-use-system-menu-bar nil)
-  (my-use-default-font))
+  (my-use-default-font)
+  (set-fontset-font t '(#x2700 . #x27BF) "DepartureMono Nerd Font"))
 
 (defun my-terminal-ui-setup ()
   "Do setup for non-graphical terminals, like disabling the toolbar."
@@ -250,25 +277,27 @@ FONT is the name of a xft font, like `Monospace-10'."
   ;; try to make scrolling smooth in terminal
   (setq scroll-preserve-screen-position t))
 
-(defun my-enforce-consistent-font-height ()
-  "Force ALL faces to use the same height as default face, preserving other styling."
-  (interactive)
-  (let ((base-height (face-attribute 'default :height)))
-    ;; Only change height, preserve all other face attributes
-    (dolist (face (face-list))
-      (let ((current-height (face-attribute face :height nil t)))
-        (when (and current-height
-                   (not (eq current-height 'unspecified))
-                   (not (equal current-height base-height)))
-          ;; Only set :height, don't touch other attributes
-          (set-face-attribute face nil :height base-height))))
-    (message "Enforced height %s on all faces" base-height)))
+(defun my-general-ui-setup ()
+  "Do setup for both terminal and non-graphical modes."
+  (tab-bar-mode 1)
+  ;; don't break long lines at word boundaries
+  (global-visual-line-mode 1)
+  ;; bar cursor
+  (setq cursor-type 'box)
+  ;; number columns in the status bar
+  (column-number-mode)
+  ;; Put ediff control panels in a separate frame in graphical mode.
+  ;; In terminal mode, ediff will do everything in one frame.
+  (setq ediff-window-setup-function 'ediff-setup-windows-multiframe)
+  (setq-default scroll-margin 5)
+
+  ;; run graphic or terminal specific setup
+  (if (display-graphic-p)
+      ;; graphical mode
+      (my-graphical-ui-setup)
+    ;; terminal mode
+    (my-terminal-ui-setup)))
 
 (my-general-ui-setup)
-(if (display-graphic-p)
-    ;; graphical mode
-    (my-graphical-ui-setup)
-  ;; terminal mode
-  (my-terminal-ui-setup))
 
 (provide 'my-eyecandy)
