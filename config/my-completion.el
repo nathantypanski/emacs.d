@@ -128,7 +128,7 @@
   (corfu-cycle t) ; Enable cycling for completions
   (corfu-quit-at-boundary nil)
   (corfu-quit-no-match 'separator)
-  (corfu-preview-current nil)
+  (setq corfu-preview-current 'insert)
   (global-corfu-modes '((not org-mode) t))
   ;; Popupinfo settings for docstrings
   (corfu-popupinfo-delay '(0.25 . 0.1))
