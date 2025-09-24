@@ -1,37 +1,54 @@
 ;; my-copy.el   -*- lexical-binding:t; -*-
 
-(defvar my-copy-command
-  (cond
-   ((eq system-type 'darwin) "pbcopy")
-   ((eq system-type 'gnu/linux) "wl-copy"))
-  "Command used for wm (i.e., outside-emacs) copies of text.")
+(defconst my-copy-program
+  (cond ((eq system-type 'darwin) (or (executable-find "pbcopy") "pbcopy"))
+        ((eq system-type 'gnu/linux) (or (executable-find "wl-copy") "wl-copy"))
+        (t nil))
+  "External program to copy to the OS clipboard.")
 
-(defvar my-paste-command
-  (cond
-   ((eq system-type 'darwin) "pbpaste")
-   ((eq system-type 'gnu/linux) "wl-paste -n"))
-  "Command used for pasting into emacs.")
+(defconst my-paste-program
+  (cond ((eq system-type 'darwin) (or (executable-find "pbpaste") "pbpaste"))
+        ((eq system-type 'gnu/linux) (or (executable-find "wl-paste") "wl-paste"))
+        (t nil))
+  "External program to paste from the OS clipboard.")
 
-;; General-purpose clipboard copy function
 (defun my-wl-copy-region (start end &optional verify)
-  "Copy region from START to END to system clipboard using wl-copy.
-If VERIFY is non-nil, check that the copy succeeded and error if not.
-When called interactively with prefix arg, enables verification."
+  "Copy region [START,END) to the OS clipboard via wl-copy/pbcopy.
+With prefix arg VERIFY, round-trip check via wl-paste/pbpaste."
   (interactive (list (region-beginning) (region-end) current-prefix-arg))
-  (let ((text (buffer-substring-no-properties start end)))
-    (with-temp-buffer
-      (insert text)
-      (call-process-region (point-min) (point-max) my-copy-command))
-    (when verify
-      (unless (string= text (string-trim (shell-command-to-string my-paste-command)))
-        (error "Copy verification failed")))
-    (message "Copied %d chars to clipboard" (length text))))
+  (unless my-copy-program
+    (user-error "No system clipboard program found"))
+  (let* ((coding-system-for-write 'utf-8-unix)
+         (status (call-process-region start end my-copy-program)))
+    (unless (and (integerp status) (zerop status))
+      (user-error "Clipboard copy failed: %s exit %S" my-copy-program status)))
+  (when verify
+    (unless my-paste-program
+      (user-error "No paste program found for verification"))
+    (let ((coding-system-for-read 'utf-8-unix))
+      (with-temp-buffer
+        (let ((status (apply #'call-process my-paste-program nil t nil
+                             (when (string-match-p "wl-paste\\'" my-paste-program) '("-n")))))
+          (unless (and (integerp status) (zerop status))
+            (user-error "Clipboard paste failed: %s exit %S" my-paste-program status))
+          (let* ((orig (buffer-substring-no-properties (region-beginning) (region-end)))
+                 (got  (buffer-string)))
+            (unless (string= orig got)
+              (user-error "Copy verification failed: %d sent vs %d received"
+                          (length orig) (length got)))))))
+  (message "Copied %d chars to clipboard" (- end start))))
 
-;; General-purpose paste function
 (defun my-wl-paste-insert ()
-  "Insert system clipboard contents at point using wl-paste."
+  "Insert OS clipboard contents at point via wl-paste/pbpaste."
   (interactive)
-  (let ((text (shell-command-to-string my-paste-command)))
-    (insert text)))
+  (unless my-paste-program
+    (user-error "No paste program found"))
+  (let ((coding-system-for-read 'utf-8-unix))
+    (with-temp-buffer
+      (let ((status (apply #'call-process my-paste-program nil t nil
+                           (when (string-match-p "wl-paste\\'" my-paste-program) '("-n")))))
+        (unless (and (integerp status) (zerop status))
+          (user-error "Clipboard paste failed: %s exit %S" my-paste-program status))
+        (insert (buffer-string))))))
 
 (provide 'my-copy)
