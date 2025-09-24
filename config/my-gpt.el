@@ -86,7 +86,7 @@
   (gptel-use-tools t)
   (gptel-enable-enhanced-state-tracking t)
   (gptel-auto-repair-invalid-state t)
-  (gptel-include-tool-results t)
+  (gptel-include-tool-results n)
   (gptel-confirm-tool-calls 'auto)
   :init
   ;; Core prompts
@@ -96,16 +96,22 @@
   (defvar my-gptel-elisp-prompt
     "You are a LLM running inside Emacs. Help me work on my elisp config. I am using emacs 30.1.90 and (use-package) with straight. Respond in org-mode. I can share any buffers or config files you request in the context.")
 
+  (defvar my-emacs-system-prompt
+    "You are a large language model living in Emacs and with introspection powers into the editor, like the ability to list/open/read buffers and run arbitrary elisp code.
+
+Running tools which consume or return large output can result in extremely high costs. Output quantity is *especially* costly: generally output costs at least 3x per token than input. So be consice and prefer tool calls which allow you to send the minimum quantity of data to achieve your desired outcome.")
+
   (defvar my-gptel-directives
     (list (cons 'Inline my-gptel-system-prompt)
-          (cons 'Elisp my-gptel-elisp-prompt)))
+          (cons 'Elisp my-gptel-elisp-prompt)
+          (cons 'Emacs my-emacs-system-prompt)))
 
   :config
   ;; Basic setup
   (when (getenv "OPENAI_API_KEY")
     (setq gptel-api-key (getenv "OPENAI_API_KEY")))
   (setq gptel-default-mode 'org-mode)
-  (setq gptel-directives (append my-gptel-directives gptel-directives))
+  (setq gptel-directives my-gptel-directives)
   (setq gptel-org-branching-context t)
 
   ;; lets us use `-n' to track number of responses, `-T' to set
@@ -208,21 +214,25 @@
 
   ;; Simple read file tool
   (defun my-gptel-tool-read-file (path)
-    "Read contents of file at PATH with safety checks."
-    (let ((expanded-path (expand-file-name path)))
-      (cond
-       ((not (my-gptel-path-allowed-p expanded-path))
-        (format "Error: Path '%s' is outside allowed directories" path))
-       ((not (file-exists-p expanded-path))
-        (format "Error: File '%s' does not exist" path))
-       ((file-directory-p expanded-path)
-        (format "Error: '%s' is a directory, not a file" path))
-       ((> (file-attribute-size (file-attributes expanded-path)) (* 1024 1024))
-        "Error: File too large (>1MB)")
-       (t
-        (with-temp-buffer
-          (insert-file-contents expanded-path)
-          (buffer-string))))))
+    "Read file with size limit."
+    (let*
+        ((max-size (* 5 1024)))
+      ((expanded-path (expand-file-name path)))
+      (if (> (file-attribute-size (file-attributes expanded-path)) max-size)
+          "File too large - please specify which section you need"
+        (cond
+         ((not (my-gptel-path-allowed-p expanded-path))
+          (format "Error: Path '%s' is outside allowed directories" path))
+         ((not (file-exists-p expanded-path))
+          (format "Error: File '%s' does not exist" path))
+         ((file-directory-p expanded-path)
+          (format "Error: '%s' is a directory, not a file" path))
+         ((> (file-attribute-size (file-attributes expanded-path)) (* 1024 1024))
+          "Error: File too large (>1MB)")
+         (t
+          (with-temp-buffer
+            (insert-file-contents expanded-path)
+            (buffer-string)))))))
 
   ;; Simple list files tool
   (defun my-gptel-tool-list-files (path)
@@ -318,21 +328,25 @@
       (format "Buffer not found: %s" buffer-name)))
 
   (defun my-gptel-list-buffers ()
-    "List all buffers with their modes and files."
-    (mapconcat
-     (lambda (buf)
-       (with-current-buffer buf
-         (format "%s [%s] %s"
-                 (buffer-name)
-                 major-mode
-                 (or (buffer-file-name) ""))))
-     (buffer-list)
-     "\n"))
+    "List buffers (max 20, exclude internal buffers)."
+    (let ((buffers (cl-remove-if
+                    (lambda (buf) (string-prefix-p " " (buffer-name buf)))
+                    (buffer-list))))
+      (when (> (length buffers) 20)
+        (setq buffers (cl-subseq buffers 0 20)))
+      (mapconcat
+       (lambda (buf)
+         (with-current-buffer buf
+           (format "%s [%s]" (buffer-name) major-mode)))
+       buffers
+       "\n")))
 
   (defun my-gptel-project-files (&optional pattern)
-    "List files in current project, optionally filtered by pattern."
+    "List files in current project, optionally filtered by pattern. Limited to 50 files."
     (if-let ((project (project-current)))
         (let ((files (project-files project)))
+          (when (> (length files) 50)
+            (setq files (cl-subseq files 0 50)))
           (if pattern
               (cl-remove-if-not
                (lambda (file) (string-match-p pattern file))
@@ -358,34 +372,6 @@
                    (or file-pattern "*")
                    pattern)))
       "Not in a project"))
-
-  (defun modify-buffer-apply-diff (buffer diff)
-    "Apply unified format DIFF to BUFFER."
-    (message "Applying diff %s to buffer %s" diff buffer)
-    (if-let ((buf (get-buffer buffer)))
-        (with-current-buffer buf
-          ;; Find the first @@ and ignore everything before it
-          (if-let ((first-hunk-pos (string-match "^@@ .*@@\n" diff)))
-              (dolist (hunk (split-string (substring diff first-hunk-pos) "^@@ .*@@\n" t))
-                (let (before after)
-                  (dolist (line (split-string hunk "\n" t))
-                    (cond
-                     ((string-prefix-p " " line)
-                      (push (substring line 1) before)
-                      (push (substring line 1) after))
-                     ((string-prefix-p "-" line)
-                      (push (substring line 1) before))
-                     ((string-prefix-p "+" line)
-                      (push (substring line 1) after))))
-                  (setq before (string-join (nreverse before) "\n")
-                        after (string-join (nreverse after) "\n"))
-                  (goto-char (point-min))
-                  (if (search-forward before nil t)
-                      (replace-match after)
-                    (message "Hunk not found in buffer %s" buffer))))
-            (message "No hunks found in diff"))
-          (format "Applied changes to buffer %s" buffer))
-      (error "Buffer %s not found" buffer)))
 
   (defun my-gptel-apply-diff-safer (buffer-name diff-content)
     "Apply unified diff directly in Emacs buffer without external patch command."
@@ -429,12 +415,99 @@
           (push (substring line 1) (plist-get (car hunks) :new-lines)))))
       (nreverse hunks)))
 
+  ;; Enhanced patch tool with better error handling
+  (defun my-gptel-apply-patch-safe (file-path diff-content &optional patch-options)
+    "Apply patch with proper error handling and permission fixes."
+    (let* ((buffer (find-file-noselect file-path))
+           (original-mode (and (file-exists-p file-path)
+                               (file-modes file-path)))
+           (made-writable nil))
+
+      (unwind-protect
+          (with-current-buffer buffer
+            ;; Make file writable if it exists and isn't writable
+            (when (and original-mode (not (file-writable-p file-path)))
+              (set-file-modes file-path (logior original-mode #o200))
+              (setq made-writable t)
+              (message "Made file %s writable for patching" file-path))
+
+            ;; Use direct text replacement for simple patches
+            (if (string-match-p "^@@.*@@" diff-content)
+                ;; Complex unified diff - use external patch command
+                (let ((temp-file (make-temp-file "gptel-patch")))
+                  (unwind-protect
+                      (progn
+                        (with-temp-file temp-file
+                          (insert diff-content))
+                        (let ((result (shell-command
+                                       (format "patch %s --read-only=warn %s < %s"
+                                               (or patch-options "-N")
+                                               (shell-quote-argument file-path)
+                                               (shell-quote-argument temp-file)))))
+                          (if (= result 0)
+                              (progn
+                                (revert-buffer t t)
+                                "Patch applied successfully")
+                            (format "Patch failed with exit code %d" result))))
+                    (when (file-exists-p temp-file)
+                      (delete-file temp-file))))
+              ;; Simple diff - do direct replacement
+              (my-gptel-apply-simple-diff diff-content)))
+
+        ;; Restore original permissions
+        (when (and made-writable original-mode)
+          (set-file-modes file-path original-mode)
+          (message "Restored original permissions for %s" file-path)))))
+
+  (defun my-gptel-apply-simple-diff (diff-content)
+    "Apply simple text replacements from diff content."
+    (let ((lines (split-string diff-content "\n"))
+          (changes 0))
+      (dolist (line lines)
+        (cond
+         ((string-prefix-p "- " line)
+          (let ((old-text (substring line 2)))
+            (goto-char (point-min))
+            (when (search-forward old-text nil t)
+              (delete-region (match-beginning 0) (match-end 0))
+              (cl-incf changes))))
+         ((string-prefix-p "+ " line)
+          (insert (substring line 2))
+          (cl-incf changes))))
+      (format "Applied %d changes" changes)))
   ;; Register tools with gptel
   (defun my-gptel-setup-tools ()
     "Setup working gptel tools."
     (interactive)
     (setq gptel-tools
           (list
+           (gptel-make-tool
+            :name "replace_in_file"
+            :description "Replace specific text in a file (more efficient than patches)"
+            :function (lambda (file old-text new-text)
+                        (let ((buf (find-file-noselect file)))
+                          (with-current-buffer buf
+                            (goto-char (point-min))
+                            (if (search-forward old-text nil t)
+                                (progn (replace-match new-text)
+                                       (save-buffer)
+                                       "Replacement made")
+                              "Text not found"))))
+            :args '((:name "file" :type "string")
+                    (:name "old_text" :type "string")
+                    (:name "new_text" :type "string"))
+            :category "edit")
+           (gptel-make-tool
+            :name "edit_buffer_line"
+            :description "Edit a specific line in current buffer"
+            :function (lambda (line-num new-content)
+                        (goto-char (point-min))
+                        (forward-line (1- line-num))
+                        (kill-line)
+                        (insert new-content)
+                        "Line updated")
+            :args '((:name "line_num" :type "integer")
+                    (:name "new_content" :type "string")))
            ;; Read file tool
            (gptel-make-tool
             :function #'my-gptel-tool-read-file
@@ -557,22 +630,7 @@
             :args (list (list :name "pattern" :type "string" :description "Search pattern")
                         (list :name "file_pattern" :type "string" :description "File glob pattern (e.g., '*.el')"))
             :category "search")
-           (gptel-make-tool
-            :function (lambda (url)
-                        (with-current-buffer (url-retrieve-synchronously url)
-                          (goto-char (point-min)) (forward-paragraph)
-                          (let ((dom (libxml-parse-html-region (point) (point-max))))
-                            (run-at-time 0 nil #'kill-buffer (current-buffer))
-                            (with-temp-buffer
-                              (eww-score-readability dom)
-                              (shr-insert-document (eww-highest-readability dom))
-                              (buffer-substring-no-properties (point-min) (point-max))))))
-            :name "read_url"
-            :description "Fetch and read the contents of a URL"
-            :args (list '(:name "url"
-                                :type "string"
-                                :description "The URL to read"))
-            :category "web")
+
            (gptel-make-tool
             :function (lambda (buffer text)
                         (with-current-buffer (get-buffer-create buffer)
@@ -754,45 +812,6 @@
 
   (add-hook 'find-file-hook 'my-auto-enable-gptel-mode)
   (add-hook 'gptel-mode-hook 'my-gptel-clean-completion)
-
-;; Better tool confirmation - add this after your tool setup
-(defun my-gptel-enhance-tool-confirmation ()
-  "Enhance tool call confirmations with detailed information."
-  (advice-add 'gptel--tool-needs-confirmation :override
-              (lambda (tool-spec call-info)
-                (let* ((tool-name (plist-get call-info :name))
-                       (tool-args (plist-get call-info :arguments))
-                       (tool-desc (plist-get tool-spec :description))
-                       (confirm-needed (or (eq gptel-confirm-tool-calls t)
-                                          (and (eq gptel-confirm-tool-calls 'auto)
-                                               (plist-get tool-spec :confirm)))))
-                  (when confirm-needed
-                    (let ((details (format "=== TOOL EXECUTION REQUEST ===
-Tool: %s
-Description: %s
-
-Arguments:
-%s
-
-Confirm execution?"
-                                          tool-name
-                                          (or tool-desc "No description provided")
-                                          (if tool-args
-                                              (mapconcat (lambda (pair)
-                                                          (format "  %s: %s"
-                                                                  (car pair)
-                                                                  (let ((val (cdr pair)))
-                                                                    (if (stringp val)
-                                                                        (if (> (length val) 200)
-                                                                            (concat (substring val 0 200) "...")
-                                                                          val)
-                                                                      (format "%S" val)))))
-                                                        tool-args "\n")
-                                            "  (no arguments)"))))
-                      (yes-or-no-p details)))))))
-
-(with-eval-after-load 'gptel
-  (my-gptel-enhance-tool-confirmation))
 
   ;; Add debug function to see what's happening
   (defun my-gptel-debug-confirmation ()
