@@ -108,7 +108,9 @@
   "ar"         'my-gptel-review
   "aT"         'my-gptel-check-tokens
   "ata"        'gptel-tool-confirm
+  "ata"        'gptel--accept-tool-calls
   "atr"        'gptel--reject-tool-calls
+  "ati"        'gptel--inspect-fsm
 
   ;; claude-code-ide
   "ai i"       'claude-code-ide-menu
