@@ -66,7 +66,7 @@
         '(("memory" :command "mcp-server-memory"))))
 
 (use-package gptel
-  :straight (:repo "karthink/gptel" :branch "state-tracking" :files ("*.el"))
+  :straight (:repo "karthink/gptel" :branch "master" :files ("*.el"))
   :custom-face
   (gptel-user-header ((t (:foreground "#dca3a3" :weight bold))))
   (gptel-assistant-header ((t (:foreground "#7f9f7f" :weight bold))))
@@ -387,6 +387,48 @@
           (format "Applied changes to buffer %s" buffer))
       (error "Buffer %s not found" buffer)))
 
+  (defun my-gptel-apply-diff-safer (buffer-name diff-content)
+    "Apply unified diff directly in Emacs buffer without external patch command."
+    (unless (get-buffer buffer-name)
+      (error "Buffer %s not found" buffer-name))
+
+    (with-current-buffer buffer-name
+      (save-excursion
+        ;; Parse the diff and apply changes directly
+        (let ((changes-applied 0))
+          (dolist (hunk (my-gptel-parse-diff diff-content))
+            (let ((start-line (plist-get hunk :start-line))
+                  (old-lines (plist-get hunk :old-lines))
+                  (new-lines (plist-get hunk :new-lines)))
+              (goto-char (point-min))
+              (forward-line (1- start-line))
+              (let ((start-pos (point)))
+                ;; Delete old lines
+                (dolist (line old-lines)
+                  (when (looking-at-p (regexp-quote line))
+                    (delete-region (point) (progn (forward-line 1) (point)))))
+                ;; Insert new lines
+                (dolist (line new-lines)
+                  (insert line "\n"))
+                (setq changes-applied (1+ changes-applied)))))
+          (format "Applied %d changes to buffer %s" changes-applied buffer-name)))))
+
+  (defun my-gptel-parse-diff (diff-content)
+    "Parse unified diff content into a list of hunks."
+    (let ((hunks '())
+          (lines (split-string diff-content "\n")))
+      (dolist (line lines)
+        (cond
+         ((string-match "^@@ -\\([0-9]+\\),?[0-9]* \\+\\([0-9]+\\),?[0-9]* @@" line)
+          (push (list :start-line (string-to-number (match-string 2 line))
+                      :old-lines '()
+                      :new-lines '()) hunks))
+         ((and hunks (string-prefix-p "-" line))
+          (push (substring line 1) (plist-get (car hunks) :old-lines)))
+         ((and hunks (string-prefix-p "+" line))
+          (push (substring line 1) (plist-get (car hunks) :new-lines)))))
+      (nreverse hunks)))
+
   ;; Register tools with gptel
   (defun my-gptel-setup-tools ()
     "Setup working gptel tools."
@@ -569,26 +611,16 @@
                                 :type "string"
                                 :description "the name of the buffer whose contents are to be retrieved"))
             :category "emacs")
+
            (gptel-make-tool
-            :name "modify_buffer"
-            :description "Modify buffer contents using unified diff format"
-            :args (list '(:name "buffer"
-                                :type "string"
-                                :description "The name of the buffer to modify")
-                        '(:name "diff"
-                                :type "string"
-                                :description "The changes to apply in unified diff format (with @@ hunks and +/- lines)"))
-            :category "emacs"
-            :function #'modify-buffer-apply-diff)
-           (gptel-make-tool
+            :name "make_directory"
+            :description "Create a new directory with the given name in the specified parent directory"
             :function (lambda (parent name)
                         (condition-case nil
                             (progn
                               (make-directory (expand-file-name name parent) t)
                               (format "Directory %s created/verified in %s" name parent))
                           (error (format "Error creating directory %s in %s" name parent))))
-            :name "make_directory"
-            :description "Create a new directory with the given name in the specified parent directory"
             :args (list '(:name "parent"
                                 :type "string"
                                 :description "The parent directory where the new directory should be created, e.g. /tmp")
@@ -598,12 +630,6 @@
             :category "file"
             :confirm t)
            (gptel-make-tool
-            :function (lambda (path filename content)
-                        (let ((full-path (expand-file-name filename path)))
-                          (with-temp-buffer
-                            (insert content)
-                            (write-file full-path))
-                          (format "Created file %s in %s" filename path)))
             :name "create_file"
             :description "Create a new file with the specified content"
             :args (list '(:name "path"
@@ -616,134 +642,59 @@
                                 :type "string"
                                 :description "The content to write to the file"))
             :category "file"
+            :function (lambda (path filename content)
+                        (let ((full-path (expand-file-name filename path)))
+                          (with-temp-buffer
+                            (insert content)
+                            (write-file full-path))
+                          (format "Created file %s in %s" filename path)))
             :confirm t)
            (gptel-make-tool
-            :name "apply_diff_fenced"
-            :description (concat
-                          "Applies a diff (patch) to a specified file using fenced diff content. This is the PREFERRED method for modifying files as it is more token-efficient."
-                          "The diff must be provided within fenced code blocks (=diff or =patch) and be in unified format. "
-                          "The LLM should generate the diff such that the file paths within the diff "
-                          "(e.g., '--- a/filename' '+++ b/filename') are appropriate for the 'file_path' argument and chosen 'patch_options'. "
-                          "Common 'patch_options' include: '' (empty, if paths in diff are exact or relative to current dir of file_path), "
-                          "'-p0' (if diff paths are full or exactly match the target including prefixes like 'a/'), "
-                          "'-p1' (if diff paths have one leading directory to strip, e.g., diff has 'a/src/file.c' and you want to patch 'src/file.c' from project root). "
-                          "Default options are '-N' (ignore already applied patches).")
-            :args (list
-                   '(:name "file_path"
-                           :type string
-                           :description "The path to the file that needs to be patched.")
-                   '(:name "diff_content"
-                           :type string
-                           :description "The diff content within fenced code blocks (=diff or =patch) in unified format.")
-                   '(:name "patch_options"
-                           :type string
-                           :optional t
-                           :description "Optional: Additional options for the 'patch' command (e.g., '-p1', '-p0', '-R'). Defaults to '-N'. Prepend other options if needed, e.g., '-p1 -N'.")
-                   '(:name "working_dir"
-                           :type string
-                           :optional t
-                           :description "Optional: The directory in which to interpret file_path and run patch. Defaults to the current buffer's directory if not specified."))
-            :category "file"
+            :name "apply_diff_safer"
+            :description "Apply unified diff directly in Emacs buffer without external patch command"
+            :args (list '(:name "buffer_name" :type "string" :description "Buffer name to modify")
+                        '(:name "diff_content" :type "string" :description "Unified diff content"))
+            :category "emacs"
+            :confirm t
             :function
-            (lambda (file_path diff_content &optional patch_options working_dir)
-              ;; Extract diff content from fenced blocks
-              (let ((extracted-diff
-                     (if (string-match "=\\(?:diff\\|patch\\)?\n\\(\\(?:.\\|\n\\)*?\\)\n=" diff_content)
-                         (match-string 1 diff_content)
-                       ;; If no fenced block found, try to use content as-is but warn
-                       (progn
-                         (message "Warning: No fenced diff block found, using content as-is")
-                         diff_content))))
+            (lambda (buffer_name diff_content)
+              (if-let ((buf (get-buffer buffer_name)))
+                  (with-current-buffer buf
+                    (let ((changes 0))
+                      ;; Parse and apply diff hunks directly
+                      (dolist (hunk (my-gptel-parse-diff diff_content))
+                        (when (my-gptel-apply-hunk hunk)
+                          (cl-incf changes)))
+                      (format "Applied %d changes to buffer %s" changes buffer_name)))
+                (error "Buffer %s not found" buffer_name))))
+           (gptel-make-tool
+            :name "replace_text_in_buffer"
+            :description "Replace text in a buffer directly without using diff/patch"
+            :function (lambda (buffer-name old-text new-text)
+                        (unless (get-buffer buffer-name)
+                          (error "Buffer %s does not exist" buffer-name))
 
-                ;; Continue with original logic using extracted diff
-                (setq diff_content extracted-diff))
-
-              (let ((original-default-directory default-directory)
-                    (user-patch-options (if (and patch_options (not (string-empty-p patch_options)))
-                                            (split-string patch_options " " t)
-                                          nil))
-                    ;; Combine user options with -N, ensuring -N is there.
-                    ;; If user provides -N or --forward, use their version. Otherwise, add -N.
-                    (base-options '("-N"))
-                    (effective-patch-options '()))
-
-                (if user-patch-options
-                    (if (or (member "-N" user-patch-options) (member "--forward" user-patch-options))
-                        (setq effective-patch-options user-patch-options)
-                      (setq effective-patch-options (append user-patch-options base-options)))
-                  (setq effective-patch-options base-options))
-
-                (let* ((out-buf-name (generate-new-buffer-name "*patch-stdout*"))
-                       (err-buf-name (generate-new-buffer-name "*patch-stderr*"))
-                       (target-file nil)
-                       (exit-status -1) ; Initialize to a known non-zero value
-                       (result-output "")
-                       (result-error ""))
-                  (unwind-protect
-                      (progn
-                        (when (and working_dir (not (string-empty-p working_dir)))
-                          (setq default-directory (expand-file-name working_dir)))
-
-                        (setq target-file (expand-file-name file_path))
-
-                        (unless (file-exists-p target-file)
-                          ;; Use error to signal failure, which gptel should catch.
-                          (error "File to patch does not exist: %s" target-file))
-
-                        ;; Handle read-only files
-                        (let ((original-mode (file-modes target-file)))
-                          (unless (file-writable-p target-file)
-                            (message "File %s is read-only, making temporarily writable" target-file)
-                            (set-file-modes target-file (logior original-mode #o200))))
-
-                        ;; Add --read-only=warn to handle remaining permission issues
-                        (setq effective-patch-options (append effective-patch-options '("--read-only=warn")))
-
-                        (with-temp-message (format "Applying diff to: `%s` with options: %s" target-file effective-patch-options)
-                          (with-temp-buffer
-                            (insert diff_content)
-                            (unless (eq (char-before (point-max)) ?\n)
-                              (goto-char (point-max))
-                              (insert "\n"))
-
-                            ;; Pass buffer *names* to call-process-region
-                            (setq exit-status (apply #'call-process-region
-                                                     (point-min) (point-max)
-                                                     "patch"       ; Command
-                                                     nil           ; delete region (no)
-                                                     (list out-buf-name err-buf-name) ; stdout/stderr buffer names
-                                                     nil           ; display (no)
-                                                     (append effective-patch-options (list target-file))))))
-
-                        ;; Retrieve content from buffers using their names
-                        (let ((stdout-buf (get-buffer out-buf-name))
-                              (stderr-buf (get-buffer err-buf-name)))
-                          (when stdout-buf
-                            (with-current-buffer stdout-buf
-                              (setq result-output (buffer-string))))
-                          (when stderr-buf
-                            (with-current-buffer stderr-buf
-                              (setq result-error (buffer-string)))))
-
-                        (if (= exit-status 0)
-                            (format "Diff successfully applied to %s.\nPatch command options: %s\nPatch STDOUT:\n%s\nPatch STDERR:\n%s"
-                                    target-file effective-patch-options result-output result-error)
-                          ;; Signal an Elisp error, which gptel will catch and display.
-                          ;; The arguments to 'error' become the error message.
-                          (error "Failed to apply diff to %s (exit status %s).\nPatch command options: %s\nPatch STDOUT:\n%s\nPatch STDERR:\n%s"
-                                 target-file exit-status effective-patch-options result-output result-error)))
-                    ;; Cleanup clause of unwind-protect
-                    (setq default-directory original-default-directory)
-                    (let ((stdout-buf-obj (get-buffer out-buf-name))
-                          (stderr-buf-obj (get-buffer err-buf-name)))
-                      (when (buffer-live-p stdout-buf-obj) (kill-buffer stdout-buf-obj))
-                      (when (buffer-live-p stderr-buf-obj) (kill-buffer stderr-buf-obj)))))))
-            :include t)
+                        (with-current-buffer buffer-name
+                          (save-excursion
+                            (goto-char (point-min))
+                            (if (search-forward old-text nil t)
+                                (progn
+                                  (replace-match new-text)
+                                  (format "Replaced text in buffer %s" buffer-name))
+                              (format "Text not found in buffer %s" buffer-name)))))
+            :args (list '(:name "buffer_name" :type "string" :description "Buffer to modify")
+                        '(:name "old_text" :type "string" :description "Text to replace")
+                        '(:name "new_text" :type "string" :description "Replacement text"))
+            :category "emacs"
+            :confirm t)
            ))
     (message "Clean gptel tools configured"))
+  (my-gptel-setup-tools)
+
 
   ;; Load fix for gptel-menu transient crashes (keymapp 2 error)
   ;; Load immediately - no need to wait for gptel-transient
+
   (require 'gptel-menu-fix)
 
   ;; Auto-enable gptel-mode for org files with GPTEL properties
@@ -775,6 +726,45 @@
   (add-hook 'find-file-hook 'my-auto-enable-gptel-mode)
   (add-hook 'gptel-mode-hook 'my-gptel-clean-completion)
 
-  (my-gptel-setup-tools))
+  ;; Add this to your my-gpt.el after the tool setup:
+  (defun my-gptel-detailed-tool-confirmation (tool-spec call-info)
+    "Show detailed confirmation dialog for tool calls with full information."
+    (let* ((tool-name (plist-get call-info :name))
+           (tool-args (plist-get call-info :arguments))
+           (tool-desc (plist-get tool-spec :description))
+           (details (format "=== TOOL CALL CONFIRMATION ===
+Tool: %s
+Description: %s
+Arguments:
+%s
+
+This tool will be executed with these parameters.
+Continue?"
+                            tool-name
+                            (or tool-desc "No description")
+                            (mapconcat (lambda (arg)
+                                         (format "  • %s: %s"
+                                                 (car arg)
+                                                 (if (stringp (cdr arg))
+                                                     (if (> (length (cdr arg)) 100)
+                                                         (concat (substring (cdr arg) 0 100) "...")
+                                                       (cdr arg))
+                                                   (format "%S" (cdr arg)))))
+                                       tool-args "\n"))))
+      (yes-or-no-p details)))
+
+  ;; Override the default confirmation behavior
+  (advice-add 'gptel--tool-confirm :override #'my-gptel-detailed-tool-confirmation)
+
+  ;; Add debug function to see what's happening
+  (defun my-gptel-debug-confirmation ()
+    "Debug tool confirmation state."
+    (interactive)
+    (message "Current overlays with gptel-tool: %s"
+             (mapcar (lambda (ov)
+                       (list (overlay-start ov) (overlay-end ov)
+                             (overlay-get ov 'gptel-tool)))
+                     (seq-filter (lambda (ov) (overlay-get ov 'gptel-tool))
+                                 (overlays-in (point-min) (point-max)))))))
 
 (provide 'my-gpt)
