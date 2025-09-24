@@ -773,39 +773,8 @@
                               completion-at-point-functions)))
 
   (add-hook 'find-file-hook 'my-auto-enable-gptel-mode)
-  (add-hook 'gptel-mode-hook 'my-gptel-clean-completion))
+  (add-hook 'gptel-mode-hook 'my-gptel-clean-completion)
 
-(gptel-make-preset 'default
-  :description "My default settings"
-  :system 'default
-  :backend "Claude"
-  :model 'claude-sonnet-4-20250514
-  :tools t :temperature nil :stream t)
-
-(gptel-make-preset 'programmer
-  :description "Code generation with context"
-  :system 'programmer
-  :backend "Claude"
-  :model 'claude-sonnet-4-20250514
-  :tools t :use-context 'system)
-
-(gptel-make-preset 'quickask
-  :description "Fast queries, no context"
-  :backend "Claude"
-  :model 'claude-3-5-haiku-20241022
-  :use-context nil :tools nil)
-
-(defun my-gptel-fix-tool-call-rendering (beg end)
-  "Fix syntax highlighting in tool call blocks."
-  (when (derived-mode-p 'org-mode)
-    (save-excursion
-      (goto-char beg)
-      (while (re-search-forward "#+begin_src elisp\\|#+begin_src emacs-lisp" end t)
-        (org-fontify-meta-lines-and-blocks-1 (- end beg))))))
-
-(add-hook 'gptel-post-response-functions #'my-gptel-fix-tool-call-rendering)
-
-  ;; Setup tools after gptel loads
-  (my-gptel-setup-tools) ; Temporarily disabled to test MCP tools conflict
+  (my-gptel-setup-tools))
 
 (provide 'my-gpt)
