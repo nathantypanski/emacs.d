@@ -690,6 +690,15 @@
                           ;; Use error to signal failure, which gptel should catch.
                           (error "File to patch does not exist: %s" target-file))
 
+                        ;; Handle read-only files
+                        (let ((original-mode (file-modes target-file)))
+                          (unless (file-writable-p target-file)
+                            (message "File %s is read-only, making temporarily writable" target-file)
+                            (set-file-modes target-file (logior original-mode #o200))))
+
+                        ;; Add --read-only=warn to handle remaining permission issues
+                        (setq effective-patch-options (append effective-patch-options '("--read-only=warn")))
+
                         (with-temp-message (format "Applying diff to: `%s` with options: %s" target-file effective-patch-options)
                           (with-temp-buffer
                             (insert diff_content)
