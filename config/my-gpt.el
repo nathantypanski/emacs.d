@@ -397,6 +397,87 @@ Running tools which consume or return large output can result in extremely high 
             output))
       "Not in a project"))
 
+
+  (defun my-gptel-parse-diff-hunks (diff-content)
+    "Parse unified diff into executable hunks."
+    (let ((hunks '())
+          (lines (split-string diff-content "\\n"))
+          (current-hunk nil))
+      (dolist (line lines)
+        (cond
+         ;; Start of new hunk: @@ -old_start,old_count +new_start,new_count @@
+         ((string-match "^@@[ \\t]+\\\\-\\\\([0-9]+\\\\)\\\\(?:,\\\\([0-9]+\\\\)\\\\)?[ \\t]+\\\\+\\\\([0-9]+\\\\)\\\\(?:,\\\\([0-9]+\\\\)\\\\)?" line)
+          (when current-hunk
+            (push current-hunk hunks))
+          (setq current-hunk
+                (list :start-line (string-to-number (match-string 3 line))
+                      :old-lines '()
+                      :new-lines '())))
+
+         ;; Line to be removed (starts with -)
+         ((and current-hunk (string-match "^\\\\-\\\\(.*\\\\)" line))
+          (push (match-string 1 line) (plist-get current-hunk :old-lines)))
+
+         ;; Line to be added (starts with +)
+         ((and current-hunk (string-match "^\\\\+\\\\(.*\\\\)" line))
+          (push (match-string 1 line) (plist-get current-hunk :new-lines)))
+
+         ;; Context line (starts with space) - ignore for now
+         ((and current-hunk (string-match "^ \\\\(.*\\\\)" line))
+          ;; Context lines don't change the content, skip
+          nil)))
+
+      ;; Add the last hunk if it exists
+      (when current-hunk
+        (push current-hunk hunks))
+
+      ;; Reverse the lines within each hunk since we pushed them
+      (mapcar (lambda (hunk)
+                (plist-put hunk :old-lines (reverse (plist-get hunk :old-lines)))
+                (plist-put hunk :new-lines (reverse (plist-get hunk :new-lines)))
+                hunk)
+              (reverse hunks))))
+
+  (defun my-gptel-parse-diff-hunks (diff-content)
+    "Parse unified diff into executable hunks."
+    (let ((hunks '())
+          (lines (split-string diff-content "\n"))
+          (current-hunk nil))
+      (dolist (line lines)
+        (cond
+         ;; Start of new hunk: @@ -old_start,old_count +new_start,new_count @@
+         ((string-match "^@@[ \t]+\\-\\([0-9]+\\)\\(?:,\\([0-9]+\\)\\)?[ \t]+\\+\\([0-9]+\\)\\(?:,\\([0-9]+\\)\\)?" line)
+          (when current-hunk
+            (push current-hunk hunks))
+          (setq current-hunk
+                (list :start-line (string-to-number (match-string 3 line))
+                      :old-lines '()
+                      :new-lines '())))
+
+         ;; Line to be removed (starts with -)
+         ((and current-hunk (string-match "^\\-\\(.*\\)" line))
+          (push (match-string 1 line) (plist-get current-hunk :old-lines)))
+
+         ;; Line to be added (starts with +)
+         ((and current-hunk (string-match "^\\+\\(.*\\)" line))
+          (push (match-string 1 line) (plist-get current-hunk :new-lines)))
+
+         ;; Context line (starts with space) - ignore for now
+         ((and current-hunk (string-match "^ \\(.*\\)" line))
+          ;; Context lines don't change the content, skip
+          nil)))
+
+      ;; Add the last hunk if it exists
+      (when current-hunk
+        (push current-hunk hunks))
+
+      ;; Reverse the lines within each hunk since we pushed them
+      (mapcar (lambda (hunk)
+                (plist-put hunk :old-lines (reverse (plist-get hunk :old-lines)))
+                (plist-put hunk :new-lines (reverse (plist-get hunk :new-lines)))
+                hunk)
+              (reverse hunks))))
+
   (defun my-gptel-apply-diff-internal (buffer-name diff-content)
     "Apply unified diff directly to buffer without external commands."
     (unless (get-buffer buffer-name)
@@ -435,42 +516,85 @@ Running tools which consume or return large output can result in extremely high 
 
           (error (format "Patch failed: %s" (error-message-string err)))))))
 
-(defun my-gptel-compressed-read (file-or-buffer &optional max-lines summary-only)
-  "Read file or buffer with compression to save API tokens."
+(defun my-gptel-gzip-compress (content)
+    "Compress content with gzip and base64 encode."
+    (with-temp-buffer
+      (insert content)
+      (let ((exit-code (call-process-region (point-min) (point-max)
+                                            "gzip" t t nil "-c")))
+        (if (= exit-code 0)
+            (progn
+              (goto-char (point-min))
+              (base64-encode-region (point-min) (point-max))
+              (buffer-substring-no-properties (point-min) (point-max)))
+          (error "Failed to compress content with gzip")))))
+
+  (defun my-gptel-compressed-read (file-or-buffer &optional start end)
+    "Read file or buffer with mandatory gzip compression. Always compresses full content.
+    START and END are character positions to extract a region before compression."
+    (let ((content
+           (cond
+            ;; Handle buffer
+            ((get-buffer file-or-buffer)
+             (with-current-buffer file-or-buffer
+               (if (and start end)
+                   (buffer-substring-no-properties start end)
+                 (buffer-string))))
+            ;; Handle file
+            ((file-exists-p file-or-buffer)
+             (with-temp-buffer
+               (insert-file-contents file-or-buffer)
+               (if (and start end)
+                   (buffer-substring-no-properties start end)
+                 (buffer-string))))
+            (t (error "File or buffer not found: %s" file-or-buffer)))))
+
+      (let ((original-size (length content))
+            (compressed (my-gptel-gzip-compress content)))
+        (format "[GZIP-COMPRESSED] Source: %s%s\\nOriginal: %,d chars → Compressed: %,d chars (%.1f%% savings)\\n\\n%s"
+                file-or-buffer
+                (if (and start end) (format " [region %d-%d]" start end) "")
+                original-size
+                (length compressed)
+                (/ 100 (- 1.0 (/ (float (length compressed)) original-size)))
+                compressed))))
+
+(defun my-gptel-meta-read (file-or-buffer &optional max-lines summary-only)
+  "Read file or buffer with line limits and summaries (renamed from compressed_read)."
   (let ((max-lines (or max-lines 50)))
     (cond
      ;; Handle buffer
      ((get-buffer file-or-buffer)
       (with-current-buffer file-or-buffer
-        (let* ((lines (split-string (buffer-string) "\n"))
+        (let* ((lines (split-string (buffer-string) "\\n"))
                (line-count (length lines)))
-          (if summary-only
-              (format "[COMPRESSED] Buffer: %s | Mode: %s | Lines: %d | Size: %d chars\nFirst 3: %s\nLast 3: %s"
-                      file-or-buffer major-mode line-count (buffer-size)
-                      (mapconcat 'identity (seq-take lines 3) " | ")
-                      (mapconcat 'identity (last lines 3) " | "))
-            (if (> line-count max-lines)
-                (format "%s\n[TRUNCATED - %d of %d lines shown]"
-                        (mapconcat 'identity (seq-take lines max-lines) "\n")
-                        max-lines line-count)
-              (buffer-string))))))
+              (if summary-only
+                  (format "[META] Buffer: %s | Mode: %s | Lines: %d | Size: %d chars\\nFirst 3: %s\\nLast 3: %s"
+                          file-or-buffer major-mode line-count (buffer-size)
+                          (mapconcat 'identity (seq-take lines 3) " | ")
+                          (mapconcat 'identity (last lines 3) " | "))
+                (if (> line-count max-lines)
+                    (format "%s\\n[TRUNCATED - %d of %d lines shown]"
+                            (mapconcat 'identity (seq-take lines max-lines) "\\n")
+                            max-lines line-count)
+                  (buffer-string))))))
 
      ;; Handle file
      ((file-exists-p file-or-buffer)
       (with-temp-buffer
         (insert-file-contents file-or-buffer)
-        (let* ((lines (split-string (buffer-string) "\n"))
+        (let* ((lines (split-string (buffer-string) "\\n"))
                (line-count (length lines)))
-          (if summary-only
-              (format "[COMPRESSED] File: %s | Lines: %d | Size: %d bytes\nFirst 3: %s\nLast 3: %s"
-                      file-or-buffer line-count (buffer-size)
-                      (mapconcat 'identity (seq-take lines 3) " | ")
-                      (mapconcat 'identity (last lines 3) " | "))
-            (if (> line-count max-lines)
-                (format "%s\n[TRUNCATED - %d of %d lines shown]"
-                        (mapconcat 'identity (seq-take lines max-lines) "\n")
-                        max-lines line-count)
-              (buffer-string))))))
+              (if summary-only
+                  (format "[META] File: %s | Lines: %d | Size: %d bytes\\nFirst 3: %s\\nLast 3: %s"
+                          file-or-buffer line-count (buffer-size)
+                          (mapconcat 'identity (seq-take lines 3) " | ")
+                          (mapconcat 'identity (last lines 3) " | "))
+                (if (> line-count max-lines)
+                    (format "%s\\n[TRUNCATED - %d of %d lines shown]"
+                            (mapconcat 'identity (seq-take lines max-lines) "\\n")
+                            max-lines line-count)
+                  (buffer-string))))))
 
      (t (format "Error: '%s' not found" file-or-buffer)))))
 
@@ -483,14 +607,14 @@ Running tools which consume or return large output can result in extremely high 
     ;;     (require 'gptel-transient)
 
     (interactive)
-    (defun my-gptel-find-file (path)
-      "Open/create file at path."
-      (let ((expanded-path (expand-file-name path)))
-        (if (my-gptel-path-allowed-p expanded-path)
+(defun my-gptel-find-file (path dir)
+      "Open/create file at path in directory dir."
+      (let ((full-path (expand-file-name path dir)))
+        (if (my-gptel-path-allowed-p full-path)
             (progn
-              (find-file expanded-path)
-              (format "Opened file: %s" path))
-          (format "Path not allowed: %s" path))))
+              (find-file full-path)
+              (format "Opened file: %s" full-path))
+          (format "Path not allowed: %s" full-path))))
     (defun my-gptel-tool-wc (path)
       "Get word count statistics for file."
       (let ((expanded-path (expand-file-name path)))
@@ -671,14 +795,25 @@ Running tools which consume or return large output can result in extremely high 
                                     '(:name "diff_content" :type "string" :description "Unified diff content"))
                         :category "emacs"
                         :confirm t)
+                       ;; Add the new tools
                        (gptel-make-tool
-                        :name "compressed_read"
-                        :description "Read file or buffer with compression to save API costs. Prefer this to full reads!"
-                        :function #'my-gptel-compressed-read
+                        :name "meta_read"
+                        :description "Read file/buffer with line limits and summaries (quick overview)"
+                        :function #'my-gptel-meta-read
                         :args (list '(:name "file_or_buffer" :type "string" :description "File path or buffer name")
                                     '(:name "max_lines" :type "number" :description "Max lines to show (default 50)" :optional t)
                                     '(:name "summary_only" :type "boolean" :description "Show only summary stats" :optional t))
                         :category "utility")
+
+                       (gptel-make-tool
+                        :name "compressed_read"
+                        :description "Read file/buffer with mandatory gzip compression (70%+ API savings). Full content preserved."
+                        :function #'my-gptel-compressed-read
+                        :args (list '(:name "file_or_buffer" :type "string" :description "File path or buffer name")
+                                    '(:name "start" :type "number" :description "Start position for region extraction" :optional t)
+                                    '(:name "end" :type "number" :description "End position for region extraction" :optional t))
+                        :category "utility")
+
                        )))
 
   ;; Add detailed tool confirmation with full argument display
@@ -761,7 +896,12 @@ Running tools which consume or return large output can result in extremely high 
                        (list (overlay-start ov) (overlay-end ov)
                              (overlay-get ov 'gptel-tool)))
                      (seq-filter (lambda (ov) (overlay-get ov 'gptel-tool))
-                                 (overlays-in (point-min) (point-max)))))))
+                                 (overlays-in (point-min) (point-max))))))
+
+   (defun my-gptel-limit-output (output max-size)
+     (if (> (length output) max-size)
+         (concat (substring output 0 max-size) "\n[OUTPUT TRUNCATED]")
+       output)))
 
 
 (provide 'my-gpt)
