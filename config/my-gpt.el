@@ -359,6 +359,7 @@ Running tools which consume or return large output can result in extremely high 
 
   (defun my-gptel-list-buffers ()
     "List buffers (max 20, exclude internal buffers)."
+    (interactive)
     (let ((buffers (cl-remove-if
                     (lambda (buf) (string-prefix-p " " (buffer-name buf)))
                     (buffer-list))))
@@ -396,62 +397,82 @@ Running tools which consume or return large output can result in extremely high 
             output))
       "Not in a project"))
 
-  (defun my-gptel-parse-diff (diff-content)
-    "Parse unified diff content into a list of hunks."
-    (let ((hunks '())
-          (lines (split-string diff-content "\n")))
-      (dolist (line lines)
-        (cond
-         ((string-match "^@@ -\\([0-9]+\\),?[0-9]* \\+\\([0-9]+\\),?[0-9]* @@" line)
-          (push (list :start-line (string-to-number (match-string 2 line))
-                      :old-lines '()
-                      :new-lines '()) hunks))
-         ((and hunks (string-prefix-p "-" line))
-          (push (substring line 1) (plist-get (car hunks) :old-lines)))
-         ((and hunks (string-prefix-p "+" line))
-          (push (substring line 1) (plist-get (car hunks) :new-lines)))))
-      (nreverse hunks)))
-
-  (defun my-gptel-apply-diff-safer (buffer-name diff-content)
+  (defun my-gptel-apply-diff-internal (buffer-name diff-content)
+    "Apply unified diff directly to buffer without external commands."
     (unless (get-buffer buffer-name)
       (error "Buffer %s does not exist" buffer-name))
 
     (with-current-buffer buffer-name
-      (save-excursion
-        (let ((changes-applied 0)
-              (buffer-modified-p (buffer-modified-p)))
+      (let ((original-point (point))
+            (hunks (my-gptel-parse-diff-hunks diff-content)))
+        (condition-case err
+            (progn
+              ;; Sort hunks by line number in reverse order to avoid offset issues
+              (setq hunks (sort hunks (lambda (a b) (> (plist-get a :start-line) (plist-get b :start-line)))))
 
-          ;; Parse diff hunks
-          (dolist (line (split-string diff-content "\n"))
-            (cond
-             ;; Handle hunk headers: @@ -old,count +new,count @@
-             ((string-match "^@@ -\\([0-9]+\\)\\(?:,\\([0-9]+\\)\\)? \\+\\([0-9]+\\)\\(?:,\\([0-9]+\\)\\)? @@" line)
-              (let* ((old-start (string-to-number (match-string 1 line)))
-                     (new-start (string-to-number (match-string 3 line)))
-                     (context-lines '())
-                     (removed-lines '())
-                     (added-lines '()))
+              (dolist (hunk hunks)
+                (let ((start-line (plist-get hunk :start-line))
+                      (old-lines (plist-get hunk :old-lines))
+                      (new-lines (plist-get hunk :new-lines)))
 
-                ;; Collect lines until next hunk or end
-                (let ((hunk-lines '()))
-                  ;; This is simplified - you'd need to collect the actual hunk lines
-                  ;; For now, just indicate we processed a hunk
-                  (cl-incf changes-applied))))
+                  ;; Go to the start line
+                  (goto-char (point-min))
+                  (forward-line (1- start-line))
 
-             ;; Simple line replacements for basic diffs
-             ((and (string-prefix-p "- " line) (string-prefix-p "+ " line))
-              (let* ((old-text (substring line 2))
-                     (new-text (substring line 2)))
-                (when (search-forward old-text nil t)
-                  (replace-match new-text)
-                  (cl-incf changes-applied))))))
+                  ;; Delete old lines
+                  (when old-lines
+                    (let ((start-pos (point)))
+                      (forward-line (length old-lines))
+                      (delete-region start-pos (point))))
 
-          (format "Applied %d changes to buffer %s%s"
-                  changes-applied
-                  buffer-name
-                  (if (and (not buffer-modified-p) (buffer-modified-p))
-                      " (buffer now modified)"
-                    ""))))))
+                  ;; Insert new lines
+                  (when new-lines
+                    (insert (mapconcat 'identity (reverse new-lines) "\n"))
+                    (when (not (bolp)) (insert "\n")))))
+
+              (goto-char original-point)
+              "Patch applied successfully")
+
+          (error (format "Patch failed: %s" (error-message-string err)))))))
+
+(defun my-gptel-compressed-read (file-or-buffer &optional max-lines summary-only)
+  "Read file or buffer with compression to save API tokens."
+  (let ((max-lines (or max-lines 50)))
+    (cond
+     ;; Handle buffer
+     ((get-buffer file-or-buffer)
+      (with-current-buffer file-or-buffer
+        (let* ((lines (split-string (buffer-string) "\n"))
+               (line-count (length lines)))
+          (if summary-only
+              (format "[COMPRESSED] Buffer: %s | Mode: %s | Lines: %d | Size: %d chars\nFirst 3: %s\nLast 3: %s"
+                      file-or-buffer major-mode line-count (buffer-size)
+                      (mapconcat 'identity (seq-take lines 3) " | ")
+                      (mapconcat 'identity (last lines 3) " | "))
+            (if (> line-count max-lines)
+                (format "%s\n[TRUNCATED - %d of %d lines shown]"
+                        (mapconcat 'identity (seq-take lines max-lines) "\n")
+                        max-lines line-count)
+              (buffer-string))))))
+
+     ;; Handle file
+     ((file-exists-p file-or-buffer)
+      (with-temp-buffer
+        (insert-file-contents file-or-buffer)
+        (let* ((lines (split-string (buffer-string) "\n"))
+               (line-count (length lines)))
+          (if summary-only
+              (format "[COMPRESSED] File: %s | Lines: %d | Size: %d bytes\nFirst 3: %s\nLast 3: %s"
+                      file-or-buffer line-count (buffer-size)
+                      (mapconcat 'identity (seq-take lines 3) " | ")
+                      (mapconcat 'identity (last lines 3) " | "))
+            (if (> line-count max-lines)
+                (format "%s\n[TRUNCATED - %d of %d lines shown]"
+                        (mapconcat 'identity (seq-take lines max-lines) "\n")
+                        max-lines line-count)
+              (buffer-string))))))
+
+     (t (format "Error: '%s' not found" file-or-buffer)))))
 
   ;; Register tools with gptel
   (defun my-gptel-setup-tools ()
@@ -483,8 +504,11 @@ Running tools which consume or return large output can result in extremely high 
          (t
           (shell-command-to-string
            (format "wc -l -w -c %s" (shell-quote-argument expanded-path)))))))
-
-
+    (defun my-gptel-read-buffer (buffer)
+      (if (buffer-live-p (get-buffer buffer))
+          (with-current-buffer buffer
+            (buffer-substring-no-properties (point-min) (point-max)))
+        (format \"Error: buffer %s is not live or does not exist\" buffer)))
 
     (setq gptel-tools (list
                        ;; List files tool
@@ -600,12 +624,8 @@ Running tools which consume or return large output can result in extremely high 
                                             :type "string"
                                             :description "the name of the buffer whose contents are to be retrieved"))
                         :category "emacs"
-                        :description "return the contents of an emacs buffer"
-                        :function (lambda (buffer)
-                                    (unless (buffer-live-p (get-buffer buffer))
-                                      (error "error: buffer %s is not live." buffer)
-                                      (with-current-buffer  buffer
-                                        (buffer-substring-no-properties (point-min) (point-max))))))
+                        :description "return the contents of an emacs buffer [WARNING: expensive! use compression instead]"
+                        :function #'my-gptel-read-buffer)
                        (gptel-make-tool
                         :name "make_directory"
                         :description "Create a new directory with the given name in the specified parent directory"
@@ -644,13 +664,21 @@ Running tools which consume or return large output can result in extremely high 
                                       (format "Created file %s in %s" filename path)))
                         :confirm t)
                        (gptel-make-tool
-                        :name "apply_diff_safer"
+                        :name "patch_buffer"
                         :description "Apply unified diff directly in Emacs buffer without external patch command"
-                        :function #'my-gptel-apply-diff-safer
+                        :function #'my-gptel-apply-diff-internal  ; Use the new internal function
                         :args (list '(:name "buffer_name" :type "string" :description "Buffer name to modify")
                                     '(:name "diff_content" :type "string" :description "Unified diff content"))
                         :category "emacs"
                         :confirm t)
+                       (gptel-make-tool
+                        :name "compressed_read"
+                        :description "Read file or buffer with compression to save API costs. Prefer this to full reads!"
+                        :function #'my-gptel-compressed-read
+                        :args (list '(:name "file_or_buffer" :type "string" :description "File path or buffer name")
+                                    '(:name "max_lines" :type "number" :description "Max lines to show (default 50)" :optional t)
+                                    '(:name "summary_only" :type "boolean" :description "Show only summary stats" :optional t))
+                        :category "utility")
                        )))
 
   ;; Add detailed tool confirmation with full argument display
@@ -733,7 +761,7 @@ Running tools which consume or return large output can result in extremely high 
                        (list (overlay-start ov) (overlay-end ov)
                              (overlay-get ov 'gptel-tool)))
                      (seq-filter (lambda (ov) (overlay-get ov 'gptel-tool))
-                                 (overlays-in (point-min) (point-max))))))
+                                 (overlays-in (point-min) (point-max)))))))
 
 
 (provide 'my-gpt)
