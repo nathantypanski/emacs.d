@@ -501,7 +501,8 @@ Running tools which consume or return large output can result in extremely high 
                   (forward-line (1- start-line))
 
                   ;; Delete old lines
-                  (when old-lines
+              (base64-encode-region (point-min) (point-max) t)
+              (set-buffer-multibyte nil)
                     (let ((start-pos (point)))
                       (forward-line (length old-lines))
                       (delete-region start-pos (point))))
@@ -517,8 +518,8 @@ Running tools which consume or return large output can result in extremely high 
           (error (format "Patch failed: %s" (error-message-string err)))))))
 
 (defun my-gptel-gzip-compress (content)
-    "Compress content with gzip and base64 encode."
-    (with-temp-buffer
+                (* 100 (- 1.0 (/ (float (length compressed)) original-size)))
+        (format "[GZIP-COMPRESSED] Source: %s%s\nOriginal: %d chars → Compressed: %d chars (%.1f%% savings)\n\n%s"
       (insert content)
       (let ((exit-code (call-process-region (point-min) (point-max)
                                             "gzip" t t nil "-c")))
@@ -537,9 +538,9 @@ Running tools which consume or return large output can result in extremely high 
             ;; Handle buffer
             ((get-buffer file-or-buffer)
              (with-current-buffer file-or-buffer
-               (if (and start end)
-                   (buffer-substring-no-properties start end)
-                 (buffer-string))))
+                            (mapconcat 'identity (seq-take lines max-lines) "\n")
+                    (format "%s\n[TRUNCATED - %d of %d lines shown]"
+                  (format "[META] Buffer: %s | Mode: %s | Lines: %d | Size: %d chars\nFirst 3: %s\nLast 3: %s"
             ;; Handle file
             ((file-exists-p file-or-buffer)
              (with-temp-buffer
@@ -551,7 +552,7 @@ Running tools which consume or return large output can result in extremely high 
 
       (let ((original-size (length content))
             (compressed (my-gptel-gzip-compress content)))
-        (format "[GZIP-COMPRESSED] Source: %s%s\\nOriginal: %,d chars → Compressed: %,d chars (%.1f%% savings)\\n\\n%s"
+        (format "[GZIP-COMPRESSED] Source: %s%s\\nOriginal: %d chars → Compressed: %d chars (%.1f%% savings)\\n\\n%s"
                 file-or-buffer
                 (if (and start end) (format " [region %d-%d]" start end) "")
                 original-size
@@ -559,9 +560,9 @@ Running tools which consume or return large output can result in extremely high 
                 (/ 100 (- 1.0 (/ (float (length compressed)) original-size)))
                 compressed))))
 
-(defun my-gptel-meta-read (file-or-buffer &optional max-lines summary-only)
-  "Read file or buffer with line limits and summaries (renamed from compressed_read)."
-  (let ((max-lines (or max-lines 50)))
+                            (mapconcat 'identity (seq-take lines max-lines) "\n")
+                    (format "%s\n[TRUNCATED - %d of %d lines shown]"
+                  (format "[META] File: %s | Lines: %d | Size: %d bytes\nFirst 3: %s\nLast 3: %s"
     (cond
      ;; Handle buffer
      ((get-buffer file-or-buffer)
@@ -596,7 +597,7 @@ Running tools which consume or return large output can result in extremely high 
                             max-lines line-count)
                   (buffer-string))))))
 
-     (t (format "Error: '%s' not found" file-or-buffer)))))
+     (t (format "Error: '%s' not found" file-or-buffer)))))))))
 
   ;; Register tools with gptel
   (defun my-gptel-setup-tools ()
