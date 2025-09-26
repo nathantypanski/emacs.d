@@ -259,7 +259,7 @@ Not buffer-local, so it really is per frame.")
   (defun my-wl-paste-evil ()
     "Paste clipboard contents at point using wl-paste, Evil-style."
     (interactive)
-    (let ((text (string-trim (shell-command-to-string my-paste-command))))
+    (let ((text (string-trim (shell-command-to-string my-paste-program))))
       (evil-with-undo
         (cond
          ((evil-visual-state-p)
