@@ -109,23 +109,6 @@ Running tools which consume or return large output can result in extremely high 
           (cons 'Elisp my-gptel-elisp-prompt)
           (cons 'Emacs my-emacs-system-prompt)))
 
-  ;; Enhanced tool confirmation function
-  (defun my-gptel-detailed-tool-confirmation (tool-spec args)
-    "Show detailed confirmation dialog for tool calls with full argument details."
-    (let* ((tool-name (plist-get tool-spec :name))
-           (tool-desc (plist-get tool-spec :description))
-           (arg-details (mapconcat
-                         (lambda (arg)
-                           (format "  %s: %s"
-                                   (plist-get arg :name)
-                                   (or (plist-get args (intern (concat ":" (plist-get arg :name))))
-                                       "<not provided>")))
-                         (plist-get tool-spec :input_schema)
-                         "\n"))
-           (confirmation-msg (format "Execute Tool: %s\n\nDescription: %s\n\nArguments:\n%s\n\nProceed?"
-                                     tool-name tool-desc arg-details)))
-      (yes-or-no-p confirmation-msg)))
-
   :config
   ;; Basic setup
   (when (getenv "OPENAI_API_KEY")
@@ -166,13 +149,75 @@ Running tools which consume or return large output can result in extremely high 
                  gptel-api-key key))))
       (message "Switched to %s" choice)))
 
+  (defun my-gptel--guess-mode (s)
+    (cond
+     ((string-match-p "\\`\\s-*(" s) 'emacs-lisp-mode)
+     ;; Emacs regex uses \( \) for groups; no (?: ), so expand explicitly:
+     ((or (string-match-p "#!/bin/bash" s)
+          (string-match-p "\\bfor\\b.*;" s)
+          (string-match-p "\\bwhile\\b.*;" s)
+          (string-match-p "\\bif\\b.*;" s)
+          (string-match-p "\\bexec\\b" s)) 'sh-mode)
+     ((or (string-match-p "\\bdef\\s-+\\w+" s)
+          (string-match-p "\\bclass\\s-+\\w+" s)) 'python-mode)
+     ((string-match-p "\\bfunction\\b|=>|import\\s-+\\w+\\s-+from" s) 'js-mode)
+     (t 'fundamental-mode)))
+
+  (defun my-gptel-confirmation-buffer (tool-spec args)
+    "Show full tool call in a dedicated buffer; return non-nil to proceed."
+    (let* ((name   (plist-get tool-spec :name))
+           (desc   (or (plist-get tool-spec :description) ""))
+           ;; gptel passes args as plist: :foo "bar" …
+           (code   (or (plist-get args :code)
+                       (plist-get args :command)
+                       (plist-get args :diff_content)
+                       (plist-get args :content)))
+           (buf    (get-buffer-create "*GPTEL Tool Preview*")))
+      (with-current-buffer buf
+        (read-only-mode -1)
+        (erase-buffer)
+        (insert (format "Tool: %s\n%s\n\nArgs (full):\n%s\n\n"
+                        name desc (pp-to-string args)))
+        (when code
+          (insert "===== Proposed code =====\n")
+          (let ((start (point)))
+            (insert code)
+            (let ((mode (my-gptel--guess-mode code)))
+              (delay-mode-hooks (funcall mode))
+              (font-lock-ensure start (point))))))
+      (setq buffer-read-only t)
+      (display-buffer buf '((display-buffer-pop-up-window)))
+      (yes-or-no-p (format "Run tool %s ?" name))))
+
+  ;; Enable it:
+  (setq gptel-confirm-tool-calls #'my-gptel-confirmation-buffer)
+
+  ;; Enhanced tool confirmation function
+  (defun my-gptel-detailed-tool-confirmation (tool-spec args)
+    "Show detailed confirmation dialog for tool calls with full argument details."
+    (let* ((tool-name (plist-get tool-spec :name))
+           (tool-desc (plist-get tool-spec :description))
+           (arg-details (mapconcat
+                         (lambda (arg)
+                           (format "  %s: %s"
+                                   (plist-get arg :name)
+                                   (or (plist-get args (intern (concat ":" (plist-get arg :name))))
+                                       "<not provided>")))
+                         (plist-get tool-spec :input_schema)
+                         "\n"))
+           (confirmation-msg (format "Execute Tool: %s\n\nDescription: %s\n\nArguments:\n%s\n\nProceed?"
+                                     tool-name tool-desc arg-details)))
+      (yes-or-no-p confirmation-msg)))
+
   ;; Buffer behavior
   (defun my-gptel-setup-behavior ()
     "Setup gptel buffer behavior."
+    (interactive)
     (visual-line-mode 1)
     (setq-local auto-save-timeout 60)
-    (setq-local auto-save-visited-mode nil))
-
+    (setq-local auto-save-visited-mode nil)
+    ;; Ensure tool call XML-ish markers don't run into prose:
+    (add-hook 'after-change-functions #'my-gptel--newline-after-tool-insert nil t))
 
   ;; Core commands
   (defun my-gptel-explain ()
@@ -248,21 +293,20 @@ Running tools which consume or return large output can result in extremely high 
           (insert-file-contents expanded-path)
           (buffer-string))))))
 
-  ;; Simple list files tool
-  (defun my-gptel-tool-list-files (path)
-    "List files in directory at PATH with safety checks."
-    (let ((expanded-path (expand-file-name (or path "."))))
+  (defun my-gptel-tool-list-files (path &optional start limit)
+    "List files at `path' with paging from `start' to `limit' (default LIMIT=200)."
+    (let* ((expanded (expand-file-name (or path ".")))
+           (s (max 0 (or start 0)))
+           (l (min 500 (or limit 200))))
       (cond
-       ((not (my-gptel-path-allowed-p expanded-path))
+       ((not (my-gptel-path-allowed-p expanded))
         (format "Error: Path '%s' is outside allowed directories" path))
-       ((not (file-exists-p expanded-path))
-        (format "Error: Directory '%s' does not exist" path))
-       ((not (file-directory-p expanded-path))
+       ((not (file-directory-p expanded))
         (format "Error: '%s' is not a directory" path))
        (t
-        (mapconcat #'identity
-                   (directory-files expanded-path nil "^[^.]" t)
-                   "\n")))))
+        (let* ((all (directory-files expanded nil "^[^.]" t))
+               (slice (seq-take (seq-drop all s) l)))
+          (mapconcat #'identity slice "\n"))))))
 
   ;; Simple bash tool with restrictions
   (defun my-gptel-tool-bash (command)
@@ -304,10 +348,11 @@ Running tools which consume or return large output can result in extremely high 
           :frame-height (frame-height)))
 
   (defun my-gptel-eval-elisp-safely (code)
-    "Safely evaluate elisp code for gptel"
-    (condition-case err
-        (eval (read code))
-      (error (format "Error: %s" err))))
+    (let ((print-length 50) (print-level 5))
+      (condition-case err
+          (with-output-to-string (princ (prin1-to-string (eval (read code)))))
+        (error (format "Error: %s" err)))))
+
 
   (defun my-gptel-add-newline-after-tools (start end)
     "Add newline after tool call responses"
@@ -316,29 +361,19 @@ Running tools which consume or return large output can result in extremely high 
       (while (re-search-forward "</invoke>" end t)  ; Search within the response region
         (unless (looking-at "\n")
           (insert "\n")))))
+  (defun my-gptel--newline-after-tool-insert (beg end _len)
+    "after-change-functions glue for `my-gptel-add-newline-after-tools'."
+    (ignore _len)
+    (condition-case _ (my-gptel-add-newline-after-tools beg end) (error nil)))
 
-  ;; Tool implementations
-  (defun my-git-status-path (path &optional extra-args)
-    "Get git status for PATH with optional EXTRA-ARGS."
-    (let* ((actual-path (or path default-directory))
-           (root (vc-git-root actual-path)))
-      (when root
-        (shell-command-to-string
-         (mapconcat 'identity
-                    (list "git" "status" "--porcelain" actual-path)
-                    " ")))))
-  (defun my-gptel-git-status (path)
-    "Get git repository status for `path'."
-
-    (let ((cmd "git status --porcelain"))
-      ;; (pcase path
-      ;;   (nil
-      ;;    (if (vc-git-root path)
-      ;;        (shell-command-to-string (concat cmd " " path))
-      ;;      ))
-      (if (vc-git-root default-directory)
-          (shell-command-to-string (concat cmd " " path))
-        "Not in a git repository")))
+  (defun my-gptel-git-status (&optional path)
+    "Return porcelain status; optional `path'."
+    (if (vc-git-root default-directory)
+        (let ((cmd (if path
+                       (format "git status --porcelain %s" (shell-quote-argument path))
+                     "git status --porcelain")))
+          (shell-command-to-string cmd))
+      "Not in a git repository"))
 
   (defun my-gptel-git-diff (&optional file)
     "Show git diff, optionally for specific file."
@@ -385,58 +420,19 @@ Running tools which consume or return large output can result in extremely high 
             files))
       '("Not in a project")))
 
+
   (defun my-gptel-grep-project (pattern &optional file-pattern)
-    "Search for pattern in project files (max 30 lines)."
+    "Search project; returns at most 30 matches."
     (if-let ((project (project-current)))
-        (let ((default-directory (project-root project))
-              (output (shell-command-to-string
-                       (format "grep -r --include='%s' '%s' . | head -30"
-                               (or file-pattern "*") pattern))))
-          (if (> (length output) 5000)
-              (concat (substring output 0 5000) "\n... (output truncated)")
-            output))
+        (let* ((default-directory (project-root project))
+               (inc (if file-pattern (format "--include=%s" (shell-quote-argument file-pattern)) ""))
+               (pat (shell-quote-argument pattern))
+               (cmd (format "grep -R -n %s %s . | head -30" inc pat)))
+          (let ((out (shell-command-to-string cmd)))
+            (if (> (length out) 5000)
+                (concat (substring out 0 5000) "\n... (output truncated)")
+              out)))
       "Not in a project"))
-
-
-  (defun my-gptel-parse-diff-hunks (diff-content)
-    "Parse unified diff into executable hunks."
-    (let ((hunks '())
-          (lines (split-string diff-content "\\n"))
-          (current-hunk nil))
-      (dolist (line lines)
-        (cond
-         ;; Start of new hunk: @@ -old_start,old_count +new_start,new_count @@
-         ((string-match "^@@[ \\t]+\\\\-\\\\([0-9]+\\\\)\\\\(?:,\\\\([0-9]+\\\\)\\\\)?[ \\t]+\\\\+\\\\([0-9]+\\\\)\\\\(?:,\\\\([0-9]+\\\\)\\\\)?" line)
-          (when current-hunk
-            (push current-hunk hunks))
-          (setq current-hunk
-                (list :start-line (string-to-number (match-string 3 line))
-                      :old-lines '()
-                      :new-lines '())))
-
-         ;; Line to be removed (starts with -)
-         ((and current-hunk (string-match "^\\\\-\\\\(.*\\\\)" line))
-          (push (match-string 1 line) (plist-get current-hunk :old-lines)))
-
-         ;; Line to be added (starts with +)
-         ((and current-hunk (string-match "^\\\\+\\\\(.*\\\\)" line))
-          (push (match-string 1 line) (plist-get current-hunk :new-lines)))
-
-         ;; Context line (starts with space) - ignore for now
-         ((and current-hunk (string-match "^ \\\\(.*\\\\)" line))
-          ;; Context lines don't change the content, skip
-          nil)))
-
-      ;; Add the last hunk if it exists
-      (when current-hunk
-        (push current-hunk hunks))
-
-      ;; Reverse the lines within each hunk since we pushed them
-      (mapcar (lambda (hunk)
-                (plist-put hunk :old-lines (reverse (plist-get hunk :old-lines)))
-                (plist-put hunk :new-lines (reverse (plist-get hunk :new-lines)))
-                hunk)
-              (reverse hunks))))
 
   (defun my-gptel-parse-diff-hunks (diff-content)
     "Parse unified diff into executable hunks."
@@ -501,104 +497,77 @@ Running tools which consume or return large output can result in extremely high 
                   (forward-line (1- start-line))
 
                   ;; Delete old lines
-              (base64-encode-region (point-min) (point-max) t)
-              (set-buffer-multibyte nil)
-                    (let ((start-pos (point)))
-                      (forward-line (length old-lines))
-                      (delete-region start-pos (point))))
+                  (let ((start-pos (point)))
+                    (forward-line (length old-lines))
+                    (delete-region start-pos (point))))
+                ;; Insert new lines
+                (when new-lines
+                  (insert (mapconcat #'identity new-lines "\n"))
+                  (when (not (bolp)) (insert "\n")))))
 
-                  ;; Insert new lines
-                  (when new-lines
-                    (insert (mapconcat 'identity (reverse new-lines) "\n"))
-                    (when (not (bolp)) (insert "\n")))))
+          (goto-char original-point)
+          "Patch applied successfully")
 
-              (goto-char original-point)
-              "Patch applied successfully")
+        (error (format "Patch failed: %s" (error-message-string err))))))
 
-          (error (format "Patch failed: %s" (error-message-string err)))))))
+  (defvar my-gptel-max-output-bytes 8192)
+  (defvar my-gptel-max-lines 300)
+  (defvar my-gptel-tool-timeout-sec 5)
 
-(defun my-gptel-gzip-compress (content)
-                (* 100 (- 1.0 (/ (float (length compressed)) original-size)))
-        (format "[GZIP-COMPRESSED] Source: %s%s\nOriginal: %d chars → Compressed: %d chars (%.1f%% savings)\n\n%s"
-      (insert content)
-      (let ((exit-code (call-process-region (point-min) (point-max)
-                                            "gzip" t t nil "-c")))
-        (if (= exit-code 0)
-            (progn
-              (goto-char (point-min))
-              (base64-encode-region (point-min) (point-max))
-              (buffer-substring-no-properties (point-min) (point-max)))
-          (error "Failed to compress content with gzip")))))
+  (defun my-gptel--clamp (s)
+    (let* ((s (or s "")) (lines (split-string s "\n"))
+           (trimmed (string-join (seq-take lines my-gptel-max-lines) "\n")))
+      (if (> (string-bytes trimmed) my-gptel-max-output-bytes)
+          (concat (substring trimmed 0 my-gptel-max-output-bytes) "\n[OUTPUT TRUNCATED]")
+        trimmed)))
 
-  (defun my-gptel-compressed-read (file-or-buffer &optional start end)
-    "Read file or buffer with mandatory gzip compression. Always compresses full content.
-    START and END are character positions to extract a region before compression."
-    (let ((content
-           (cond
-            ;; Handle buffer
-            ((get-buffer file-or-buffer)
-             (with-current-buffer file-or-buffer
-                            (mapconcat 'identity (seq-take lines max-lines) "\n")
-                    (format "%s\n[TRUNCATED - %d of %d lines shown]"
-                  (format "[META] Buffer: %s | Mode: %s | Lines: %d | Size: %d chars\nFirst 3: %s\nLast 3: %s"
-            ;; Handle file
-            ((file-exists-p file-or-buffer)
-             (with-temp-buffer
-               (insert-file-contents file-or-buffer)
-               (if (and start end)
-                   (buffer-substring-no-properties start end)
-                 (buffer-string))))
-            (t (error "File or buffer not found: %s" file-or-buffer)))))
+  (defun my-gptel--with-timeout (thunk)
+    (let ((res nil) (done nil))
+      (run-with-timer my-gptel-tool-timeout-sec nil
+                      (lambda () (unless done (setq res "[TIMEOUT]") (setq done t))))
+      (setq res (funcall thunk))
+      (setq done t)
+      res))
 
-      (let ((original-size (length content))
-            (compressed (my-gptel-gzip-compress content)))
-        (format "[GZIP-COMPRESSED] Source: %s%s\\nOriginal: %d chars → Compressed: %d chars (%.1f%% savings)\\n\\n%s"
-                file-or-buffer
-                (if (and start end) (format " [region %d-%d]" start end) "")
-                original-size
-                (length compressed)
-                (/ 100 (- 1.0 (/ (float (length compressed)) original-size)))
-                compressed))))
+  (defun my-gptel-wrap (fn)
+    (lambda (&rest args)
+      (my-gptel--clamp (my-gptel--with-timeout (lambda () (apply fn args))))))
 
-                            (mapconcat 'identity (seq-take lines max-lines) "\n")
-                    (format "%s\n[TRUNCATED - %d of %d lines shown]"
-                  (format "[META] File: %s | Lines: %d | Size: %d bytes\nFirst 3: %s\nLast 3: %s"
-    (cond
-     ;; Handle buffer
-     ((get-buffer file-or-buffer)
-      (with-current-buffer file-or-buffer
-        (let* ((lines (split-string (buffer-string) "\\n"))
-               (line-count (length lines)))
-              (if summary-only
-                  (format "[META] Buffer: %s | Mode: %s | Lines: %d | Size: %d chars\\nFirst 3: %s\\nLast 3: %s"
-                          file-or-buffer major-mode line-count (buffer-size)
-                          (mapconcat 'identity (seq-take lines 3) " | ")
-                          (mapconcat 'identity (last lines 3) " | "))
-                (if (> line-count max-lines)
-                    (format "%s\\n[TRUNCATED - %d of %d lines shown]"
-                            (mapconcat 'identity (seq-take lines max-lines) "\\n")
-                            max-lines line-count)
-                  (buffer-string))))))
+  (defun my-gptel-find-file (path dir)
+    "Open/create file at path in directory dir."
+    (let ((full-path (expand-file-name path dir)))
+      (if (my-gptel-path-allowed-p full-path)
+          (progn
+            (find-file full-path)
+            (format "Opened file: %s" full-path))
+        (format "Path not allowed: %s" full-path))))
+  (defun my-gptel-tool-wc (path)
+    "Get word count statistics for file."
+    (let ((expanded-path (expand-file-name path)))
+      (cond
+       ((not (my-gptel-path-allowed-p expanded-path))
+        (format "Error: Path '%s' is outside allowed directories" path))
+       ((not (file-exists-p expanded-path))
+        (format "Error: File '%s' does not exist" path))
+       ((file-directory-p expanded-path)
+        (format "Error: '%s' is a directory" path))
+       (t
+        (shell-command-to-string
+         (format "wc -l -w -c %s" (shell-quote-argument expanded-path)))))))
 
-     ;; Handle file
-     ((file-exists-p file-or-buffer)
-      (with-temp-buffer
-        (insert-file-contents file-or-buffer)
-        (let* ((lines (split-string (buffer-string) "\\n"))
-               (line-count (length lines)))
-              (if summary-only
-                  (format "[META] File: %s | Lines: %d | Size: %d bytes\\nFirst 3: %s\\nLast 3: %s"
-                          file-or-buffer line-count (buffer-size)
-                          (mapconcat 'identity (seq-take lines 3) " | ")
-                          (mapconcat 'identity (last lines 3) " | "))
-                (if (> line-count max-lines)
-                    (format "%s\\n[TRUNCATED - %d of %d lines shown]"
-                            (mapconcat 'identity (seq-take lines max-lines) "\\n")
-                            max-lines line-count)
-                  (buffer-string))))))
-
-     (t (format "Error: '%s' not found" file-or-buffer)))))))))
-
+    (defun my-gptel-paged-read (file-or-buffer &optional start line-count)
+      "Return at most LINE-COUNT lines starting at START (1-based)."
+      (let* ((content (cond
+                       ((get-buffer file-or-buffer)
+                        (with-current-buffer file-or-buffer (buffer-string)))
+                       ((file-exists-p file-or-buffer)
+                        (with-temp-buffer (insert-file-contents file-or-buffer)
+                                          (buffer-string)))
+                       (t (user-error "Not found: %s" file-or-buffer))))
+             (lines (split-string content "\n"))
+             (s (max 1 (or start 1)))
+             (n (min 300 (max 1 (or line-count 200)))))
+        (string-join (seq-take (seq-drop lines (1- s)) n) "\n")))
   ;; Register tools with gptel
   (defun my-gptel-setup-tools ()
     "Setup working gptel tools."
@@ -608,40 +577,16 @@ Running tools which consume or return large output can result in extremely high 
     ;;     (require 'gptel-transient)
 
     (interactive)
-(defun my-gptel-find-file (path dir)
-      "Open/create file at path in directory dir."
-      (let ((full-path (expand-file-name path dir)))
-        (if (my-gptel-path-allowed-p full-path)
-            (progn
-              (find-file full-path)
-              (format "Opened file: %s" full-path))
-          (format "Path not allowed: %s" full-path))))
-    (defun my-gptel-tool-wc (path)
-      "Get word count statistics for file."
-      (let ((expanded-path (expand-file-name path)))
-        (cond
-         ((not (my-gptel-path-allowed-p expanded-path))
-          (format "Error: Path '%s' is outside allowed directories" path))
-         ((not (file-exists-p expanded-path))
-          (format "Error: File '%s' does not exist" path))
-         ((file-directory-p expanded-path)
-          (format "Error: '%s' is a directory" path))
-         (t
-          (shell-command-to-string
-           (format "wc -l -w -c %s" (shell-quote-argument expanded-path)))))))
-    (defun my-gptel-read-buffer (buffer)
-      (if (buffer-live-p (get-buffer buffer))
-          (with-current-buffer buffer
-            (buffer-substring-no-properties (point-min) (point-max)))
-        (format \"Error: buffer %s is not live or does not exist\" buffer)))
 
     (setq gptel-tools (list
                        ;; List files tool
                        (gptel-make-tool
                         :function #'my-gptel-tool-list-files
                         :name "list_files"
-                        :description "List files in a directory"
-                        :args (list '(:name "path" :type "string" :description "Directory path"))
+                        :description "List files in a directory (paged)"
+                        :args (list '(:name "path" :type "string" :description "Directory path")
+                                    '(:name "start" :type "number" :optional t :description "paging start")
+                                    '(:name "limit" :type "number" :optional t :description "limit of pages (default 200)"))
                         :category "file")
                        (gptel-make-tool
                         :function #'my-gptel-get-buffer-info
@@ -655,7 +600,6 @@ Running tools which consume or return large output can result in extremely high 
                         :description "Get information about Emacs frames and windows"
                         :args nil
                         :category "emacs")
-
                        (gptel-make-tool
                         :function #'my-gptel-eval-elisp-safely
                         :name "eval_elisp"
@@ -663,13 +607,12 @@ Running tools which consume or return large output can result in extremely high 
                         :args (list (list :name "code" :type "string" :description "Elisp code to evaluate"))
                         :category "emacs"
                         :confirm t)
-
                        ;; Git operations
                        (gptel-make-tool
                         :function #'my-gptel-git-status
                         :name "git_status"
                         :description "Get git repository status"
-                        :args (list '(:name "repo" :type "string" :description "path to repository or file for git status"))
+                        :args (list '(:name "repo" :type "string" :description "path to repository or file for git status" :optional t))
                         :category "git"
                         :confirm nil)
 
@@ -677,14 +620,7 @@ Running tools which consume or return large output can result in extremely high 
                        (gptel-make-tool
                         :function (lambda (&optional file) (my-gptel-git-diff file))
                         :name "git_diff"
-                        :description "Show git diff for all files"
-                        :args nil
-                        :category "git")
-
-                       (gptel-make-tool
-                        :function (lambda (file) (my-gptel-git-diff file))
-                        :name "git_diff_file"
-                        :description "Show git diff for specific file"
+                        :description "show git diff for `file'"
                         :args (list (list :name "file" :type "string" :description "File to diff"))
                         :category "git")
 
@@ -734,23 +670,14 @@ Running tools which consume or return large output can result in extremely high 
                         :args (list '(:name "pattern" :type "string" :description "Search pattern")
                                     '(:name "file_pattern" :type "string" :description "pattern selecting files (via `grep --include')" :optional t))
                         :category "search")
-
                        (gptel-make-tool
-                        :function #'find-file-other-window
-                        :name "find_file_other_window"
-                        :description "Open a file or directory in this Emacs session."
-                        :args (list '(:name "file"
-                                            :type "string"
-                                            :description "The file or directory to open in the Emacs session."))
+                        :function #'my-gptel-paged-read
+                        :name "paged_read"
+                        :description "Read N lines from file/buffer starting at START (default 200; max 300)."
+                        :args (list '(:name "file_or_buffer" :type "string")
+                                    '(:name "start" :type "number" :optional t)
+                                    '(:name "line_count" :type "number" :optional t))
                         :category "emacs")
-                       (gptel-make-tool
-                        :name "read_buffer"
-                        :args (list '(:name "buffer"
-                                            :type "string"
-                                            :description "the name of the buffer whose contents are to be retrieved"))
-                        :category "emacs"
-                        :description "return the contents of an emacs buffer [WARNING: expensive! use compression instead]"
-                        :function #'my-gptel-read-buffer)
                        (gptel-make-tool
                         :name "make_directory"
                         :description "Create a new directory with the given name in the specified parent directory"
@@ -796,63 +723,7 @@ Running tools which consume or return large output can result in extremely high 
                                     '(:name "diff_content" :type "string" :description "Unified diff content"))
                         :category "emacs"
                         :confirm t)
-                       ;; Add the new tools
-                       (gptel-make-tool
-                        :name "meta_read"
-                        :description "Read file/buffer with line limits and summaries (quick overview)"
-                        :function #'my-gptel-meta-read
-                        :args (list '(:name "file_or_buffer" :type "string" :description "File path or buffer name")
-                                    '(:name "max_lines" :type "number" :description "Max lines to show (default 50)" :optional t)
-                                    '(:name "summary_only" :type "boolean" :description "Show only summary stats" :optional t))
-                        :category "utility")
-
-                       (gptel-make-tool
-                        :name "compressed_read"
-                        :description "Read file/buffer with mandatory gzip compression (70%+ API savings). Full content preserved."
-                        :function #'my-gptel-compressed-read
-                        :args (list '(:name "file_or_buffer" :type "string" :description "File path or buffer name")
-                                    '(:name "start" :type "number" :description "Start position for region extraction" :optional t)
-                                    '(:name "end" :type "number" :description "End position for region extraction" :optional t))
-                        :category "utility")
-
                        )))
-
-  ;; Add detailed tool confirmation with full argument display
-  (defun my-gptel-detailed-confirmation (tool-spec args)
-    "Show detailed confirmation dialog with tool name, description and arguments."
-    (let* ((tool-name (plist-get tool-spec :name))
-           (tool-desc (plist-get tool-spec :description))
-           (confirm-required (plist-get tool-spec :confirm))
-           (args-display (mapconcat
-                          (lambda (arg)
-                            (let ((name (car arg))
-                                  (value (cdr arg)))
-                              (format "  %s: %s" name
-                                      (if (> (length (format "%s" value)) 200)
-                                          (concat (substring (format "%s" value) 0 200) "...")
-                                        value))))
-                          args "\n")))
-      (when confirm-required
-        (yes-or-no-p
-         (format "Execute Tool: %s\n\nDescription: %s\n\nArguments:\n%s\n\nProceed? "
-                 tool-name tool-desc args-display)))))
-
-  ;; Custom confirmation function for detailed tool dialogs
-  (defun my-gptel-detailed-tool-confirmation (&rest args)
-    "Show detailed confirmation dialog for tool calls."
-    (let* ((tool-name (if (stringp (car args)) (car args) "Unknown Tool"))
-           (tool-args (if (stringp (car args)) (cdr args) args))
-           (arg-details (mapconcat
-                         (lambda (arg)
-                           (format "  %s"
-                                   (if (> (length (format "%s" arg)) 100)
-                                       (concat (substring (format "%s" arg) 0 100) "...")
-                                     arg)))
-                         tool-args "\n"))
-           (confirmation-msg (format "Execute Tool: %s\n\nArguments:\n%s\n\nProceed?"
-                                     tool-name arg-details)))
-      (yes-or-no-p confirmation-msg)))
-
 
   ;; Load fix for gptel-menu transient crashes (keymapp 2 error)
   ;; Load immediately - no need to wait for gptel-transient
@@ -888,21 +759,10 @@ Running tools which consume or return large output can result in extremely high 
   (add-hook 'find-file-hook 'my-auto-enable-gptel-mode)
   (add-hook 'gptel-mode-hook 'my-gptel-clean-completion)
 
-  ;; Add debug function to see what's happening
-  (defun my-gptel-debug-confirmation ()
-    "Debug tool confirmation state."
-    (interactive)
-    (message "Current overlays with gptel-tool: %s"
-             (mapcar (lambda (ov)
-                       (list (overlay-start ov) (overlay-end ov)
-                             (overlay-get ov 'gptel-tool)))
-                     (seq-filter (lambda (ov) (overlay-get ov 'gptel-tool))
-                                 (overlays-in (point-min) (point-max))))))
-
-   (defun my-gptel-limit-output (output max-size)
-     (if (> (length output) max-size)
-         (concat (substring output 0 max-size) "\n[OUTPUT TRUNCATED]")
-       output)))
+  (defun my-gptel-limit-output (output max-size)
+    (if (> (length output) max-size)
+        (concat (substring output 0 max-size) "\n[OUTPUT TRUNCATED]")
+      output)))
 
 
 (provide 'my-gpt)
