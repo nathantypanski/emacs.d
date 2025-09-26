@@ -52,6 +52,32 @@
   (org-log-done t)
   (org-src-fontify-natively t)
 
+  (defun my-org-fontify-tool-blocks (limit)
+    "Fontify #+begin_tool … #+end_tool like src blocks."
+    (let ((case-fold-search t)
+          found)
+      (while (and (< (point) limit)
+                  (re-search-forward "^[ \t]*#\\+begin_tool\\b.*$" limit t))
+        (setq found t)
+        (let* ((beg-line-b (match-beginning 0))
+               (beg-line-e (match-end 0))
+               (end-line-beg
+                (save-excursion
+                  (if (re-search-forward "^[ \t]*#\\+end_tool\\b.*$" nil t)
+                      (match-beginning 0)
+                    (point-max))))
+               (end-line-end
+                (save-excursion
+                  (goto-char end-line-beg)
+                  (line-end-position))))
+          (put-text-property beg-line-b beg-line-e 'face 'org-block-begin-line)
+          (put-text-property beg-line-e end-line-beg 'face 'org-block)
+          (put-text-property end-line-beg end-line-end 'face 'org-block-end-line)
+          (put-text-property beg-line-b end-line-end 'font-lock-multiline t)))
+      nil))
+  (font-lock-add-keywords 'org-mode '((my-org-fontify-tool-blocks)) 'append)
+
+
   (org-agenda-prefix-format
    '((home  . "  %i %-12:c%?-12t% s")
      (todo    . "  %i %-12:c [%e] %b ")
