@@ -74,7 +74,7 @@
           (put-text-property beg-line-e end-line-beg 'face 'org-block)
           (put-text-property end-line-beg end-line-end 'face 'org-block-end-line)
           (put-text-property beg-line-b end-line-end 'font-lock-multiline t)))
-      nil))
+      found))
   (font-lock-add-keywords 'org-mode '((my-org-fontify-tool-blocks)) 'append)
 
 
