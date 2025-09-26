@@ -160,7 +160,7 @@ Running tools which consume or return large output can result in extremely high 
           (string-match-p "\\bexec\\b" s)) 'sh-mode)
      ((or (string-match-p "\\bdef\\s-+\\w+" s)
           (string-match-p "\\bclass\\s-+\\w+" s)) 'python-mode)
-     ((string-match-p "\\bfunction\\b|=>|import\\s-+\\w+\\s-+from" s) 'js-mode)
+     ((string-match-p "\\bfunction\\b\\|=>\\|import\\s-+\\w+\\s-+from" s) 'js-mode)
      (t 'fundamental-mode)))
 
   (defun my-gptel-confirmation-buffer (tool-spec args)
@@ -215,9 +215,7 @@ Running tools which consume or return large output can result in extremely high 
     (interactive)
     (visual-line-mode 1)
     (setq-local auto-save-timeout 60)
-    (setq-local auto-save-visited-mode nil)
-    ;; Ensure tool call XML-ish markers don't run into prose:
-    (add-hook 'after-change-functions #'my-gptel--newline-after-tool-insert nil t))
+    (setq-local auto-save-visited-mode nil))
 
   ;; Core commands
   (defun my-gptel-explain ()
@@ -273,25 +271,6 @@ Running tools which consume or return large output can result in extremely high 
             (cl-some (lambda (pattern)
                        (string-match-p pattern expanded))
                      my-gptel-blocked-patterns)))))
-
-  ;; Simple read file tool
-  (defun my-gptel-tool-read-file (path)
-    "Read file with size limit (max 20KB)."
-    (let* ((expanded-path (expand-file-name path))
-           (max-size (* 20 1024))) ; 20KB limit for cost efficiency
-      (cond
-       ((not (my-gptel-path-allowed-p expanded-path))
-        (format "Error: Path '%s' is outside allowed directories" path))
-       ((not (file-exists-p expanded-path))
-        (format "Error: File '%s' does not exist" path))
-       ((file-directory-p expanded-path)
-        (format "Error: '%s' is a directory, not a file" path))
-       ((> (file-attribute-size (file-attributes expanded-path)) max-size)
-        "Error: File too large (>20KB). Use head/tail or grep for specific sections")
-       (t
-        (with-temp-buffer
-          (insert-file-contents expanded-path)
-          (buffer-string))))))
 
   (defun my-gptel-tool-list-files (path &optional start limit)
     "List files at `path' with paging from `start' to `limit' (default LIMIT=200)."
@@ -352,19 +331,6 @@ Running tools which consume or return large output can result in extremely high 
       (condition-case err
           (with-output-to-string (princ (prin1-to-string (eval (read code)))))
         (error (format "Error: %s" err)))))
-
-
-  (defun my-gptel-add-newline-after-tools (start end)
-    "Add newline after tool call responses"
-    (save-excursion
-      (goto-char start)  ; Use the provided start position
-      (while (re-search-forward "</invoke>" end t)  ; Search within the response region
-        (unless (looking-at "\n")
-          (insert "\n")))))
-  (defun my-gptel--newline-after-tool-insert (beg end _len)
-    "after-change-functions glue for `my-gptel-add-newline-after-tools'."
-    (ignore _len)
-    (condition-case _ (my-gptel-add-newline-after-tools beg end) (error nil)))
 
   (defun my-gptel-git-status (&optional path)
     "Return porcelain status; optional `path'."
@@ -568,6 +534,32 @@ Running tools which consume or return large output can result in extremely high 
              (s (max 1 (or start 1)))
              (n (min 300 (max 1 (or line-count 200)))))
         (string-join (seq-take (seq-drop lines (1- s)) n) "\n")))
+
+    (defun my-gptel-file-summary (path)
+      "Get a brief summary of file structure instead of full content."
+      (let ((expanded-path (expand-file-name path)))
+        (cond
+         ((not (my-gptel-path-allowed-p expanded-path))
+          (format "Error: Path '%s' is outside allowed directories" path))
+         ((not (file-exists-p expanded-path))
+          (format "Error: File '%s' does not exist" path))
+         ((file-directory-p expanded-path)
+          (format "Error: '%s' is a directory" path))
+         (t
+          (with-temp-buffer
+            (insert-file-contents expanded-path)
+            (let* ((lines (split-string (buffer-string) "\n"))
+                   (total-lines (length lines))
+                   (size (buffer-size))
+                   (first-10 (seq-take lines 10))
+                   (last-5 (if (> total-lines 15) (seq-take (last lines) 5) '())))
+              (format "File: %s\nSize: %d bytes, %d lines\n\nFirst 10 lines:\n%s\n%s"
+                      path size total-lines
+                      (string-join first-10 "\n")
+                      (if last-5
+                          (format "\n...\n\nLast 5 lines:\n%s" (string-join last-5 "\n"))
+                        ""))))))))
+
   ;; Register tools with gptel
   (defun my-gptel-setup-tools ()
     "Setup working gptel tools."
