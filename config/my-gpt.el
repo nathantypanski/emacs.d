@@ -153,25 +153,43 @@ append instructions to page the rest via `paged_read'."
 ;; -------- Dynamic Org response prefix (one level deeper than current) --------
 
 (defun my-gptel--nested-org-prefix (&optional label)
-  "Return an Org heading prefix one level deeper than current point.
-LABEL defaults to 'Assistant' but can be 'Human' or other text."
-  (let ((level (if (and (derived-mode-p 'org-mode) (fboundp 'org-current-level))
-                   (or (org-current-level) 0)
-                 0))
-        (label (or label "Assistant")))
-    (concat (make-string (1+ level) ?*) " " label "\n")))
+  "Return an Org heading prefix that continues the conversation thread.
+LABEL defaults to 'Assistant' but can be 'Human' or other text.
+This ensures proper nesting like a chat conversation."
+  (let* ((label (or label "Assistant"))
+         (level (if (derived-mode-p 'org-mode)
+                    (or (my-gptel--find-conversation-context)
+                        ;; Fallback: nest under current heading
+                        (save-excursion
+                          (beginning-of-line)
+                          (or (org-current-level)
+                              (progn
+                                (ignore-errors (org-back-to-heading t))
+                                (org-current-level))
+                              0)))
+                  0)))
+    (concat (make-string level ?*) " " label "\n")))
 
 (defun my-gptel--with-nested-prefix (orig &rest args)
-  "Around-advice for `gptel-send' to inject computed Org prompt/response prefixes."
+  "Around-advice for `gptel-send' to inject computed Org prompt/response prefixes.
+Ensures conversation threads nest properly like a chat interface."
   (let* ((response-prefix (and (derived-mode-p 'org-mode)
                                (my-gptel--nested-org-prefix "Assistant")))
          (prompt-prefix (and (derived-mode-p 'org-mode)
                              (my-gptel--nested-org-prefix "Human")))
          ;; Ensure gptel sees a STRING, not a function/symbol.
          (gptel-prompt-prefix-alist
-          (if prompt-prefix `((org-mode . ,prompt-prefix)) gptel-prompt-prefix-alist))
+          (if prompt-prefix
+              `((org-mode . ,prompt-prefix))
+            gptel-prompt-prefix-alist))
          (gptel-response-prefix-alist
-          (if response-prefix `((org-mode . ,response-prefix)) gptel-response-prefix-alist)))
+          (if response-prefix
+              `((org-mode . ,response-prefix))
+            gptel-response-prefix-alist)))
+    ;; Debug info (remove in production)
+    (when (and (derived-mode-p 'org-mode) response-prefix)
+      (message "GPT conversation: Using level %d for Human/Assistant headings"
+               (length (car (split-string response-prefix " ")))))
     (apply orig args)))
 
 ;;;###autoload
