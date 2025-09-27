@@ -33,7 +33,13 @@
       (push '((nil . "TAB") . (nil . "↹")) which-key-replacement-alist)
       (push '((nil . "SPC") . (nil . "⎵")) which-key-replacement-alist)
       (push '((nil . "DEL") . (nil . "⌫")) which-key-replacement-alist)
-      (push '((nil . "ESC") . (nil . "⎋")) which-key-replacement-alist)))
+      (push '((nil . "ESC") . (nil . "⎋")) which-key-replacement-alist))
+
+    ;; Disable Ctrl+mouse wheel font scaling
+    (global-unset-key (kbd "C-<wheel-up>"))
+    (global-unset-key (kbd "C-<wheel-down>"))
+    (global-unset-key (kbd "C-<mouse-4>"))
+    (global-unset-key (kbd "C-<mouse-5>")))
 
   ;; Leader key descriptions (comma as leader) - conditional on display type
   (which-key-add-key-based-replacements
