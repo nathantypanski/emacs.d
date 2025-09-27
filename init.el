@@ -100,6 +100,4 @@
 
 (require 'my-parens)
 
-(after 'evil (my-tty-cursor-update))
-
 (provide 'init)
