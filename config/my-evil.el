@@ -130,6 +130,8 @@ Not buffer-local, so it really is per frame.")
   (evil-set-initial-state 'vterm-mode 'emacs)
   (evil-set-initial-state 'vterm-copy-mode 'normal)
   (evil-set-initial-state 'transient-mode 'emacs)
+  (evil-set-initial-state 'embark-collect-mode 'emacs)
+  (evil-set-initial-state 'embark-export-mode 'emacs)
 
   (defun my-mode-line-update ()
     "Update the modeline."
@@ -433,6 +435,8 @@ If LSP isn’t active here, signal a user‑friendly error."
   ;; Include vterm in evil-collection
   (add-to-list 'evil-collection-mode-list 'vterm)
   (evil-collection-init)
+  (evil-collection-init 'embark)
+  (evil-collection-init 'consult)
   ;; corfu should be loaded because my-completion comes first.
   (evil-collection-corfu-setup))
 

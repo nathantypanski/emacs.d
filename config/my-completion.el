@@ -51,6 +51,7 @@
 (use-package consult
   :ensure t
   :demand t
+  :after 'evil 'general
   :bind
   (("C-s" . consult-line)
    ("M-y" . consult-yank-pop)
@@ -58,20 +59,23 @@
   :custom
   (consult-async-min-input 0)
   :config
-  (after 'evil
-    (define-key evil-normal-state-map (kbd "P") 'consult-yank-from-kill-ring)
-    (define-key evil-normal-state-map (kbd "SPC `") 'consult-mark)))
+  (general-define-key
+   :keymaps 'evil-normal-state-map
+                      (kbd "P") 'consult-yank-from-kill-ring
+                      (kbd "SPC `") 'consult-mark))
 
 (use-package embark
   :ensure t
   :commands (embark-act embark-act-all)
+  :after ('general 'evil)
   :config
-  (evil-leader/set-key
-    ">" 'embark-act))
+   (general-define-key :keymaps 'embark-collect-mode-map
+                       "C-n" nil
+                       "C-p" nil))
 
 (use-package embark-consult
   :ensure t
-  :after (consult embark)
+  :after ('consult 'embark)
   :bind (("C-." . embark-act)))
 
 (when (bound-and-true-p semantic-mode)
