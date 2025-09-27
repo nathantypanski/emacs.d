@@ -3,6 +3,80 @@
 ;; <leader> keybindings for evil-leader
 
 (require 'evil-leader)
+(require 'project)
+
+(defun my-make-frame (&optional name)
+  "Make a new frame (for binding to keys) optionally with name `name'."
+  (interactive "sName for new frame: ")
+  (if name
+      (make-frame `((name . ,name)))
+    (make-frame)))
+
+;; Core search function that works in any directory
+(defun my-search-in-dir (dir)
+  "Search in DIR using the best available tool (rg > ag > grep)."
+  (let ((default-directory dir))
+    (cond
+     ((executable-find "rg") (consult-ripgrep))
+     ((and (fboundp 'ag-regexp) (executable-find "ag"))
+      (call-interactively 'ag-regexp))
+     (t (consult-grep)))))
+
+;; Interactive function for searching in current directory
+(defun my-search-here ()
+  "Search in current directory."
+  (interactive)
+  (my-search-in-dir default-directory))
+
+;; Interactive function for searching in project
+(defun my-search-project ()
+  "Search in project root directory."
+  (interactive)
+  (if-let ((project (project-current)))
+      (my-search-in-dir (project-root project))
+    (user-error "Not in a project")))
+
+;; Interactive function for searching in arbitrary directory
+(defun my-search-directory (dir)
+  "Search in specified directory."
+  (interactive "DDirectory: ")
+  (my-search-in-dir dir))
+
+(defun my-eval-and-insert-result ()
+  "Evaluate the preceding sexp and insert result on next line."
+  (interactive)
+  (let ((result (eval-last-sexp nil)))
+    (end-of-line)
+    (newline)
+    (insert (format "%S" result))))
+
+(defun my-eval-and-insert-as-comment ()
+  "Evaluate the preceding sexp and insert result as a comment."
+  (interactive)
+  (let ((result (eval-last-sexp nil)))
+    (end-of-line)
+    (newline)
+    (insert (format ";; => %S" result))))
+
+(defun my-eval-print-last-sexp ()
+  "Like eval-print-last-sexp but with cleaner formatting."
+  (interactive)
+  (let ((result (eval-last-sexp nil)))
+    (end-of-line)
+    (newline)
+    (insert (format "%S" result))))
+
+(defun my-eval-region-and-comment ()
+  "Evaluate region and insert result as comment below."
+  (interactive)
+  (when (use-region-p)
+    (let* ((code (buffer-substring-no-properties (region-beginning) (region-end)))
+           (result (eval (read code))))
+      (goto-char (region-end))
+      (end-of-line)
+      (newline)
+      (insert (format ";; => %S" result)))))
+
 (evil-leader/set-key
   "$"          'display-line-numbers-mode
   "qq"         'kill-current-buffer
@@ -13,7 +87,6 @@
   ">"          'find-file-at-point
   "\\"         'split-window-horizontally
   "-"          'split-window-vertically
-  "e"          'elisp-eval-region-or-buffer
   "E"          'pp-eval-last-sexp
   "TAB"        'my-hop-around-buffers
   "RET"        'my-spawn-terminal-here
@@ -31,19 +104,24 @@
   "`"          'visit-term-buffer
   "cc"         'projectile-compile-project
   "f"          'find-file
+  "F"          'my-make-frame
   "k"          'my-eldoc-doc-buffer-popup
   "x"          'execute-extended-command
   "X"          'consult-complex-command
-  "s r"        'ag-regexp
 
   ;;
   "u v"        'vundo
 
   ;; consult
-  "s R"        'consult-ripgrep
+  "s p"        'my-search-project
+  "s R"        'my-search-here
+  "s r"        'my-search-directory
   "b"          'consult-buffer
-  "l"          'consult-imenu
-  "s i"        'consult-imenu
+  "s i"          'consult-imenu
+  "s u"        'apropos-function
+  "s c"        'apropos-command
+  "s I"        'consult-imenu-multi
+  "s o"        'consult-outline
   "s l"        'consult-line
   "s m"        'consult-man
   "s f"        'consult-find
@@ -80,6 +158,12 @@
   "tp"         'tab-bar-switch-to-prev-tab
   "tr"         'tab-bar-rename-tab
 
+  ;; eval
+  "ee"         'elisp-eval-region-or-buffer
+  "ei"         'my-eval-and-insert-result
+  "ec"         'my-eval-and-insert-as-comment
+  "ep"         'my-eval-print-last-sexp
+
   ;; perspectives
   "pt"         'my-perspective-switch
   "pc"         'my-perspective-new
@@ -96,6 +180,9 @@
   "gd"         'magit-diff
   "gl"         'magit-log
   "gd"         'magit-diff
+
+  ;; modify
+  "m f"        'text-scale-adjust ; modify font scale
 
   ;; gptel
   "aa"         'gptel-add
@@ -127,7 +214,6 @@
   "o l"        'org-store-link
 
   (kbd ".")    'embark-act
-  "m"          'elisp-slime-nav-find-elisp-thing-at-point
   ","          'other-window)
 
 (evil-leader/set-key-for-mode 'git-commit-mode "qq" 'git-commit-abort)
