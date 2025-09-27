@@ -152,19 +152,26 @@ append instructions to page the rest via `paged_read'."
 
 ;; -------- Dynamic Org response prefix (one level deeper than current) --------
 
-(defun my-gptel--nested-org-prefix ()
-  "Return an Org heading prefix one level deeper than current point."
+(defun my-gptel--nested-org-prefix (&optional label)
+  "Return an Org heading prefix one level deeper than current point.
+LABEL defaults to 'Assistant' but can be 'Human' or other text."
   (let ((level (if (and (derived-mode-p 'org-mode) (fboundp 'org-current-level))
                    (or (org-current-level) 0)
-                 0)))
-    (concat (make-string (1+ level) ?*) " Assistant\n")))
+                 0))
+        (label (or label "Assistant")))
+    (concat (make-string (1+ level) ?*) " " label "\n")))
 
 (defun my-gptel--with-nested-prefix (orig &rest args)
-  "Around-advice for `gptel-send' to inject a computed Org response prefix."
-  (let* ((prefix (and (derived-mode-p 'org-mode) (my-gptel--nested-org-prefix)))
+  "Around-advice for `gptel-send' to inject computed Org prompt/response prefixes."
+  (let* ((response-prefix (and (derived-mode-p 'org-mode)
+                               (my-gptel--nested-org-prefix "Assistant")))
+         (prompt-prefix (and (derived-mode-p 'org-mode)
+                             (my-gptel--nested-org-prefix "Human")))
          ;; Ensure gptel sees a STRING, not a function/symbol.
+         (gptel-prompt-prefix-alist
+          (if prompt-prefix `((org-mode . ,prompt-prefix)) gptel-prompt-prefix-alist))
          (gptel-response-prefix-alist
-          (if prefix `((org-mode . ,prefix)) gptel-response-prefix-alist)))
+          (if response-prefix `((org-mode . ,response-prefix)) gptel-response-prefix-alist)))
     (apply orig args)))
 
 ;;;###autoload
@@ -214,14 +221,14 @@ Also stash the full raw output in a temp buffer when larger than caps."
   (gptel-prompt-prefix-alist '((org-mode . "** Human\n")))
   (gptel-response-prefix-alist '((org-mode . "** Assistant\n")))
   (gptel-model 'claude-sonnet-4-20250514)
-  (gptel-max-tokens 800)
+  (gptel-max-tokens 1000)
   (gptel-use-tools t)
   (gptel-auto-repair-invalid-state t)
   (gptel-include-tool-results nil)
   (gptel-confirm-tool-calls 'auto)
   (gptel-default-mode 'org-mode)
   (gptel-directives my-gptel-directives)
-  (gptel-org-branching-context nil)
+  (gptel-org-branching-context t)
   :init
   ;; Prompts / directives
   (defvar my-gptel-system-prompt
@@ -490,29 +497,43 @@ so you (or the LLM) can continue via the `paged_read` tool."
 
   ;; Diff application (kept functional, just minor style nits)
   (defun my-gptel-parse-diff-hunks (diff)
-    (let ((hunks nil)
-          (lines (split-string diff "\n"))
-          (cur nil))
-      (dolist (line lines)
-        (cond
-         ((string-match "^@@[ \t]+\\-\\([0-9]+\\)\\(?:,\\([0-9]+\\)\\)?[ \t]+\\+\\([0-9]+\\)\\(?:,\\([0-9]+\\)\\)?" line)
-          (when cur (push cur hunks))
-          (setq cur (list :start-line (string-to-number (match-string 3 line))
-                          :old-lines '() :new-lines '())))
-         ((and cur (string-match "^\\-\\(.*\\)" line))
-          (push (match-string 1 line) (plist-get cur :old-lines)))
-         ((and cur (string-match "^\\+\\(.*\\)" line))
-          (push (match-string 1 line) (plist-get cur :new-lines)))
-         ((and cur (string-match "^ \\(.*\\)" line))
-          nil)))
-      (when cur (push cur hunks))
-      (mapcar (lambda (h)
-                (plist-put h :old-lines (nreverse (plist-get h :old-lines)))
-                (plist-put h :new-lines (nreverse (plist-get h :new-lines)))
-                h)
-              (nreverse hunks))))
+  "Parse unified diff into structured hunks with better error handling."
+  (let ((hunks nil)
+        (lines (split-string diff "\n"))
+        (cur nil))
+    (dolist (line lines)
+      (cond
+       ;; Hunk header: @@ -old_start,old_count +new_start,new_count @@
+       ((string-match "^@@[ \t]*-\\([0-9]+\\)\\(?:,\\([0-9]+\\)\\)?[ \t]*\\+\\([0-9]+\\)\\(?:,\\([0-9]+\\)\\)?[ \t]*@@" line)
+        (when cur (push cur hunks))
+        (setq cur (list :old-start (string-to-number (match-string 1 line))
+                        :old-count (if (match-string 2 line)
+                                     (string-to-number (match-string 2 line)) 1)
+                        :new-start (string-to-number (match-string 3 line))
+                        :new-count (if (match-string 4 line)
+                                     (string-to-number (match-string 4 line)) 1)
+                        :removed-lines '()
+                        :added-lines '()
+                        :context-lines '())))
+       ;; Removed line
+       ((and cur (string-match "^-\\(.*\\)" line))
+        (push (match-string 1 line) (plist-get cur :removed-lines)))
+       ;; Added line
+       ((and cur (string-match "^\\+\\(.*\\)" line))
+        (push (match-string 1 line) (plist-get cur :added-lines)))
+       ;; Context line
+       ((and cur (string-match "^ \\(.*\\)" line))
+        (push (match-string 1 line) (plist-get cur :context-lines)))))
+    (when cur (push cur hunks))
+    ;; Reverse the collected lines to restore original order
+    (mapcar (lambda (h)
+              (plist-put h :removed-lines (nreverse (plist-get h :removed-lines)))
+              (plist-put h :added-lines (nreverse (plist-get h :added-lines)))
+              (plist-put h :context-lines (nreverse (plist-get h :context-lines)))
+              h)
+            (nreverse hunks))))
 
-  (defun my-gptel-apply-diff-internal (buffer-name diff-content)
+ (defun my-gptel-apply-diff-internal (buffer-name diff-content)
     "Apply unified diff directly to BUFFER-NAME."
     (unless (get-buffer buffer-name) (error "Buffer %s does not exist" buffer-name))
     (with-current-buffer buffer-name
@@ -520,12 +541,11 @@ so you (or the LLM) can continue via the `paged_read` tool."
             (hunks (my-gptel-parse-diff-hunks diff-content)))
         (condition-case err
             (progn
-              (setq hunks (sort hunks (lambda (a b) (> (plist-get a :start-line)
-                                                       (plist-get b :start-line)))))
+              (setq hunks (sort hunks (lambda (a b) (> (plist-get a :old-start) (plist-get b :old-start)))))
               (dolist (h hunks)
-                (let* ((start (plist-get h :start-line))
-                       (old (plist-get h :old-lines))
-                       (new (plist-get h :new-lines)))
+                (let* ((start (plist-get h :old-start))
+                       (old (plist-get h :removed-lines))
+                       (new (plist-get h :added-lines)))
                   (goto-char (point-min))
                   (forward-line (1- start))
                   (let ((beg (point)))
@@ -537,6 +557,36 @@ so you (or the LLM) can continue via the `paged_read` tool."
               (goto-char pt)
               "Patch applied successfully")
           (error (format "Patch failed: %s" (error-message-string err)))))))
+
+ (defun my-gptel-apply-diff-improved (buffer-name diff-content)
+   "Apply unified diff to BUFFER-NAME.
+    DIFF-CONTENT should be a proper unified diff format.
+
+    Example:
+    (my-gptel-apply-diff-improved \"my-file.el\"
+                                  \"--- a/my-file.el
+    +++ b/my-file.el
+    @@ -10,3 +10,3 @@
+    context line
+    -old line
+    +new line
+    context line\")
+
+    Returns success/error message."
+   (cond
+    ((null buffer-name)
+     "ERROR: buffer-name cannot be nil")
+    ((null diff-content)
+     "ERROR: diff-content cannot be nil")
+    ((string-empty-p (string-trim buffer-name))
+     "ERROR: buffer-name cannot be empty")
+    ((string-empty-p (string-trim diff-content))
+     "ERROR: diff-content cannot be empty")
+    ((not (get-buffer buffer-name))
+     (format "ERROR: Buffer '%s' does not exist" buffer-name))
+    (t
+     ;; Call the actual implementation
+     (my-gptel-apply-diff-internal buffer-name diff-content))))
 
   ;;;; Output clamps / timeouts (simplified)
   (defun my-gptel--with-timeout (thunk)
@@ -552,20 +602,99 @@ LABEL tags the temp buffer name."
        label)))
 
   ;; File helpers
-  (defun my-gptel-find-file (path &optional dir)
-    "Find or create PATH in DIR (or project/home)."
-    (let* ((base (or (and dir (my-gptel--resolve dir))
-                     (my-gptel--project-root)
-                     "~"))
-           (full (if (file-name-absolute-p path)
-                     path
-                   (expand-file-name (or path "") base))))
-      (if (my-gptel-path-allowed-p full)
+  (defun my-gptel--buffer-dir ()
+  (or (and buffer-file-name (file-name-directory buffer-file-name))
+      default-directory))
+
+(defun my-gptel--project-candidates (basename)
+  "Return absolute paths in current project whose basename equals BASENAME."
+  (when-let* ((proj (project-current))
+              (root (project-root proj))
+              (files (project-files proj)))
+    (cl-loop for f in files
+             for abs = (expand-file-name f root)
+             when (string= (file-name-nondirectory abs) basename)
+             collect abs)))
+
+(defun my-gptel-find-file (path &optional dir where must-exist)
+  "Open/optionally create PATH per intent.
+WHERE is one of: \"buffer\" (default), \"project\", \"cwd\", \"explicit\".
+If MUST-EXIST is non-nil, refuse to create; return an ambiguity/error message instead."
+  (let* ((abs? (file-name-absolute-p path))
+         (where (or where "buffer"))
+         (base
+          (cond
+           (abs? nil) ; base unused
+           ((and dir (stringp dir)) (my-gptel--resolve dir))          ; explicit base wins
+           ((string= where "buffer")  (my-gptel--buffer-dir))
+           ((string= where "project") (or (my-gptel--project-root) (my-gptel--buffer-dir)))
+           ((string= where "cwd")     default-directory)
+           ((string= where "explicit") (my-gptel--resolve (or dir ".")))
+           (t (my-gptel--buffer-dir)))))
+    (cond
+     ;; Absolute path: just honor it
+     (abs?
+      (if (or (not must-exist) (file-exists-p path))
           (progn
-            (make-directory (file-name-directory full) t)
-            (find-file (file-truename full))
-            (format "Opened file: %s" (file-truename full)))
-        (format "Path not allowed: %s" full))))
+            (make-directory (file-name-directory path) t)
+            (find-file (file-truename path))
+            (format "Opened file: %s" (file-truename path)))
+        (format "Not found (must_exist): %s" path)))
+
+     ;; Relative with directory components → treat as relative to base
+     ((string-match-p "/" path)
+      (let* ((full (expand-file-name path base)))
+        (if (or (file-exists-p full) (not must-exist))
+            (progn
+              (make-directory (file-name-directory full) t)
+              (find-file (file-truename full))
+              (format "Opened file: %s" (file-truename full)))
+          (format "Not found (must_exist): %s (base %s)" path base))))
+
+     ;; Bare filename → resolve intent carefully
+     (t
+      ;; 1) prefer an already-open buffer visiting this basename
+      (let* ((bn path)
+             (open-hit
+              (cl-loop for b in (buffer-list)
+                       for f = (buffer-local-value 'buffer-file-name b)
+                       when (and f (string= (file-name-nondirectory f) bn))
+                       ;; prefer one under current project if possible
+                       minimize (if (and (my-gptel--project-root)
+                                         (string-prefix-p (my-gptel--project-root) f))
+                                    0 1) into rank
+                       collect (cons rank f) into hits
+                       finally return
+                       (car (sort hits (lambda (a b) (< (car a) (car b))))))))
+        (cond
+         (open-hit
+          (find-file (cdr open-hit))
+          (format "Switched to open buffer: %s" (cdr open-hit)))
+
+         ;; 2) search the project for a unique basename
+         ((my-gptel--project-root)
+          (let ((cands (my-gptel--project-candidates bn)))
+            (pcase (length cands)
+              (0 (if must-exist
+                     (format "Not found (must_exist): %s" bn)
+                   (let* ((full (expand-file-name bn base)))
+                     (make-directory (file-name-directory full) t)
+                     (find-file (file-truename full))
+                     (format "Created new file: %s" (file-truename full)))))
+              (1 (find-file (car cands))
+                 (format "Opened project match: %s" (car cands)))
+              (_ (format "Ambiguous basename %S; candidates:\n%s"
+                         bn (mapconcat #'identity cands "\n"))))))
+
+         ;; 3) no project → fall back to base
+         (t
+          (let ((full (expand-file-name bn base)))
+            (if (or (file-exists-p full) (not must-exist))
+                (progn
+                  (make-directory (file-name-directory full) t)
+                  (find-file (file-truename full))
+                  (format "Opened file: %s" (file-truename full)))
+              (format "Not found (must_exist): %s (base %s)" bn base))))))))))
 
   (defun my-gptel-tool-wc (path)
     (let* ((p (my-gptel--resolve path)))
@@ -667,14 +796,11 @@ LABEL tags the temp buffer name."
                                                 :description "Regex to filter"))
                             :category "project")
            (gptel-make-tool :function #'my-gptel-find-file :name "find_file"
-                            :description "Open/create file"
-                            :args (list '(:name "path"
-                                                :type "string"
-                                                :description "Relative path")
-                                        '(:name "dir"
-                                                :type "string"
-                                                :optional t
-                                                :description "Parent directory"))
+                            :description "Open/create file with intent"
+                            :args (list '(:name "path"        :type "string" :description "Filename or relative/absolute path")
+                                        '(:name "dir"         :type "string" :optional t :description "Explicit base directory")
+                                        '(:name "where"       :type "string" :optional t :description "\"buffer\"|\"project\"|\"cwd\"|\"explicit\"")
+                                        '(:name "must_exist"  :type "boolean":optional t :description "If true, do not create when missing"))
                             :category "file")
            (gptel-make-tool :function #'my-gptel-tool-wc :name "wc"
                             :description "wc -l -w -c for a file"
@@ -694,12 +820,14 @@ LABEL tags the temp buffer name."
                                         '(:name "start" :type "number" :optional t)
                                         '(:name "line_count" :type "number" :optional t))
                             :category "emacs")
-           (gptel-make-tool :function #'my-gptel-apply-diff-internal :name "patch_buffer"
-                            :description "Apply unified diff to a buffer"
-                            :args (list '(:name "buffer_name" :type "string")
-                                        '(:name "diff_content" :type "string"))
-                            :category "emacs" :confirm t)
-
+           (gptel-make-tool
+            :function #'my-gptel-apply-diff-improved
+            :name "patch_buffer"
+            :description "Apply unified diff to a buffer. Both buffer_name and diff_content are REQUIRED strings."
+            :args (list '(:name "buffer_name" :type "string" :description "Name of buffer to patch (REQUIRED)")
+                        '(:name "diff_content" :type "string" :description "Unified diff content (REQUIRED)"))
+            :category "emacs"
+            :confirm t)
            ;; Simple file creation / mkdir (kept; confirm writes)
            (gptel-make-tool
             :name "make_directory" :category "file" :confirm t
