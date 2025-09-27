@@ -495,99 +495,6 @@ so you (or the LLM) can continue via the `paged_read` tool."
             out))
       "Not in a project"))
 
-  ;; Diff application (kept functional, just minor style nits)
-  (defun my-gptel-parse-diff-hunks (diff)
-  "Parse unified diff into structured hunks with better error handling."
-  (let ((hunks nil)
-        (lines (split-string diff "\n"))
-        (cur nil))
-    (dolist (line lines)
-      (cond
-       ;; Hunk header: @@ -old_start,old_count +new_start,new_count @@
-       ((string-match "^@@[ \t]*-\\([0-9]+\\)\\(?:,\\([0-9]+\\)\\)?[ \t]*\\+\\([0-9]+\\)\\(?:,\\([0-9]+\\)\\)?[ \t]*@@" line)
-        (when cur (push cur hunks))
-        (setq cur (list :old-start (string-to-number (match-string 1 line))
-                        :old-count (if (match-string 2 line)
-                                     (string-to-number (match-string 2 line)) 1)
-                        :new-start (string-to-number (match-string 3 line))
-                        :new-count (if (match-string 4 line)
-                                     (string-to-number (match-string 4 line)) 1)
-                        :removed-lines '()
-                        :added-lines '()
-                        :context-lines '())))
-       ;; Removed line
-       ((and cur (string-match "^-\\(.*\\)" line))
-        (push (match-string 1 line) (plist-get cur :removed-lines)))
-       ;; Added line
-       ((and cur (string-match "^\\+\\(.*\\)" line))
-        (push (match-string 1 line) (plist-get cur :added-lines)))
-       ;; Context line
-       ((and cur (string-match "^ \\(.*\\)" line))
-        (push (match-string 1 line) (plist-get cur :context-lines)))))
-    (when cur (push cur hunks))
-    ;; Reverse the collected lines to restore original order
-    (mapcar (lambda (h)
-              (plist-put h :removed-lines (nreverse (plist-get h :removed-lines)))
-              (plist-put h :added-lines (nreverse (plist-get h :added-lines)))
-              (plist-put h :context-lines (nreverse (plist-get h :context-lines)))
-              h)
-            (nreverse hunks))))
-
- (defun my-gptel-apply-diff-internal (buffer-name diff-content)
-    "Apply unified diff directly to BUFFER-NAME."
-    (unless (get-buffer buffer-name) (error "Buffer %s does not exist" buffer-name))
-    (with-current-buffer buffer-name
-      (let ((pt (point))
-            (hunks (my-gptel-parse-diff-hunks diff-content)))
-        (condition-case err
-            (progn
-              (setq hunks (sort hunks (lambda (a b) (> (plist-get a :old-start) (plist-get b :old-start)))))
-              (dolist (h hunks)
-                (let* ((start (plist-get h :old-start))
-                       (old (plist-get h :removed-lines))
-                       (new (plist-get h :added-lines)))
-                  (goto-char (point-min))
-                  (forward-line (1- start))
-                  (let ((beg (point)))
-                    (forward-line (length old))
-                    (delete-region beg (point)))
-                  (when new
-                    (insert (string-join new "\n"))
-                    (unless (bolp) (insert "\n")))))
-              (goto-char pt)
-              "Patch applied successfully")
-          (error (format "Patch failed: %s" (error-message-string err)))))))
-
- (defun my-gptel-apply-diff-improved (buffer-name diff-content)
-   "Apply unified diff to BUFFER-NAME.
-    DIFF-CONTENT should be a proper unified diff format.
-
-    Example:
-    (my-gptel-apply-diff-improved \"my-file.el\"
-                                  \"--- a/my-file.el
-    +++ b/my-file.el
-    @@ -10,3 +10,3 @@
-    context line
-    -old line
-    +new line
-    context line\")
-
-    Returns success/error message."
-   (cond
-    ((null buffer-name)
-     "ERROR: buffer-name cannot be nil")
-    ((null diff-content)
-     "ERROR: diff-content cannot be nil")
-    ((string-empty-p (string-trim buffer-name))
-     "ERROR: buffer-name cannot be empty")
-    ((string-empty-p (string-trim diff-content))
-     "ERROR: diff-content cannot be empty")
-    ((not (get-buffer buffer-name))
-     (format "ERROR: Buffer '%s' does not exist" buffer-name))
-    (t
-     ;; Call the actual implementation
-     (my-gptel-apply-diff-internal buffer-name diff-content))))
-
   ;;;; Output clamps / timeouts (simplified)
   (defun my-gptel--with-timeout (thunk)
     (with-timeout (my-gptel-tool-timeout-sec "[TIMEOUT]")
@@ -747,6 +654,66 @@ If MUST-EXIST is non-nil, refuse to create; return an ambiguity/error message in
                                       (string-join last5 "\n"))
                       ""))))))))
 
+  (defun my-gptel-replace-function (buffer-name function-name new-function-code)
+    "Replace entire function FUNCTION-NAME in BUFFER-NAME with NEW-FUNCTION-CODE."
+    (with-current-buffer buffer-name
+      (save-excursion
+        (goto-char (point-min))
+        (if (re-search-forward (format "^(defun %s\\b" (regexp-quote function-name)) nil t)
+            (progn
+              (beginning-of-line)
+              (let ((start (point)))
+                (forward-sexp)  ; Skip entire defun
+                (delete-region start (point))
+                (insert new-function-code)
+                (message "Replaced function %s" function-name)))
+          (error "Function %s not found" function-name)))))
+
+  (defun my-gptel-replace-lines (buffer-name start-line end-line new-content)
+    "Replace lines START-LINE to END-LINE with NEW-CONTENT."
+    (with-current-buffer buffer-name
+      (save-excursion
+        (goto-char (point-min))
+        (forward-line (1- start-line))
+        (let ((start (point)))
+          (forward-line (1+ (- end-line start-line)))
+          (delete-region start (point))
+          (insert new-content)
+          (message "Replaced lines %d-%d" start-line end-line)))))
+
+  (defun my-gptel-search-replace (buffer-name old-text new-text &optional literal)
+    "Replace OLD-TEXT with NEW-TEXT in BUFFER-NAME.
+If LITERAL is non-nil, treat OLD-TEXT as literal string, not regexp."
+    (with-current-buffer buffer-name
+      (save-excursion
+        (goto-char (point-min))
+        (let ((count 0))
+          (if literal
+              (while (search-forward old-text nil t)
+                (replace-match new-text nil t)
+                (cl-incf count))
+            (while (re-search-forward old-text nil t)
+              (replace-match new-text)
+              (cl-incf count)))
+          (message "Replaced %d occurrences" count)))))
+  (defun my-gptel-insert-at-line (buffer-name line-number content)
+    "Insert CONTENT at LINE-NUMBER in BUFFER-NAME."
+    (with-current-buffer buffer-name
+      (save-excursion
+        (goto-char (point-min))
+        (forward-line (1- line-number))
+        (beginning-of-line)
+        (insert content)
+        (message "Inserted content at line %d" line-number))))
+
+
+  (defun my-gptel-search-replace (buffer-name old-text new-text)
+    "Replace OLD-TEXT with NEW-TEXT in BUFFER-NAME."
+    (with-current-buffer buffer-name
+      (goto-char (point-min))
+      (while (search-forward old-text nil t)
+        (replace-match new-text))))
+
   ;;;; Tool registration
   (defun my-gptel-setup-tools ()
     "Register tools with gptel."
@@ -820,14 +787,6 @@ If MUST-EXIST is non-nil, refuse to create; return an ambiguity/error message in
                                         '(:name "start" :type "number" :optional t)
                                         '(:name "line_count" :type "number" :optional t))
                             :category "emacs")
-           (gptel-make-tool
-            :function #'my-gptel-apply-diff-improved
-            :name "patch_buffer"
-            :description "Apply unified diff to a buffer. Both buffer_name and diff_content are REQUIRED strings."
-            :args (list '(:name "buffer_name" :type "string" :description "Name of buffer to patch (REQUIRED)")
-                        '(:name "diff_content" :type "string" :description "Unified diff content (REQUIRED)"))
-            :category "emacs"
-            :confirm t)
            ;; Simple file creation / mkdir (kept; confirm writes)
            (gptel-make-tool
             :name "make_directory" :category "file" :confirm t
@@ -853,7 +812,40 @@ If MUST-EXIST is non-nil, refuse to create; return an ambiguity/error message in
             :args (list '(:name "path"     :type "string" :description "Directory")
                         '(:name "filename" :type "string" :description "File name")
                         '(:name "content"  :type "string" :description "Content")))
-           )))
+           (gptel-make-tool
+            :name "replace_function" :category "edit" :confirm t
+            :description "Replace entire defun in BUFFER-NAME that matches FUNCTION-NAME."
+            :function #'my-gptel-replace-function
+            :args (list '(:name "buffer_name"      :type "string" :description "Target buffer")
+                        '(:name "function_name"    :type "string" :description "defun name (symbol)")
+                        '(:name "new_function_code":type "string" :description "Full (defun ...) text")))
+
+           (gptel-make-tool
+            :name "replace_lines" :category "edit" :confirm t
+            :description "Replace lines START..END (inclusive) in BUFFER-NAME."
+            :function #'my-gptel-replace-lines
+            :args (list '(:name "buffer_name" :type "string" :description "Target buffer")
+                        '(:name "start_line"  :type "number" :description "1-based")
+                        '(:name "end_line"    :type "number" :description "1-based, ≥ start_line")
+                        '(:name "new_content" :type "string" :description "Replacement text")))
+
+           (gptel-make-tool
+            :name "search_replace" :category "edit" :confirm t
+            :description "Replace OLD-TEXT with NEW-TEXT; literal or regex."
+            :function #'my-gptel-search-replace
+            :args (list '(:name "buffer_name" :type "string" :description "Target buffer")
+                        '(:name "old_text"    :type "string" :description "String or regex")
+                        '(:name "new_text"    :type "string" :description "Replacement")
+                        '(:name "literal"     :type "boolean" :optional t :description "Treat OLD-TEXT literally? (default: regex)")))
+
+           (gptel-make-tool
+            :name "insert_at_line" :category "edit" :confirm t
+            :description "Insert CONTENT at LINE-NUMBER (before existing line)."
+            :function #'my-gptel-insert-at-line
+            :args (list '(:name "buffer_name" :type "string" :description "Target buffer")
+                        '(:name "line_number" :type "number" :description "1-based line")
+                        '(:name "content"     :type "string" :description "Text to insert"))))))
+
 
   ;; Fix for gptel transient crash (if present)
   (ignore-errors (require 'gptel-menu-fix))
