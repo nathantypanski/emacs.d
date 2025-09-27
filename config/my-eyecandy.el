@@ -215,7 +215,7 @@ FONT is the name of a xft font, like `Monospace-10'."
                     org-inline-src-block org-block-begin-line
                     org-block-end-line org-meta-line))
       (when (facep face)
-        (set-face-attribute face nil :height 'unspecified)))
+        (set-face-attribute face nil :height 0.7)))
 
     ;; Add advice to prevent height changes
     (advice-add 'set-face-attribute :before
@@ -227,6 +227,56 @@ FONT is the name of a xft font, like `Monospace-10'."
                 '((name . enforce-font-height)))
 
     (message "Enforced consistent font heights and installed protection")))
+
+(defun my-get-faces-with-custom-sizes ()
+  "Return list of faces with non-default font sizes."
+  (let ((faces-with-sizes '()))
+    (dolist (face (face-list))
+      (let ((height (face-attribute face :height nil t))
+            (family (face-attribute face :family nil t)))
+        (when (and (numberp height) (not (eq height 'unspecified)))
+          (push (list face height family) faces-with-sizes))))
+    (sort faces-with-sizes
+          (lambda (a b) (string< (symbol-name (car a))
+                                (symbol-name (car b)))))))
+
+(defun my-insert-customize-link (face)
+  "Insert a clickable link to customize FACE."
+  (insert-button (format "%s" face)
+                 'face 'link
+                 'action `(lambda (_) (customize-face ',face))
+                 'help-echo (format "Click to customize %s" face)))
+
+(defun my-insert-source-link (face)
+  "Insert a clickable link to view source of FACE."
+  (insert-button "source"
+                 'face 'link
+                 'action `(lambda (_) (find-function-other-window ',face))
+                 'help-echo (format "Click to view source of %s" face)))
+
+(defun my-list-font-faces-with-sizes ()
+  "Display faces with custom font sizes with clickable links."
+  (interactive)
+  (let ((faces-with-sizes (my-get-faces-with-custom-sizes)))
+    (with-current-buffer (get-buffer-create "*Font Faces*")
+      (erase-buffer)
+      (insert "Font Faces with Custom Sizes\n")
+      (insert "============================\n\n")
+      (dolist (face-info faces-with-sizes)
+        (let ((face (car face-info))
+              (height (cadr face-info))
+              (family (caddr face-info)))
+          ;; Customize link
+          (my-insert-customize-link face)
+          (insert (format ": height=%s" height))
+          (when (not (eq family 'unspecified))
+            (insert (format " family=%s" family)))
+          (insert "  (")
+          ;; Source link
+          (my-insert-source-link face)
+          (insert ")\n")))
+      (goto-char (point-min))
+      (pop-to-buffer (current-buffer)))))
 
 (defun my-display-gui-p ()
   "Return t if running in GUI mode, nil if terminal."
@@ -245,6 +295,14 @@ FONT is the name of a xft font, like `Monospace-10'."
           ;; Only set :height, don't touch other attributes
           (set-face-attribute face nil :height base-height))))
     (message "Enforced height %s on all faces" base-height)))
+
+(defun my-reset-to-inherited-fonts ()
+  "Reset most faces to inherit from base faces instead of having explicit heights."
+  (interactive)
+  (dolist (face (face-list))
+    (unless (member face '(default fixed-pitch variable-pitch))
+      (set-face-attribute face nil :height 'unspecified :family 'unspecified)))
+  (message "Reset font inheritance"))
 
 (defun my-graphical-ui-setup ()
   "Do setup for graphical terminals, like enabling the menu bar."
