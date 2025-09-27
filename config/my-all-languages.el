@@ -664,6 +664,9 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
     (add-hook 'go-mode-hook 'my-setup-go-mode)))
 
 
+(use-package elisp-autofmt
+  :ensure t)
+
 ;;  -*- lexical-binding: t; -*-
 ;; (eval-after-load "tex"
 ;;   '(remove-from-list 'TeX-command-list
