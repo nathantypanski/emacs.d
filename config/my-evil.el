@@ -23,7 +23,7 @@
 (use-package evil
   :ensure evil
   :demand t
-  :after (consult key-chord general)
+  :after (key-chord general)
   :init
   (setq evil-emacs-state-cursor   '("#dfaf8f" box)
         evil-normal-state-cursor  '("#f8f893" box)
@@ -430,7 +430,7 @@ If LSP isn’t active here, signal a user‑friendly error."
 
 (use-package evil-collection
   :ensure evil-collection
-  :after evil
+  :after (evil consult)
   :demand t
   :config
   ;; Include vterm in evil-collection
