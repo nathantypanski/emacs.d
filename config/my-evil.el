@@ -36,6 +36,7 @@
   ;; evil-collection requires this set before loading evil
   (evil-want-C-u-scroll t)
   (evil-want-C-u-delete nil)
+  (evil-want-C-w-delete nil)
   (evil-want-C-w-in-emacs-state t)
   (evil-want-keybinding nil)
   (evil-magic 'very-magic)

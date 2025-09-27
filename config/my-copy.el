@@ -12,6 +12,14 @@
         (t nil))
   "External program to paste from the OS clipboard.")
 
+
+;; Non-nil means cutting and pasting uses the clipboard.
+;; This can be in addition to, but in preference to, the primary selection,
+;; if applicable (i.e. under X11).
+;; ;
+;;   This variable has an alias: ‘x-select-enable-clipboard’.
+(setq select-enable-clipboard nil)
+
 (defun my-wl-copy-region (start end &optional verify)
   "Copy region [START,END) to the OS clipboard via wl-copy/pbcopy.
 With prefix arg VERIFY, round-trip check via wl-paste/pbpaste."
