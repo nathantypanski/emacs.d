@@ -34,23 +34,6 @@
 
     (when (file-exists-p notes-file)
       (setq org-default-notes-file notes-file)))
-  :custom
-  (org-edit-src-content-indentation 0)
-  (org-auto-align-tags nil)
-  (org-tags-column 0)
-  (org-catch-invisible-edits 'show-and-error)
-  (org-special-ctrl-a/e t)
-  (org-insert-heading-respect-content t)
-
-  ;; Org styling, hide markup etc.
-  (org-hide-emphasis-markers t)
-  (org-pretty-entities t)
-  (org-agenda-tags-column 0)
-  (org-ellipsis "…")
-
-  (org-startup-folded nil)
-  (org-log-done t)
-  (org-src-fontify-natively t)
 
   (defun my-org-fontify-tool-blocks (limit)
     "Fontify #+begin_tool … #+end_tool like src blocks."
@@ -76,8 +59,23 @@
           (put-text-property beg-line-b end-line-end 'font-lock-multiline t)))
       found))
   (font-lock-add-keywords 'org-mode '((my-org-fontify-tool-blocks)) 'append)
+  :custom
+  (org-edit-src-content-indentation 0)
+  (org-auto-align-tags nil)
+  (org-tags-column 0)
+  (org-catch-invisible-edits 'show-and-error)
+  (org-special-ctrl-a/e t)
+  (org-insert-heading-respect-content t)
 
+  ;; Org styling, hide markup etc.
+  (org-hide-emphasis-markers t)
+  (org-pretty-entities t)
+  (org-agenda-tags-column 0)
+  (org-ellipsis "…")
 
+  (org-startup-folded nil)
+  (org-log-done t)
+  (org-src-fontify-natively t)
   (org-agenda-prefix-format
    '((home  . "  %i %-12:c%?-12t% s")
      (todo    . "  %i %-12:c [%e] %b ")
