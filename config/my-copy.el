@@ -46,9 +46,8 @@ With prefix arg VERIFY, round-trip check via wl-paste/pbpaste."
                           (length orig) (length got)))))))
   (message "Copied %d chars to clipboard" (- end start))))
 
-(defun my-wl-paste-insert ()
-  "Insert OS clipboard contents at point via wl-paste/pbpaste."
-  (interactive)
+(defun my-wl-paste-string ()
+  "Return OS clipboard contents as string via wl-paste/pbpaste."
   (unless my-paste-program
     (user-error "No paste program found"))
   (let ((coding-system-for-read 'utf-8-unix))
@@ -57,6 +56,11 @@ With prefix arg VERIFY, round-trip check via wl-paste/pbpaste."
                            (when (string-match-p "wl-paste\\'" my-paste-program) '("-n")))))
         (unless (and (integerp status) (zerop status))
           (user-error "Clipboard paste failed: %s exit %S" my-paste-program status))
-        (insert (buffer-string))))))
+        (buffer-string)))))
+
+(defun my-wl-paste-insert ()
+  "Insert OS clipboard contents at point via wl-paste/pbpaste."
+  (interactive)
+  (insert (my-wl-paste-string)))
 
 (provide 'my-copy)
