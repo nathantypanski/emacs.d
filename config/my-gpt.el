@@ -311,31 +311,6 @@ Note you have a number of tools available to you. Use them liberally as needed, 
      ((string-match-p (rx (or "function" "=>" (seq "import" (+ space) (+ word) (+ space) "from"))) s) 'js-mode)
      (t 'fundamental-mode)))
 
-  (defun my-gptel-confirmation-buffer (tool-spec args)
-    "Preview tool call ARGS; return non-nil to proceed."
-    (let* ((name (plist-get tool-spec :name))
-           (desc (or (plist-get tool-spec :description) ""))
-           (code (or (plist-get args :code)
-                     (plist-get args :command)
-                     (plist-get args :diff_content)
-                     (plist-get args :content)))
-           (buf (get-buffer-create "*GPTEL Tool Preview*")))
-      (with-current-buffer buf
-        (read-only-mode -1)
-        (erase-buffer)
-        (insert (format "Tool: %s\n%s\n\nArgs:\n%s\n\n"
-                        name desc (pp-to-string args)))
-        (when code
-          (insert "===== Proposed code =====\n")
-          (let ((start (point)))
-            (insert code)
-            (delay-mode-hooks (funcall (my-gptel--guess-mode code)))
-            (font-lock-ensure start (point)))))
-      (setq buffer-read-only t)
-      (display-buffer buf '((display-buffer-pop-up-window)))
-      (yes-or-no-p (format "Run tool %s ?" name))))
-  (setq gptel-confirm-tool-calls #'my-gptel-confirmation-buffer)
-
   ;; Review / Explain
   (defun my-gptel-explain ()
     (interactive)
