@@ -243,7 +243,7 @@ Also stash the full raw output in a temp buffer when larger than caps."
   (gptel-use-tools t)
   (gptel-auto-repair-invalid-state t)
   (gptel-include-tool-results nil)
-  (gptel-confirm-tool-calls 'auto)
+  (gptel-confirm-tool-calls t)
   (gptel-default-mode 'org-mode)
   (gptel-directives my-gptel-directives)
   (gptel-org-branching-context t)
@@ -460,19 +460,30 @@ so you (or the LLM) can continue via the `paged_read` tool."
         (error (format "Error: %s" (error-message-string err))))))
 
   (defun my-gptel-git-status (&optional path)
-    (if (vc-git-root default-directory)
-        (let ((cmd (if path
-                       (format "git status --porcelain %s" (shell-quote-argument path))
-                     "git status --porcelain")))
-          (shell-command-to-string cmd))
-      "Not in a git repository"))
+    (let* ((dir (if path
+                    (if (file-directory-p path)
+                        path
+                      (file-name-directory (expand-file-name path)))
+                  default-directory))
+           (default-directory dir))
+      (if (vc-git-root dir)
+          (let ((cmd (if path
+                         (format "git status --porcelain -- %s" (shell-quote-argument path))
+                       "git status --porcelain")))
+            (shell-command-to-string cmd))
+        "Not in a git repository")))
 
   (defun my-gptel-git-diff (&optional file)
-    (if (vc-git-root default-directory)
-        (shell-command-to-string
-         (if file (format "git diff %s" (shell-quote-argument file)) "git diff"))
-      "Not in a git repository"))
-
+    (let* ((dir (if file
+                    (if (file-directory-p file)
+                        file
+                      (file-name-directory (expand-file-name file)))
+                  default-directory))
+           (default-directory dir))
+      (if (vc-git-root dir)
+          (shell-command-to-string
+           (if file (format "git diff -- %s" (shell-quote-argument file)) "git diff"))
+        "Not in a git repository")))
   (defun my-gptel-switch-buffer (buffer-name)
     (if-let ((buf (get-buffer buffer-name)))
         (progn (switch-to-buffer buf) (format "Switched to buffer: %s" buffer-name))
@@ -669,7 +680,7 @@ If MUST-EXIST is non-nil, refuse to create; return an ambiguity/error message in
                                       (string-join last5 "\n"))
                       ""))))))))
 
-  (defun my-gptel-replace-function (buffer-name function-name new-function-code)
+  (defun my-gptel-replace-function-deprecated (buffer-name function-name new-function-code)
     "Replace entire function FUNCTION-NAME in BUFFER-NAME with NEW-FUNCTION-CODE."
     (with-current-buffer buffer-name
       (save-excursion
@@ -684,7 +695,7 @@ If MUST-EXIST is non-nil, refuse to create; return an ambiguity/error message in
                 (message "Replaced function %s" function-name)))
           (error "Function %s not found" function-name)))))
 
-  (defun my-gptel-replace-lines (buffer-name start-line end-line new-content)
+  (defun my-gptel-replace-lines-deprecated (buffer-name start-line end-line new-content)
     "Replace lines START-LINE to END-LINE with NEW-CONTENT."
     (with-current-buffer buffer-name
       (save-excursion
@@ -696,7 +707,7 @@ If MUST-EXIST is non-nil, refuse to create; return an ambiguity/error message in
           (insert new-content)
           (message "Replaced lines %d-%d" start-line end-line)))))
 
-  (defun my-gptel-search-replace (buffer-name old-text new-text &optional literal)
+  (defun my-gptel-search-replace-deprecated (buffer-name old-text new-text &optional literal)
     "Replace OLD-TEXT with NEW-TEXT in BUFFER-NAME.
 If LITERAL is non-nil, treat OLD-TEXT as literal string, not regexp."
     (with-current-buffer buffer-name
@@ -711,7 +722,8 @@ If LITERAL is non-nil, treat OLD-TEXT as literal string, not regexp."
               (replace-match new-text)
               (cl-incf count)))
           (message "Replaced %d occurrences" count)))))
-  (defun my-gptel-insert-at-line (buffer-name line-number content)
+
+  (defun my-gptel-insert-at-line-deprecated (buffer-name line-number content)
     "Insert CONTENT at LINE-NUMBER in BUFFER-NAME."
     (with-current-buffer buffer-name
       (save-excursion
@@ -721,13 +733,74 @@ If LITERAL is non-nil, treat OLD-TEXT as literal string, not regexp."
         (insert content)
         (message "Inserted content at line %d" line-number))))
 
-
-  (defun my-gptel-search-replace (buffer-name old-text new-text)
-    "Replace OLD-TEXT with NEW-TEXT in BUFFER-NAME."
+  (defun my-gptel-replace-lines (buffer-name start-line end-line new-content)
+    "Replace lines START-LINE to END-LINE with NEW-CONTENT."
+    (unless (get-buffer buffer-name)
+      (error "Buffer %s does not exist" buffer-name))
     (with-current-buffer buffer-name
-      (goto-char (point-min))
-      (while (search-forward old-text nil t)
-        (replace-match new-text))))
+      (let ((line-count (line-number-at-pos (point-max))))
+        (when (or (< start-line 1) (> start-line line-count)
+                  (< end-line start-line) (> end-line line-count))
+          (error "Invalid line range: %d-%d (buffer has %d lines)"
+                 start-line end-line line-count)))
+      (save-excursion
+        (goto-char (point-min))
+        (forward-line (1- start-line))
+        (let ((start (point))
+              (old-content))
+          (forward-line (1+ (- end-line start-line)))
+          (setq old-content (buffer-substring start (point)))
+          (delete-region start (point))
+          (insert new-content)
+          (unless (string-suffix-p "\n" new-content)
+            (insert "\n"))
+          (format "Replaced lines %d-%d:\nOLD:\n%s\nNEW:\n%s"
+                  start-line end-line old-content new-content)))))
+
+  (defun my-gptel-insert-at-line (buffer-name line-number content)
+    "Insert CONTENT at LINE-NUMBER in BUFFER-NAME."
+    (unless (get-buffer buffer-name)
+      (error "Buffer %s does not exist" buffer-name))
+    (with-current-buffer buffer-name
+      (let ((line-count (line-number-at-pos (point-max))))
+        (when (or (< line-number 1) (> line-number (1+ line-count)))
+          (error "Invalid line number: %d (buffer has %d lines)"
+                 line-number line-count)))
+      (save-excursion
+        (goto-char (point-min))
+        (if (= line-number 1)
+            (goto-char (point-min))
+          (forward-line (1- line-number)))
+        (beginning-of-line)
+        (insert content)
+        (unless (string-suffix-p "\n" content)
+          (insert "\n"))
+        (format "Inserted at line %d:\n%s" line-number content))))
+
+  (defun my-gptel-search-replace (buffer-name old-text new-text &optional literal)
+    "Replace OLD-TEXT with NEW-TEXT in BUFFER-NAME."
+    (unless (get-buffer buffer-name)
+      (error "Buffer %s does not exist" buffer-name))
+    (with-current-buffer buffer-name
+      (save-excursion
+        (goto-char (point-min))
+        (let ((count 0)
+              (replacements '()))
+          (if literal
+              (while (search-forward old-text nil t)
+                (let ((line (line-number-at-pos)))
+                  (replace-match new-text nil t)
+                  (push (format "Line %d" line) replacements)
+                  (setq count (1+ count))))
+            (while (re-search-forward old-text nil t)
+              (let ((line (line-number-at-pos)))
+                (replace-match new-text)
+                (push (format "Line %d" line) replacements)
+                (setq count (1+ count)))))
+          (if (> count 0)
+              (format "Replaced %d occurrences at: %s"
+                      count (string-join (nreverse replacements) ", "))
+            "No matches found")))))
 
   ;;;; Tool registration
   (defun my-gptel-setup-tools ()
@@ -827,14 +900,6 @@ If LITERAL is non-nil, treat OLD-TEXT as literal string, not regexp."
             :args (list '(:name "path"     :type "string" :description "Directory")
                         '(:name "filename" :type "string" :description "File name")
                         '(:name "content"  :type "string" :description "Content")))
-           (gptel-make-tool
-            :name "replace_function" :category "edit" :confirm t
-            :description "Replace entire defun in BUFFER-NAME that matches FUNCTION-NAME."
-            :function #'my-gptel-replace-function
-            :args (list '(:name "buffer_name"      :type "string" :description "Target buffer")
-                        '(:name "function_name"    :type "string" :description "defun name (symbol)")
-                        '(:name "new_function_code":type "string" :description "Full (defun ...) text")))
-
            (gptel-make-tool
             :name "replace_lines" :category "edit" :confirm t
             :description "Replace lines START..END (inclusive) in BUFFER-NAME."
