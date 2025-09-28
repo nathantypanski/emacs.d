@@ -166,5 +166,9 @@
 
 (add-hook 'git-commit-mode-hook 'my-disable-completion-in-git-commit)
 
+(use-package helpful
+  :bind (("C-h f" . helpful-function)
+         ("C-h v" . helpful-variable)))
+
 (provide 'my-completion)
 ;;; my-completion.el ends here

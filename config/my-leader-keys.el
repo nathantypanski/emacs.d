@@ -83,7 +83,7 @@
   "qw"         'evil-window-delete
   "qo"         'my-kill-other-buffer
   "Q"          'my-kill-current-buffer-with-confirmation
-  "h"          'dired-jump
+  "d"          'dired-jump
   ">"          'find-file-at-point
   "\\"         'split-window-horizontally
   "-"          'split-window-vertically
@@ -109,6 +109,14 @@
   "x"          'execute-extended-command
   "X"          'consult-complex-command
 
+  ;; help
+  "hf"        'helpful-function
+  "hk"        'helpful-key
+  "hs"        'helpful-symbol
+  "hm"        'helpful-macro
+  "hv"        'helpful-variable
+  "hB"        'helpful-kill-buffers
+
   ;;
   "u v"        'vundo
 
@@ -117,7 +125,7 @@
   "s R"        'my-search-here
   "s r"        'my-search-directory
   "b"          'consult-buffer
-  "s i"          'consult-imenu
+  "s i"        'consult-imenu
   "s u"        'apropos-function
   "s c"        'apropos-command
   "s I"        'consult-imenu-multi
