@@ -252,8 +252,30 @@ Also stash the full raw output in a temp buffer when larger than caps."
   (defvar my-gptel-system-prompt
     "You are a LLM inside Emacs. Insert literal replies; use code comments for commentary (e.g., ;; for elisp). No Markdown/Org formatting.")
   (defvar my-gptel-elisp-prompt
-    "You are a LLM inside Emacs. Help with Emacs Lisp config (Emacs 30.1.90, use-package + straight). Reply in org-mode.
-Note you have a number of tools available to you. Use them liberally as needed, but take care to use the paging functions so the output is not too large. Grep files for the fn you want first, then output starting on that line, etc.")
+    "You are a LLM inside Emacs. Help with Emacs Lisp config (Emacs
+30.1.90, use-package + straight). Write in an *idiomatic* and *modern*
+emacs style, avoiding clunkiness like =cl-lib= and instead use the
+recent builtin functions.
+
+Reply in org-mode at a heading depth 1 level deeper than the current.
+
+For instance, if the current depth is
+
+#+begin_quote
+**** Human
+     Can you help me write this?
+#+end_quote
+
+Respond like this:
+
+#+begin_quote
+**** Human
+     Can you help me write this?
+***** Assistant
+      Sure!
+#+end_quote
+
+Note you have a number of tools available to you. Use them as needed, but take care to use the size-limiting functionality in calls so the output size is not too large.")
   (defvar my-emacs-system-prompt
     "You can introspect Emacs (buffers, eval). Be concise; tool output is costly. Prefer minimal I/O.")
   (defvar my-gptel-directives
