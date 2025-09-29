@@ -71,7 +71,13 @@ Otherwise, returns nil."
   (setq truncate-lines nil)
   (hl-line-mode)
   ;; Improves highlighting etc.
-  (diredfl-mode))
+  (diredfl-mode)
+
+  ;; Set up keybindings for dired
+  (general-define-key
+   :states '(normal)
+   "j" 'my-dired-next-line
+   "k" 'my-dired-prev-line))
 
 (add-hook 'dired-mode-hook 'my-setup-dired)
 
