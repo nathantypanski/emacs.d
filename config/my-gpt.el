@@ -217,9 +217,9 @@ Also stash the full raw output in a temp buffer when larger than caps."
          (s    (max 1 (or start 1)))
          (n    (min my-gptel-pager-max-lines
                     (max 1 (or line-count my-gptel-pager-default-lines)))))
-      (my-gptel--emit-paged
-       (string-join (seq-take (seq-drop lines (1- s)) n) "\n")
-       (format "cmd:%s" command))))
+    (my-gptel--emit-paged
+     (string-join (seq-take (seq-drop lines (1- s)) n) "\n")
+     (format "cmd:%s" command))))
 
 (use-package gptel
   :straight (:repo "karthink/gptel" :branch "master" :files ("*.el"))
@@ -536,98 +536,215 @@ LABEL tags the temp buffer name."
 
   ;; File helpers
   (defun my-gptel--buffer-dir ()
-  (or (and buffer-file-name (file-name-directory buffer-file-name))
-      default-directory))
+    (or (and buffer-file-name (file-name-directory buffer-file-name))
+        default-directory))
 
-(defun my-gptel--project-candidates (basename)
-  "Return absolute paths in current project whose basename equals BASENAME."
-  (when-let* ((proj (project-current))
-              (root (project-root proj))
-              (files (project-files proj)))
-    (cl-loop for f in files
-             for abs = (expand-file-name f root)
-             when (string= (file-name-nondirectory abs) basename)
-             collect abs)))
+  (defun my-gptel--project-candidates (basename)
+    "Return absolute paths in current project whose basename equals BASENAME."
+    (when-let* ((proj (project-current))
+                (root (project-root proj))
+                (files (project-files proj)))
+      (cl-loop for f in files
+               for abs = (expand-file-name f root)
+               when (string= (file-name-nondirectory abs) basename)
+               collect abs)))
 
-(defun my-gptel-find-file (path &optional dir where must-exist)
-  "Open/optionally create PATH per intent.
+  (defun my-gptel-replace-lines (buffer-name start-line end-line new-content)
+    "Replace lines START-LINE to END-LINE with NEW-CONTENT."
+    (unless (get-buffer buffer-name)
+      (error "Buffer %s does not exist" buffer-name))
+    (with-current-buffer buffer-name
+      (let ((line-count (line-number-at-pos (point-max))))
+        (when (or (< start-line 1) (> start-line line-count)
+                  (< end-line start-line) (> end-line line-count))
+          (error "line range: %d-%d (buffer has %d lines)"
+                 start-line end-line line-count)))
+      (save-excursion
+        (goto-char (point-min))
+        (forward-line (1- start-line))
+        (let ((start (point))
+              (old-content))
+          (forward-line (1+ (- end-line start-line)))
+          (setq old-content (buffer-substring start (point)))
+          (delete-region start (point))
+          (insert new-content)
+          (unless (string-suffix-p "\n" new-content)
+            (insert "\n"))
+          (format "Replaced lines %d-%d:\nOLD:\n%s\nNEW:\n%s"
+                  start-line end-line old-content new-content)))))
+
+  (defun my-gptel-find-file (path &optional dir where must-exist)
+    "Open/optionally create PATH per intent.
 WHERE is one of: \"buffer\" (default), \"project\", \"cwd\", \"explicit\".
 If MUST-EXIST is non-nil, refuse to create; return an ambiguity/error message instead."
-  (let* ((abs? (file-name-absolute-p path))
-         (where (or where "buffer"))
-         (base
-          (cond
-           (abs? nil) ; base unused
-           ((and dir (stringp dir)) (my-gptel--resolve dir))          ; explicit base wins
-           ((string= where "buffer")  (my-gptel--buffer-dir))
-           ((string= where "project") (or (my-gptel--project-root) (my-gptel--buffer-dir)))
-           ((string= where "cwd")     default-directory)
-           ((string= where "explicit") (my-gptel--resolve (or dir ".")))
-           (t (my-gptel--buffer-dir)))))
-    (cond
-     ;; Absolute path: just honor it
-     (abs?
-      (if (or (not must-exist) (file-exists-p path))
-          (progn
-            (make-directory (file-name-directory path) t)
-            (find-file (file-truename path))
-            (format "Opened file: %s" (file-truename path)))
-        (format "Not found (must_exist): %s" path)))
-
-     ;; Relative with directory components → treat as relative to base
-     ((string-match-p "/" path)
-      (let* ((full (expand-file-name path base)))
-        (if (or (file-exists-p full) (not must-exist))
+    (let* ((abs? (file-name-absolute-p path))
+           (where (or where "buffer"))
+           (base
+            (cond
+             (abs? nil) ; base unused
+             ((and dir (stringp dir)) (my-gptel--resolve dir))          ; explicit base wins
+             ((string= where "buffer")  (my-gptel--buffer-dir))
+             ((string= where "project") (or (my-gptel--project-root) (my-gptel--buffer-dir)))
+             ((string= where "cwd")     default-directory)
+             ((string= where "explicit") (my-gptel--resolve (or dir ".")))
+             (t (my-gptel--buffer-dir)))))
+      (cond
+       ;; Absolute path: just honor it
+       (abs?
+        (if (or (not must-exist) (file-exists-p path))
             (progn
-              (make-directory (file-name-directory full) t)
-              (find-file (file-truename full))
-              (format "Opened file: %s" (file-truename full)))
-          (format "Not found (must_exist): %s (base %s)" path base))))
+              (make-directory (file-name-directory path) t)
+              (find-file (file-truename path))
+              (format "Opened file: %s" (file-truename path)))
+          (format "Not found (must_exist): %s" path)))
 
-     ;; Bare filename → resolve intent carefully
-     (t
-      ;; 1) prefer an already-open buffer visiting this basename
-      (let* ((bn path)
-             (open-hit
-              (cl-loop for b in (buffer-list)
-                       for f = (buffer-local-value 'buffer-file-name b)
-                       when (and f (string= (file-name-nondirectory f) bn))
-                       ;; prefer one under current project if possible
-                       minimize (if (and (my-gptel--project-root)
-                                         (string-prefix-p (my-gptel--project-root) f))
-                                    0 1) into rank
-                       collect (cons rank f) into hits
-                       finally return
-                       (car (sort hits (lambda (a b) (< (car a) (car b))))))))
-        (cond
-         (open-hit
-          (find-file (cdr open-hit))
-          (format "Switched to open buffer: %s" (cdr open-hit)))
+       ;; Relative with directory components → treat as relative to base
+       ((string-match-p "/" path)
+        (let* ((full (expand-file-name path base)))
+          (if (or (file-exists-p full) (not must-exist))
+              (progn
+                (make-directory (file-name-directory full) t)
+                (find-file (file-truename full))
+                (format "Opened file: %s" (file-truename full)))
+            (format "Not found (must_exist): %s (base %s)" path base))))
 
-         ;; 2) search the project for a unique basename
-         ((my-gptel--project-root)
-          (let ((cands (my-gptel--project-candidates bn)))
-            (pcase (length cands)
-              (0 (if must-exist
-                     (format "Not found (must_exist): %s" bn)
-                   (let* ((full (expand-file-name bn base)))
-                     (make-directory (file-name-directory full) t)
-                     (find-file (file-truename full))
-                     (format "Created new file: %s" (file-truename full)))))
-              (1 (find-file (car cands))
-                 (format "Opened project match: %s" (car cands)))
-              (_ (format "Ambiguous basename %S; candidates:\n%s"
-                         bn (mapconcat #'identity cands "\n"))))))
+       ;; Basename only → check open buffers, then project search
+       (t
+        (let* ((bn path)
+               (open-hit
+                (seq-find (lambda (b)
+                            (when-let ((f (buffer-local-value 'buffer-file-name b)))
+                              (string= (file-name-nondirectory f) bn)))
+                          (buffer-list))))
+          ;; Prefer project files if multiple matches
+          (when (and open-hit (my-gptel--project-root))
+            (setq open-hit
+                  (or (seq-find (lambda (b)
+                                  (when-let ((f (buffer-local-value 'buffer-file-name b)))
+                                    (and (string= (file-name-nondirectory f) bn)
+                                         (string-prefix-p (my-gptel--project-root) f))))
+                                (buffer-list))
+                      open-hit)))
+          (cond
+           (open-hit
+            (find-file (buffer-local-value 'buffer-file-name open-hit))
+            (format "Switched to open buffer: %s"
+                    (buffer-local-value 'buffer-file-name open-hit)))
 
-         ;; 3) no project → fall back to base
-         (t
-          (let ((full (expand-file-name bn base)))
-            (if (or (file-exists-p full) (not must-exist))
-                (progn
-                  (make-directory (file-name-directory full) t)
-                  (find-file (file-truename full))
-                  (format "Opened file: %s" (file-truename full)))
-              (format "Not found (must_exist): %s (base %s)" bn base))))))))))
+           ;; 2) search the project for a unique basename
+           ((my-gptel--project-root)
+            (let ((cands (my-gptel--project-candidates bn)))
+              (pcase (length cands)
+                (0 (if must-exist
+                       (format "Not found (must_exist): %s" bn)
+                     (let* ((full (expand-file-name bn base)))
+                       (make-directory (file-name-directory full) t)
+                       (find-file (file-truename full))
+                       (format "Created new file: %s" (file-truename full)))))
+                (1 (find-file (car cands))
+                   (format "Opened project match: %s" (car cands)))
+                (_ (format "Ambiguous basename %S; candidates:\n%s"
+                           bn (mapconcat #'identity cands "\n"))))))
+
+           ;; 3) no project → fall back to base
+           (t
+            (let ((full (expand-file-name bn base)))
+              (if (or (file-exists-p full) (not must-exist))
+                  (progn
+                    (make-directory (file-name-directory full) t)
+                    (find-file (file-truename full))
+                    (format "Opened file: %s" (file-truename full)))
+                (format "Not found (must_exist): %s (base %s)" bn base))))))))))
+
+  (defun my-gptel-find-file-deprecated (path &optional dir where must-exist)
+    "Open/optionally create PATH per intent.
+WHERE is one of: \"buffer\" (default), \"project\", \"cwd\", \"explicit\".
+If MUST-EXIST is non-nil, refuse to create; return an ambiguity/error message instead."
+    (let* ((abs? (file-name-absolute-p path))
+           (where (or where "buffer"))
+           (base
+            (cond
+             (abs? nil) ; base unused
+             ((and dir (stringp dir)) (my-gptel--resolve dir))          ; explicit base wins
+             ((string= where "buffer")  (my-gptel--buffer-dir))
+             ((string= where "project") (or (my-gptel--project-root) (my-gptel--buffer-dir)))
+             ((string= where "cwd")     default-directory)
+             ((string= where "explicit") (my-gptel--resolve (or dir ".")))
+             (t (my-gptel--buffer-dir)))))
+      (cond
+       ;; Absolute path: just honor it
+       (abs?
+        (if (or (not must-exist) (file-exists-p path))
+            (progn
+              (make-directory (file-name-directory path) t)
+              (find-file (file-truename path))
+              (format "Opened file: %s" (file-truename path)))
+          (format "Not found (must_exist): %s" path)))
+
+       ;; Relative with directory components → treat as relative to base
+       ((string-match-p "/" path)
+        (let* ((full (expand-file-name path base)))
+          (if (or (file-exists-p full) (not must-exist))
+              (progn
+                (make-directory (file-name-directory full) t)
+                (find-file (file-truename full))
+                (format "Opened file: %s" (file-truename full)))
+            (format "Not found (must_exist): %s (base %s)" path base))))
+       ;; Basename only → check open buffers, then project search
+       (t
+        (let* ((bn path)
+               (open-hit
+                (seq-find (lambda (b)
+                            (when-let ((f (buffer-local-value 'buffer-file-name b)))
+                              (string= (file-name-nondirectory f) bn)))
+                          (buffer-list))))
+          ;; Prefer project files if multiple matches
+          (when (and open-hit (my-gptel--project-root))
+            (setq open-hit
+                  (or (seq-find (lambda (b)
+                                  (when-let ((f (buffer-local-value 'buffer-file-name b)))
+                                    (and (string= (file-name-nondirectory f) bn)
+                                         (string-prefix-p (my-gptel--project-root) f))))
+                                (buffer-list))
+                      open-hit)))
+          (cond
+           (open-hit
+            (find-file (buffer-local-value 'buffer-file-name open-hit))
+            (format "Switched to open buffer: %s"
+                    (buffer-local-value 'buffer-file-name open-hit)))
+
+           ;; 2) search the project for a unique basename
+           ((my-gptel--project-root)
+            (let ((cands (my-gptel--project-candidates bn)))
+              (pcase (length cands)
+                (0 (if must-exist
+                       (format "Not found (must_exist): %s" bn)
+                     (let* ((full (expand-file-name bn base)))
+                       (make-directory (file-name-directory full) t)
+                       (find-file (file-truename full))
+                       (format "Created new file: %s" (file-truename full)))))
+                (1 (find-file (car cands))
+                   (format "Opened project match: %s" (car cands)))
+                (_ (format "Ambiguous basename %S; candidates:\n%s"
+                           bn (mapconcat #'identity cands "\n"))))))
+
+           ;; 3) no project → fall back to base
+           (t
+            (let ((full (expand-file-name bn base)))
+              (if (or (file-exists-p full) (not must-exist))
+                  (progn
+                    (make-directory (file-name-directory full) t)
+                    (find-file (file-truename full))
+                    (format "Opened file: %s" (file-truename full)))
+                (format "Not found (must_exist): %s (base %s)" bn base)
+                (make-directory (file-name-directory full) t)
+                (find-file (file-truename full))
+                (format "Opened file: %s" (file-truename full))
+                (format "Not found (must_exist): %s (base %s)" bn base)
+                (make-directory (file-name-directory full) t)
+                (find-file (file-truename full))
+                (format "Opened file: %s" (file-truename full)
+                        (format "Not found (must_exist): %s (base %s)" bn base)))))))))))
 
   (defun my-gptel-tool-wc (path)
     (let* ((p (my-gptel--resolve path)))
@@ -903,7 +1020,7 @@ If LITERAL is non-nil, treat OLD-TEXT as literal string, not regexp."
            (gptel-make-tool
             :name "replace_lines" :category "edit" :confirm t
             :description "Replace lines START..END (inclusive) in BUFFER-NAME."
-            :function #'my-gptel-replace-lines
+            :function #'my-gptel-replace-lines-deprecated
             :args (list '(:name "buffer_name" :type "string" :description "Target buffer")
                         '(:name "start_line"  :type "number" :description "1-based")
                         '(:name "end_line"    :type "number" :description "1-based, ≥ start_line")
