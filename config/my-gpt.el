@@ -242,7 +242,7 @@ Also stash the full raw output in a temp buffer when larger than caps."
   (gptel-max-tokens 1000)
   (gptel-use-tools t)
   (gptel-auto-repair-invalid-state t)
-  (gptel-include-tool-results nil)
+  (gptel-include-tool-results t)
   (gptel-confirm-tool-calls t)
   (gptel-default-mode 'org-mode)
   (gptel-directives my-gptel-directives)
@@ -256,24 +256,6 @@ Also stash the full raw output in a temp buffer when larger than caps."
 30.1.90, use-package + straight). Write in an *idiomatic* and *modern*
 emacs style, avoiding clunkiness like =cl-lib= and instead use the
 recent builtin functions.
-
-Reply in org-mode at a heading depth 1 level deeper than the current.
-
-For instance, if the current depth is
-
-#+begin_quote
-**** Human
-     Can you help me write this?
-#+end_quote
-
-Respond like this:
-
-#+begin_quote
-**** Human
-     Can you help me write this?
-***** Assistant
-      Sure!
-#+end_quote
 
 Note you have a number of tools available to you. Use them as needed, but take care to use the size-limiting functionality in calls so the output size is not too large.")
   (defvar my-emacs-system-prompt
@@ -549,30 +531,6 @@ LABEL tags the temp buffer name."
                when (string= (file-name-nondirectory abs) basename)
                collect abs)))
 
-  (defun my-gptel-replace-lines (buffer-name start-line end-line new-content)
-    "Replace lines START-LINE to END-LINE with NEW-CONTENT."
-    (unless (get-buffer buffer-name)
-      (error "Buffer %s does not exist" buffer-name))
-    (with-current-buffer buffer-name
-      (let ((line-count (line-number-at-pos (point-max))))
-        (when (or (< start-line 1) (> start-line line-count)
-                  (< end-line start-line) (> end-line line-count))
-          (error "line range: %d-%d (buffer has %d lines)"
-                 start-line end-line line-count)))
-      (save-excursion
-        (goto-char (point-min))
-        (forward-line (1- start-line))
-        (let ((start (point))
-              (old-content))
-          (forward-line (1+ (- end-line start-line)))
-          (setq old-content (buffer-substring start (point)))
-          (delete-region start (point))
-          (insert new-content)
-          (unless (string-suffix-p "\n" new-content)
-            (insert "\n"))
-          (format "Replaced lines %d-%d:\nOLD:\n%s\nNEW:\n%s"
-                  start-line end-line old-content new-content)))))
-
   (defun my-gptel-find-file (path &optional dir where must-exist)
     "Open/optionally create PATH per intent.
 WHERE is one of: \"buffer\" (default), \"project\", \"cwd\", \"explicit\".
@@ -595,7 +553,7 @@ If MUST-EXIST is non-nil, refuse to create; return an ambiguity/error message in
             (progn
               (make-directory (file-name-directory path) t)
               (find-file (file-truename path))
-              (format "Opened file: %s" (file-truename path)))
+              (format "Opened file: %s\nBuffer name: %s" (file-truename path) (buffer-name))))
           (format "Not found (must_exist): %s" path)))
 
        ;; Relative with directory components → treat as relative to base
@@ -605,7 +563,7 @@ If MUST-EXIST is non-nil, refuse to create; return an ambiguity/error message in
               (progn
                 (make-directory (file-name-directory full) t)
                 (find-file (file-truename full))
-                (format "Opened file: %s" (file-truename full)))
+                (format "Opened file: %s\nBuffer name: %s" (file-truename full) (buffer-name))))
             (format "Not found (must_exist): %s (base %s)" path base))))
 
        ;; Basename only → check open buffers, then project search
@@ -628,8 +586,8 @@ If MUST-EXIST is non-nil, refuse to create; return an ambiguity/error message in
           (cond
            (open-hit
             (find-file (buffer-local-value 'buffer-file-name open-hit))
-            (format "Switched to open buffer: %s"
-                    (buffer-local-value 'buffer-file-name open-hit)))
+            (format "Switched to open buffer: %s\nBuffer name: %s"
+                    (buffer-local-value 'buffer-file-name open-hit) (buffer-name)))
 
            ;; 2) search the project for a unique basename
            ((my-gptel--project-root)
@@ -640,9 +598,9 @@ If MUST-EXIST is non-nil, refuse to create; return an ambiguity/error message in
                      (let* ((full (expand-file-name bn base)))
                        (make-directory (file-name-directory full) t)
                        (find-file (file-truename full))
-                       (format "Created new file: %s" (file-truename full)))))
+                       (format "Created new file: %s\nBuffer name: %s" (file-truename full) (buffer-name))))))
                 (1 (find-file (car cands))
-                   (format "Opened project match: %s" (car cands)))
+                   (format "Opened project match: %s\nBuffer name: %s" (car cands) (buffer-name))))
                 (_ (format "Ambiguous basename %S; candidates:\n%s"
                            bn (mapconcat #'identity cands "\n"))))))
 
@@ -653,98 +611,8 @@ If MUST-EXIST is non-nil, refuse to create; return an ambiguity/error message in
                   (progn
                     (make-directory (file-name-directory full) t)
                     (find-file (file-truename full))
-                    (format "Opened file: %s" (file-truename full)))
-                (format "Not found (must_exist): %s (base %s)" bn base))))))))))
-
-  (defun my-gptel-find-file-deprecated (path &optional dir where must-exist)
-    "Open/optionally create PATH per intent.
-WHERE is one of: \"buffer\" (default), \"project\", \"cwd\", \"explicit\".
-If MUST-EXIST is non-nil, refuse to create; return an ambiguity/error message instead."
-    (let* ((abs? (file-name-absolute-p path))
-           (where (or where "buffer"))
-           (base
-            (cond
-             (abs? nil) ; base unused
-             ((and dir (stringp dir)) (my-gptel--resolve dir))          ; explicit base wins
-             ((string= where "buffer")  (my-gptel--buffer-dir))
-             ((string= where "project") (or (my-gptel--project-root) (my-gptel--buffer-dir)))
-             ((string= where "cwd")     default-directory)
-             ((string= where "explicit") (my-gptel--resolve (or dir ".")))
-             (t (my-gptel--buffer-dir)))))
-      (cond
-       ;; Absolute path: just honor it
-       (abs?
-        (if (or (not must-exist) (file-exists-p path))
-            (progn
-              (make-directory (file-name-directory path) t)
-              (find-file (file-truename path))
-              (format "Opened file: %s" (file-truename path)))
-          (format "Not found (must_exist): %s" path)))
-
-       ;; Relative with directory components → treat as relative to base
-       ((string-match-p "/" path)
-        (let* ((full (expand-file-name path base)))
-          (if (or (file-exists-p full) (not must-exist))
-              (progn
-                (make-directory (file-name-directory full) t)
-                (find-file (file-truename full))
-                (format "Opened file: %s" (file-truename full)))
-            (format "Not found (must_exist): %s (base %s)" path base))))
-       ;; Basename only → check open buffers, then project search
-       (t
-        (let* ((bn path)
-               (open-hit
-                (seq-find (lambda (b)
-                            (when-let ((f (buffer-local-value 'buffer-file-name b)))
-                              (string= (file-name-nondirectory f) bn)))
-                          (buffer-list))))
-          ;; Prefer project files if multiple matches
-          (when (and open-hit (my-gptel--project-root))
-            (setq open-hit
-                  (or (seq-find (lambda (b)
-                                  (when-let ((f (buffer-local-value 'buffer-file-name b)))
-                                    (and (string= (file-name-nondirectory f) bn)
-                                         (string-prefix-p (my-gptel--project-root) f))))
-                                (buffer-list))
-                      open-hit)))
-          (cond
-           (open-hit
-            (find-file (buffer-local-value 'buffer-file-name open-hit))
-            (format "Switched to open buffer: %s"
-                    (buffer-local-value 'buffer-file-name open-hit)))
-
-           ;; 2) search the project for a unique basename
-           ((my-gptel--project-root)
-            (let ((cands (my-gptel--project-candidates bn)))
-              (pcase (length cands)
-                (0 (if must-exist
-                       (format "Not found (must_exist): %s" bn)
-                     (let* ((full (expand-file-name bn base)))
-                       (make-directory (file-name-directory full) t)
-                       (find-file (file-truename full))
-                       (format "Created new file: %s" (file-truename full)))))
-                (1 (find-file (car cands))
-                   (format "Opened project match: %s" (car cands)))
-                (_ (format "Ambiguous basename %S; candidates:\n%s"
-                           bn (mapconcat #'identity cands "\n"))))))
-
-           ;; 3) no project → fall back to base
-           (t
-            (let ((full (expand-file-name bn base)))
-              (if (or (file-exists-p full) (not must-exist))
-                  (progn
-                    (make-directory (file-name-directory full) t)
-                    (find-file (file-truename full))
-                    (format "Opened file: %s" (file-truename full)))
-                (format "Not found (must_exist): %s (base %s)" bn base)
-                (make-directory (file-name-directory full) t)
-                (find-file (file-truename full))
-                (format "Opened file: %s" (file-truename full))
-                (format "Not found (must_exist): %s (base %s)" bn base)
-                (make-directory (file-name-directory full) t)
-                (find-file (file-truename full))
-                (format "Opened file: %s" (file-truename full)
-                        (format "Not found (must_exist): %s (base %s)" bn base)))))))))))
+                    (format "Opened file: %s\nBuffer name: %s" (file-truename full) (buffer-name))))
+                (format "Not found (must_exist): %s (base %s)" bn base)))))
 
   (defun my-gptel-tool-wc (path)
     (let* ((p (my-gptel--resolve path)))
@@ -797,58 +665,7 @@ If MUST-EXIST is non-nil, refuse to create; return an ambiguity/error message in
                                       (string-join last5 "\n"))
                       ""))))))))
 
-  (defun my-gptel-replace-function-deprecated (buffer-name function-name new-function-code)
-    "Replace entire function FUNCTION-NAME in BUFFER-NAME with NEW-FUNCTION-CODE."
-    (with-current-buffer buffer-name
-      (save-excursion
-        (goto-char (point-min))
-        (if (re-search-forward (format "^(defun %s\\b" (regexp-quote function-name)) nil t)
-            (progn
-              (beginning-of-line)
-              (let ((start (point)))
-                (forward-sexp)  ; Skip entire defun
-                (delete-region start (point))
-                (insert new-function-code)
-                (message "Replaced function %s" function-name)))
-          (error "Function %s not found" function-name)))))
 
-  (defun my-gptel-replace-lines-deprecated (buffer-name start-line end-line new-content)
-    "Replace lines START-LINE to END-LINE with NEW-CONTENT."
-    (with-current-buffer buffer-name
-      (save-excursion
-        (goto-char (point-min))
-        (forward-line (1- start-line))
-        (let ((start (point)))
-          (forward-line (1+ (- end-line start-line)))
-          (delete-region start (point))
-          (insert new-content)
-          (message "Replaced lines %d-%d" start-line end-line)))))
-
-  (defun my-gptel-search-replace-deprecated (buffer-name old-text new-text &optional literal)
-    "Replace OLD-TEXT with NEW-TEXT in BUFFER-NAME.
-If LITERAL is non-nil, treat OLD-TEXT as literal string, not regexp."
-    (with-current-buffer buffer-name
-      (save-excursion
-        (goto-char (point-min))
-        (let ((count 0))
-          (if literal
-              (while (search-forward old-text nil t)
-                (replace-match new-text nil t)
-                (cl-incf count))
-            (while (re-search-forward old-text nil t)
-              (replace-match new-text)
-              (cl-incf count)))
-          (message "Replaced %d occurrences" count)))))
-
-  (defun my-gptel-insert-at-line-deprecated (buffer-name line-number content)
-    "Insert CONTENT at LINE-NUMBER in BUFFER-NAME."
-    (with-current-buffer buffer-name
-      (save-excursion
-        (goto-char (point-min))
-        (forward-line (1- line-number))
-        (beginning-of-line)
-        (insert content)
-        (message "Inserted content at line %d" line-number))))
 
   (defun my-gptel-replace-lines (buffer-name start-line end-line new-content)
     "Replace lines START-LINE to END-LINE with NEW-CONTENT."
@@ -968,7 +785,7 @@ If LITERAL is non-nil, treat OLD-TEXT as literal string, not regexp."
                                                 :description "Regex to filter"))
                             :category "project")
            (gptel-make-tool :function #'my-gptel-find-file :name "find_file"
-                            :description "Open/create file with intent"
+                            :description "Open/create file and return buffer name for editing"
                             :args (list '(:name "path"        :type "string" :description "Filename or relative/absolute path")
                                         '(:name "dir"         :type "string" :optional t :description "Explicit base directory")
                                         '(:name "where"       :type "string" :optional t :description "\"buffer\"|\"project\"|\"cwd\"|\"explicit\"")
@@ -1020,7 +837,7 @@ If LITERAL is non-nil, treat OLD-TEXT as literal string, not regexp."
            (gptel-make-tool
             :name "replace_lines" :category "edit" :confirm t
             :description "Replace lines START..END (inclusive) in BUFFER-NAME."
-            :function #'my-gptel-replace-lines-deprecated
+            :function #'my-gptel-replace-lines
             :args (list '(:name "buffer_name" :type "string" :description "Target buffer")
                         '(:name "start_line"  :type "number" :description "1-based")
                         '(:name "end_line"    :type "number" :description "1-based, ≥ start_line")
@@ -1046,6 +863,9 @@ If LITERAL is non-nil, treat OLD-TEXT as literal string, not regexp."
 
   ;; Fix for gptel transient crash (if present)
   (ignore-errors (require 'gptel-menu-fix))
+
+  ;; Initialize tools
+  (my-gptel-setup-tools)
 
   ;; Auto-enable gptel-mode in org files with GPTEL props
   (defun my-auto-enable-gptel-mode ()
