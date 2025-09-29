@@ -367,42 +367,62 @@ Return the expanded absolute path (string)."
     '("\\.ssh/" "\\.gnupg/" "\\.aws/" "\\.kube/" "\\.docker/"
       "\\.password-store/" "\\.authinfo" "\\.netrc"))
 
+  (defvar my-gptel-allowed-paths
+    (list (expand-file-name "~/src")
+          (expand-file-name "~/dotfiles")
+          (expand-file-name "~/.emacs.d/straight/repos"))
+    "List of allowed base paths for file operations.")
+
   (defun my-gptel-path-allowed-p (path)
-    (let ((p (expand-file-name path)))
-      (not (or (string-match-p my-gptel--sensitive-name-rx p)
-               (seq-some (lambda (dir) (string-prefix-p dir p)) my-gptel-blocked-paths)
-               (seq-some (lambda (re)  (string-match-p re p)) my-gptel-blocked-patterns)))))
+    "Check if PATH is allowed for file operations with robust security checks."
+    (let* ((p (expand-file-name path))
+           ;; Resolve symlinks to get the real path
+           (resolved (file-truename p)))
+      (and
+       ;; Must be under one of the allowed base paths (check both original and resolved)
+       (or (seq-some (lambda (allowed) (string-prefix-p allowed p)) my-gptel-allowed-paths)
+           (seq-some (lambda (allowed) (string-prefix-p allowed resolved)) my-gptel-allowed-paths))
+       ;; Must not match sensitive patterns
+       (not (string-match-p my-gptel--sensitive-name-rx resolved))
+       ;; Must not be in blocked system paths
+       (not (seq-some (lambda (dir) (string-prefix-p dir resolved)) my-gptel-blocked-paths))
+       ;; Must not match blocked patterns
+       (not (seq-some (lambda (re) (string-match-p re resolved)) my-gptel-blocked-patterns)))))
 
   ;;;; Small tools
   (defun my-gptel-tool-list-files (path &optional start limit)
     "List files at PATH (non-dot), paging from START to LIMIT."
     (let* ((dir (my-gptel--resolve (or path ".")))
-           (s (max 0 (or start 0)))
-           (l (min 500 (or limit 200))))
-      (cond
-       ((not (my-gptel-path-allowed-p dir))
-        (format "Error: Path '%s' is outside allowed directories" path))
-       ((not (file-directory-p dir))
-        (format "Error: '%s' is not a directory" path))
-       (t
+           (validation-error (my-gptel--validate-file-path dir :allow-directory t)))
+      (if validation-error
+          validation-error
         (let* ((all (directory-files dir nil directory-files-no-dot-files-regexp t))
-               (slice (seq-take (seq-drop all s) l)))
-          (string-join slice "\n"))))))
+               (slice (my-gptel--paginate-list all start (min 500 (or limit 200)))))
+          (string-join slice "\n")))))
+
+  (defvar my-gptel-dangerous-commands
+    (rx (or "sudo" "rm -rf" "dd if=" "mkfs" "format" "fdisk" "parted"
+            "poweroff" "shutdown" "reboot" "halt" "init 0" "init 6"))
+    "Regex pattern for dangerous commands to block.")
 
   (defun my-gptel-tool-bash (command)
-    "Execute a (somewhat) safe shell COMMAND."
+    "Execute a shell COMMAND with safety checks and error handling."
     (cond
-     ((string-match-p (rx (or "sudo" "rm -rf" "dd if=" "mkfs")) command)
+     ;; Block dangerous commands
+     ((string-match-p my-gptel-dangerous-commands command)
       (format "Error: Dangerous command blocked: %s" command))
+
+     ;; Special handling for rm commands (require confirmation)
      ((string-match-p (rx bow "rm" eow) command)
       (if (yes-or-no-p (format "Execute command containing 'rm'? %s" command))
-          (shell-command-to-string command)
+          (my-gptel-with-safe-execution (format "sh:%s" command)
+            (shell-command-to-string command))
         "Command cancelled"))
+
+     ;; Execute other commands with safety wrapper
      (t
-      (let ((out (shell-command-to-string command)))
-        (if (string-blank-p out)
-            "(Command completed with no output)"
-          (my-gptel--emit-paged out (format "sh:%s" command)))))))
+      (my-gptel-with-safe-execution (format "sh:%s" command)
+        (shell-command-to-string command)))))
 
   (defun my-gptel-get-buffer-info ()
     (list :buffer-name (buffer-name)
@@ -442,29 +462,25 @@ so you (or the LLM) can continue via the `paged_read` tool."
         (error (format "Error: %s" (error-message-string err))))))
 
   (defun my-gptel-git-status (&optional path)
-    (let* ((dir (if path
-                    (if (file-directory-p path)
-                        path
-                      (file-name-directory (expand-file-name path)))
-                  default-directory))
+    (let* ((dir (my-gptel--path-to-dir path))
            (default-directory dir))
       (if (vc-git-root dir)
-          (let ((cmd (if path
-                         (format "git status --porcelain -- %s" (shell-quote-argument path))
-                       "git status --porcelain")))
-            (shell-command-to-string cmd))
+          (let* ((cmd (if path
+                          (format "git status --porcelain -- %s" (shell-quote-argument path))
+                        "git status --porcelain"))
+                 (output (shell-command-to-string cmd)))
+            (my-gptel--emit-paged output "git-status"))
         "Not in a git repository")))
 
   (defun my-gptel-git-diff (&optional file)
-    (let* ((dir (if file
-                    (if (file-directory-p file)
-                        file
-                      (file-name-directory (expand-file-name file)))
-                  default-directory))
+    (let* ((dir (my-gptel--path-to-dir file))
            (default-directory dir))
       (if (vc-git-root dir)
-          (shell-command-to-string
-           (if file (format "git diff -- %s" (shell-quote-argument file)) "git diff"))
+          (let* ((cmd (if file
+                          (format "git diff -- %s" (shell-quote-argument file))
+                        "git diff"))
+                 (output (shell-command-to-string cmd)))
+            (my-gptel--emit-paged output "git-diff"))
         "Not in a git repository")))
   (defun my-gptel-switch-buffer (buffer-name)
     (if-let ((buf (get-buffer buffer-name)))
@@ -508,18 +524,73 @@ so you (or the LLM) can continue via the `paged_read` tool."
     (with-timeout (my-gptel-tool-timeout-sec "[TIMEOUT]")
       (funcall thunk)))
 
+  (defmacro my-gptel-with-safe-execution (label &rest body)
+    "Execute BODY with timeout, error handling, and paging.
+LABEL is used for the temp buffer name if output is truncated."
+    `(condition-case err
+         (my-gptel--with-timeout
+          (lambda ()
+            (let ((result (progn ,@body)))
+              (if (and result (not (string-blank-p (format "%s" result))))
+                  (my-gptel--emit-paged (format "%s" result) ,label)
+                result))))
+       (error (format "Error: %s" (error-message-string err)))))
+
   (defun my-gptel-wrap (fn &optional label)
     "Return a wrapper around FN that clamps output and stashes the full text in a temp buffer if needed.
 LABEL tags the temp buffer name."
     (lambda (&rest args)
-      (my-gptel--emit-paged
-       (my-gptel--with-timeout (lambda () (apply fn args)))
-       label)))
+      (my-gptel-with-safe-execution label
+        (apply fn args))))
 
   ;; File helpers
   (defun my-gptel--buffer-dir ()
     (or (and buffer-file-name (file-name-directory buffer-file-name))
         default-directory))
+
+  (defun my-gptel--path-to-dir (path)
+    "Convert PATH to a directory path. If PATH is a file, return its directory."
+    (if path
+        (if (file-directory-p path)
+            path
+          (file-name-directory (expand-file-name path)))
+      default-directory))
+
+  (defun my-gptel--validate-file-path (path &key allow-directory allow-missing)
+    "Validate PATH for file operations. Return error string or nil if valid.
+ALLOW-DIRECTORY: if t, don't error on directories
+ALLOW-MISSING: if t, don't error on non-existent files"
+    (let ((p (expand-file-name path)))
+      (cond
+       ((not (my-gptel-path-allowed-p p))
+        (format "Error: Path '%s' is outside allowed directories" path))
+       ((and (not allow-missing) (not (file-exists-p p)))
+        (format "Error: File '%s' does not exist" path))
+       ((and (not allow-directory) (file-directory-p p))
+        (format "Error: '%s' is a directory" path))
+       (t nil))))
+
+  (defun my-gptel--safe-file-create (path content)
+    "Safely create file at PATH with CONTENT, creating directories as needed."
+    (make-directory (file-name-directory path) t)
+    (with-temp-buffer
+      (insert content)
+      (write-file path)))
+
+  (defun my-gptel--paginate-lines (content &optional start line-count)
+    "Return a paginated slice of CONTENT lines.
+START is 1-based (default 1), LINE-COUNT defaults to 200."
+    (let* ((lines (split-string (or content "") "\n"))
+           (s (max 1 (or start 1)))
+           (n (min 300 (max 1 (or line-count 200)))))
+      (string-join (seq-take (seq-drop lines (1- s)) n) "\n")))
+
+  (defun my-gptel--paginate-list (items &optional start limit)
+    "Return a paginated slice of ITEMS list.
+START is 0-based (default 0), LIMIT defaults to 200."
+    (let* ((s (max 0 (or start 0)))
+           (l (max 1 (or limit 200))))
+      (seq-take (seq-drop items s) l)))
 
   (defun my-gptel--project-candidates (basename)
     "Return absolute paths in current project whose basename equals BASENAME."
@@ -615,15 +686,11 @@ If MUST-EXIST is non-nil, refuse to create; return an ambiguity/error message in
                 (format "Not found (must_exist): %s (base %s)" bn base)))))
 
   (defun my-gptel-tool-wc (path)
-    (let* ((p (my-gptel--resolve path)))
-      (cond
-       ((not (my-gptel-path-allowed-p p))
-        (format "Error: Path '%s' is outside allowed directories" path))
-       ((not (file-exists-p p))
-        (format "Error: File '%s' does not exist" path))
-       ((file-directory-p p)
-        (format "Error: '%s' is a directory" path))
-       (t (shell-command-to-string (format "wc -l -w -c %s" (shell-quote-argument p)))))))
+    (let* ((p (my-gptel--resolve path))
+           (validation-error (my-gptel--validate-file-path p)))
+      (if validation-error
+          validation-error
+        (shell-command-to-string (format "wc -l -w -c %s" (shell-quote-argument p))))))
 
   (defun my-gptel-paged-read (file-or-buffer &optional start line-count)
     "Return ≤LINE-COUNT lines starting at START (1-based)."
@@ -634,22 +701,14 @@ If MUST-EXIST is non-nil, refuse to create; return an ambiguity/error message in
                       (with-temp-buffer
                         (insert-file-contents file-or-buffer)
                         (buffer-string)))
-                     (t (user-error "Not found: %s" file-or-buffer))))
-           (lines (split-string content "\n"))
-           (s (max 1 (or start 1)))
-           (n (min 300 (max 1 (or line-count 200)))))
-      (string-join (seq-take (seq-drop lines (1- s)) n) "\n")))
+                     (t (user-error "Not found: %s" file-or-buffer)))))
+      (my-gptel--paginate-lines content start line-count)))
 
   (defun my-gptel-file-summary (path)
-    (let* ((p (expand-file-name path)))
-      (cond
-       ((not (my-gptel-path-allowed-p p))
-        (format "Error: Path '%s' is outside allowed directories" path))
-       ((not (file-exists-p p))
-        (format "Error: File '%s' does not exist" path))
-       ((file-directory-p p)
-        (format "Error: '%s' is a directory" path))
-       (t
+    (let* ((p (expand-file-name path))
+           (validation-error (my-gptel--validate-file-path p)))
+      (if validation-error
+          validation-error
         (with-temp-buffer
           (insert-file-contents p)
           (let* ((txt (buffer-string))
@@ -663,7 +722,7 @@ If MUST-EXIST is non-nil, refuse to create; return an ambiguity/error message in
                     (string-join first "\n")
                     (if last5 (format "\n...\n\nLast 5 lines:\n%s"
                                       (string-join last5 "\n"))
-                      ""))))))))
+                      "")))))))
 
 
 
@@ -827,9 +886,7 @@ If MUST-EXIST is non-nil, refuse to create; return an ambiguity/error message in
             :description "Create file with content"
             :function (lambda (path filename content)
                         (let ((full (expand-file-name filename path)))
-                          (with-temp-buffer
-                            (insert content)
-                            (write-file full))
+                          (my-gptel--safe-file-create full content)
                           (format "Created file %s in %s" filename path)))
             :args (list '(:name "path"     :type "string" :description "Directory")
                         '(:name "filename" :type "string" :description "File name")
@@ -893,11 +950,6 @@ If MUST-EXIST is non-nil, refuse to create; return an ambiguity/error message in
   (add-hook 'find-file-hook #'my-auto-enable-gptel-mode)
   (add-hook 'gptel-mode-hook #'my-gptel-clean-completion)
 
-  ;; Optional generic output limiter if you want a single call site
-  (defun my-gptel-limit-output (output max-size)
-    (if (> (length output) max-size)
-        (concat (substring output 0 max-size) "\n[OUTPUT TRUNCATED]")
-      output)))
 
 (provide 'my-gpt)
 ;;; my-gpt.el ends here
