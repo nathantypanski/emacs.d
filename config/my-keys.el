@@ -89,7 +89,8 @@
    "C-c m" 'my-show-messages-transient
    "C-c d" 'describe-symbol               ; Full documentation with descriptions
    "M-`"   'tmm-menubar
-   "C-c M" 'my-show-messages-buffer))
+   "C-c M" 'my-show-messages-buffer)
+  (message "loaded general.el"))
 
   ;; Clean undo system - no external packages needed
 
