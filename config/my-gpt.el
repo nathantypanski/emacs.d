@@ -316,7 +316,7 @@ LABEL is used for the temp buffer name if output is truncated."
                  gptel-api-key key)))
         ('openai
          (let* ((key (or (getenv "OPENAI_API_KEY") (read-passwd "OpenAI API Key: ")))
-                (backend (cdr (assoc "ChatGPT" gptel--known-backends))))
+                (backend (alist-get "ChatGPT" gptel--known-backends nil nil 'equal)))
            (setq gptel-model   model
                  gptel-backend backend
                  gptel-api-key key))))
@@ -480,7 +480,7 @@ Return the expanded absolute path (string)."
     "Get detailed function help using helpful package."
     (when-let ((sym (intern-soft symbol)))
       (if (fboundp sym)
-          (progn
+          (save-window-excursion
             (helpful-function sym)
             (with-current-buffer (helpful--buffer sym t)
               (buffer-string)))
@@ -490,7 +490,7 @@ Return the expanded absolute path (string)."
     "Get detailed variable help using helpful package."
     (when-let ((sym (intern-soft symbol)))
       (if (boundp sym)
-          (progn
+          (save-window-excursion
             (helpful-variable sym)
             (with-current-buffer (helpful--buffer sym nil)
               (buffer-string)))
@@ -499,9 +499,10 @@ Return the expanded absolute path (string)."
   (defun my-gptel-helpful-symbol (symbol)
     "Get comprehensive help for SYMBOL using helpful package."
     (when-let ((sym (intern-soft symbol)))
-      (helpful-symbol sym)
-      (with-current-buffer (helpful--buffer sym nil)
-        (buffer-string))))
+      (save-window-excursion
+        (helpful-symbol sym)
+        (with-current-buffer (helpful--buffer sym nil)
+          (buffer-string)))))
 
   (defun my-gptel-features ()
     "List loaded Emacs features."
@@ -686,10 +687,9 @@ START is 0-based (default 0), LIMIT defaults to 200."
     (when-let* ((proj (project-current))
                 (root (project-root proj))
                 (files (project-files proj)))
-      (cl-loop for f in files
-               for abs = (expand-file-name f root)
-               when (string= (file-name-nondirectory abs) basename)
-               collect abs)))
+      (seq-filter (lambda (f)
+                    (string= (file-name-nondirectory f) basename))
+                  (mapcar (lambda (f) (expand-file-name f root)) files))))
 
   (defun my-gptel-open-file (path)
     "Open existing file by absolute or relative path."
@@ -723,19 +723,20 @@ START is 0-based (default 0), LIMIT defaults to 200."
       (format "Created file %s in %s" filename path)))
 
   (defun my-gptel-tool-wc (name &optional type)
-    "Get word count for NAME. TYPE can be 'buffer' or 'file' (default: auto-detect)."
-    (my-gptel--with-buffer-or-file
-     name type
-     ;; Buffer handler
-     (lambda (buffer-name)
-       (with-current-buffer buffer-name
-         (let ((lines (count-lines (point-min) (point-max)))
-               (words (count-words (point-min) (point-max)))
-               (chars (- (point-max) (point-min))))
-           (format "%d %d %d %s" lines words chars buffer-name))))
-     ;; File handler
-     (lambda (file-path)
-       (shell-command-to-string (format "wc -l -w -c %s" (shell-quote-argument file-path))))))
+   "Get word count for NAME. TYPE can be 'buffer' or 'file' (default: auto-detect)."
+   (my-gptel--with-buffer-or-file
+    name type
+    ;; Buffer handler
+    (lambda (buffer-name)
+      (with-current-buffer buffer-name
+        (let ((lines (count-lines (point-min) (point-max)))
+              (words (count-words (point-min) (point-max)))
+              (chars (- (point-max) (point-min))))
+          (format "%d %d %d %s" lines words chars buffer-name))))
+    ;; File handler
+    (lambda (file-path)
+      (shell-command-to-string
+       (format "wc -l -w -c %s" (shell-quote-argument file-path))))))
 
   (defun my-gptel-paged-read (file-or-buffer &optional start line-count)
     "Return ≤LINE-COUNT lines starting at START (1-based)."
@@ -991,27 +992,32 @@ START is 0-based (default 0), LIMIT defaults to 200."
   (my-gptel-setup-tools)
 
   ;; Auto-enable gptel-mode in org files with GPTEL props
-  (defun my-auto-enable-gptel-mode ()
-    (when (eq major-mode 'org-mode)
-      (save-excursion
-        (goto-char (point-min))
-        (when (and (re-search-forward "^:PROPERTIES:" nil t)
-                   (let ((end (save-excursion (re-search-forward "^:END:" nil t))))
-                     (and end (re-search-forward "^:GPTEL_" end t))))
-          (gptel-mode 1)))))
+ (defun my-auto-enable-gptel-mode ()
+   (when (eq major-mode 'org-mode)
+     (save-excursion
+       (goto-char (point-min))
+       (when (and (re-search-forward "^:PROPERTIES:" nil t)
+                  (let ((end
+                         (save-excursion
+                           (re-search-forward "^:END:" nil t))))
+                    (and end (re-search-forward "^:GPTEL_" end t))))
+         (gptel-mode 1)))))
 
-  (defun my-gptel-clean-completion ()
-    "Tone down completion noise in gptel buffers."
-    (interactive)
-    (when (bound-and-true-p corfu-mode) (corfu-mode -1))
-    (setq-local completion-at-point-functions
-                (cl-remove-if
-                 (lambda (fn)
-                   (memq fn '(ispell-completion-at-point
-                              org-completion-at-point
-                              pcomplete-completions-at-point
-                              comint-completion-at-point)))
-                 completion-at-point-functions)))
+ (defun my-gptel-clean-completion ()
+   "Tone down completion noise in gptel buffers."
+   (interactive)
+   (when (bound-and-true-p corfu-mode)
+     (corfu-mode -1))
+   (setq-local completion-at-point-functions
+               (seq-remove
+                (lambda (fn)
+                  (memq
+                   fn
+                   '(ispell-completion-at-point
+                     org-completion-at-point
+                     pcomplete-completions-at-point
+                     comint-completion-at-point)))
+                completion-at-point-functions)))
 
   (add-hook 'find-file-hook #'my-auto-enable-gptel-mode)
   (add-hook 'gptel-mode-hook #'my-gptel-clean-completion))
