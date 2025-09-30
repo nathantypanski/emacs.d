@@ -4,6 +4,46 @@
 (use-package request :ensure t)
 (require 'subr-x) ; string-empty-p / string-blank-p
 
+;;;;; Tool Architecture Philosophy
+;;
+;; This configuration implements a tightly scoped interface between LLM tool agents
+;; and the user's Emacs editing session, following these core principles:
+;;
+;; 1. NON-INTRUSIVE OPERATION
+;;    - Tools operate in the background without disrupting the user's workflow
+;;    - Use `save-window-excursion` to prevent buffer displays during tool execution
+;;    - Return data rather than showing UI - let the LLM consume information quietly
+;;
+;; 2. BUFFER-FIRST DESIGN
+;;    - Tools accept either buffer names or file paths as primary arguments
+;;    - Buffer operations are preferred when possible (faster, no filesystem I/O)
+;;    - Explicit `type` parameter ('buffer' or 'file') allows precise control
+;;    - Generic `my-gptel--with-buffer-or-file` helper standardizes this pattern
+;;
+;; 3. SCOPED ACCESS CONTROL
+;;    - Path validation ensures tools only access allowed directories
+;;    - Git-tracked files preference maintains project scope
+;;    - Security functions prevent dangerous operations
+;;    - Confirmation required for state-changing operations (edit, delete, bash)
+;;
+;; 4. INTELLIGENT OUTPUT MANAGEMENT
+;;    - Automatic pagination for large outputs (pages of ~50 lines)
+;;    - Truncation with continuation markers for extremely large data
+;;    - Structured output formatting for different tool categories
+;;    - Context-aware responses (error messages, validation feedback)
+;;
+;; 5. UNIFIED TOOL ECOSYSTEM
+;;    - Categories: file, edit, search, info, emacs, project
+;;    - Consistent parameter patterns across related tools
+;;    - Extensible architecture - easy to add new tool types
+;;    - Integration with existing Emacs packages (helpful, project.el, etc.)
+;;
+;; The goal is to create an invisible but powerful bridge where the LLM can
+;; efficiently explore and manipulate the codebase without disrupting the human
+;; developer's flow, while maintaining appropriate security boundaries.
+;;
+;;;;
+
 (use-package claude-code-ide
   :straight (:type git :host github :repo "manzaltu/claude-code-ide.el")
   :bind ("C-c C-'" . claude-code-ide-menu)
@@ -104,6 +144,94 @@
 (defcustom my-gptel-eval-print-level 5
   "Max nesting level printed by `prin1` during eval."
   :type 'integer :group 'my-gptel)
+
+;;;;; Tool Definition Macro
+(defmacro defgptel-tool (name args docstring &rest options-and-body)
+  "Define a gptel tool function and register it automatically.
+
+NAME is the function name (symbol).
+ARGS is the parameter list with type annotations: (param type description &optional)
+DOCSTRING becomes both the function docstring and tool description.
+OPTIONS-AND-BODY contains keyword options followed by the function body.
+
+Supported options:
+  :name STRING          - Tool name (default: derived from function name)
+  :category STRING      - Tool category (default: \"general\")
+  :confirm BOOLEAN      - Require confirmation (default: nil)
+
+Parameter format in ARGS:
+  (param-name type description)              - Required parameter
+  (param-name type description &optional)    - Optional parameter
+
+Example:
+  (defgptel-tool my-gptel-word-count (file string \"File path\")
+    \"Count words in file.\"
+    :category \"file\"
+    (with-temp-buffer
+      (insert-file-contents file)
+      (count-words (point-min) (point-max))))"
+  (declare (indent defun) (doc-string 3))
+  (let* ((func-name (symbol-name name))
+         (tool-name-default (if (string-match "^my-gptel-\\(.+\\)" func-name)
+                                (replace-match "\\1" nil nil func-name)
+                              func-name))
+         (options nil)
+         (body nil)
+         (parsing-options t))
+
+    ;; Parse options and body
+    (dolist (item options-and-body)
+      (if (and parsing-options (keywordp item))
+          (progn
+            (push item options)
+            (push (pop options-and-body) options))
+        (progn
+          (setq parsing-options nil)
+          (push item body))))
+
+    (setq options (nreverse options)
+          body (nreverse body))
+
+    ;; Extract option values
+    (let ((tool-name (or (plist-get options :name) tool-name-default))
+          (category (or (plist-get options :category) "general"))
+          (confirm (plist-get options :confirm))
+          (param-list nil))
+
+      ;; Build parameter list for gptel-make-tool
+      (dolist (param args)
+        (let* ((param-name (symbol-name (nth 0 param)))
+               (param-type (symbol-name (nth 1 param)))
+               (param-desc (nth 2 param))
+               (optional (member '&optional param)))
+          (push `(:name ,param-name :type ,param-type :description ,param-desc
+                        ,@(when optional '(:optional t)))
+                param-list)))
+      (setq param-list (nreverse param-list))
+
+      ;; Generate the expansion
+      `(progn
+         ;; Define the function
+         (defun ,name ,(mapcar #'car args)
+           ,docstring
+           ,@body)
+
+         ;; Add to tool registry (this will be used when tools are registered)
+         (push (gptel-make-tool :function #',name
+                                :name ,tool-name
+                                :description ,docstring
+                                :args ,(if param-list `(list ,@param-list) nil)
+                                :category ,category
+                                ,@(when confirm `(:confirm ,confirm)))
+               my-gptel-tool-registry)))))
+
+;; Tool registry for collecting defined tools
+(defvar my-gptel-tool-registry nil
+  "Registry of tools defined with `defgptel-tool`.")
+
+;; Clear registry on reload to prevent duplicates
+;; This makes the configuration idempotent - multiple evaluations produce the same result
+(setq my-gptel-tool-registry nil)
 
 (defun my-gptel--list-temp-buffers ()
   (seq-filter (lambda (b) (string-prefix-p my-gptel-temp-buffer-prefix (buffer-name b)))
@@ -214,7 +342,7 @@ Ensures conversation threads nest properly like a chat interface."
   (gptel-assistant-header ((t (:foreground "#7f9f7f" :weight bold))))
   (gptel-response ((t (:foreground "#9fc59f"))))
   :commands (gptel gptel-menu gptel-send gptel-request
-                   my-gptel-switch-model)
+                   my-gptel-switch-model my-gptel-setup-model-on-first-use)
   :hook ((gptel-mode . my-gptel-setup-behavior))
   :custom
   (gptel-track-response t)
@@ -234,6 +362,9 @@ Ensures conversation threads nest properly like a chat interface."
   (gptel-directives my-gptel-directives)
   (gptel-org-branching-context t)
   :init
+  (defvar my-gptel--initial-setup t
+    "Variable to determine whether to call `my-gptel-setup-model-on-first-use'.")
+
   ;; Prompts / directives
   (defvar my-gptel-tone-instruction
     "<tone>
@@ -321,6 +452,21 @@ LABEL is used for the temp buffer name if output is truncated."
                  gptel-backend backend
                  gptel-api-key key))))
       (message "Switched to %s" choice)))
+
+  (defun my-gptel-setup-model-on-first-use (name &optional _ initial interactivep)
+    "Prompt for model selection if none is set up properly."
+    (when (and (called-interactively-p 'any)
+               (or my-gptel--initial-setup
+                   (or (not gptel-backend)
+                       (not gptel-api-key)))
+               (y-or-n-p "Choose model for this session? "))
+      (setq my-gptel--initial-setup nil)
+      (my-gptel-switch-model))
+    nil)
+
+  ;; Add advice to prompt for model selection on first use
+  (advice-add 'gptel :before #'my-gptel-setup-model-on-first-use)
+  (advice-add 'gptel-send :before #'my-gptel-setup-model-on-first-use)
 
   ;; Buffer behavior
   (defun my-gptel-setup-behavior ()
@@ -454,27 +600,31 @@ Return the expanded absolute path (string)."
     "Check if symbol NAME exists in obarray."
     (if (intern-soft name) "exists" "nil"))
 
-  (defun my-gptel-function-completions (prefix &optional limit)
-    "Return functions matching PREFIX. LIMIT defaults to 50."
-    (let ((limit (or limit 50))
-          (matches '()))
+  ;; Example of new macro-based definition (same function, different approach):
+  ;; (defgptel-tool my-gptel-symbol-exists-v2 ((name string "Symbol name to check"))
+  ;;   "Check if a symbol exists in Emacs"
+  ;;   :category "emacs"
+  ;;   (if (intern-soft name) "exists" "nil"))
+
+  ;; Macro demonstration removed - will implement properly when needed
+
+  (defun my-gptel-function-completions (prefix)
+    "Return functions matching PREFIX."
+    (let ((matches '()))
       (mapatoms (lambda (sym)
                   (when (and (fboundp sym)
-                             (string-match-p (regexp-quote prefix) (symbol-name sym))
-                             (< (length matches) limit))
+                             (string-match-p (regexp-quote prefix) (symbol-name sym)))
                     (push (symbol-name sym) matches))))
-      (string-join (sort matches #'string<) "\n")))
+      (my-gptel--emit-paged (string-join (sort matches #'string<) "\n") "functions")))
 
-  (defun my-gptel-variable-completions (prefix &optional limit)
-    "Return variables matching PREFIX. LIMIT defaults to 50."
-    (let ((limit (or limit 50))
-          (matches '()))
+  (defun my-gptel-variable-completions (prefix)
+    "Return variables matching PREFIX."
+    (let ((matches '()))
       (mapatoms (lambda (sym)
                   (when (and (boundp sym)
-                             (string-match-p (regexp-quote prefix) (symbol-name sym))
-                             (< (length matches) limit))
+                             (string-match-p (regexp-quote prefix) (symbol-name sym)))
                     (push (symbol-name sym) matches))))
-      (string-join (sort matches #'string<) "\n")))
+      (my-gptel--emit-paged (string-join (sort matches #'string<) "\n") "variables")))
 
   (defun my-gptel-helpful-function (symbol)
     "Get detailed function help using helpful package."
@@ -506,7 +656,7 @@ Return the expanded absolute path (string)."
 
   (defun my-gptel-features ()
     "List loaded Emacs features."
-    (string-join (mapcar #'symbol-name (sort features #'string<)) "\n"))
+    (my-gptel--emit-paged (string-join (mapcar #'symbol-name (sort features #'string<)) "\n") "features"))
 
   (defun my-gptel-featurep (feature)
     "Check if FEATURE is loaded."
@@ -518,7 +668,7 @@ Return the expanded absolute path (string)."
     "List available Info manuals."
     (require 'info)
     (let ((manuals (info--manual-names nil)))
-      (string-join (sort (info--filter-manual-names manuals) #'string<) "\n")))
+      (my-gptel--emit-paged (string-join (sort (info--filter-manual-names manuals) #'string<) "\n") "info-manuals")))
 
   (defun my-gptel-info-read (manual node)
     "Read contents of NODE in MANUAL using Info system."
@@ -527,7 +677,8 @@ Return the expanded absolute path (string)."
         (save-window-excursion
           (info (format "(%s)%s" manual node))
           (with-current-buffer "*info*"
-            (buffer-substring-no-properties (point-min) (point-max))))
+            (let ((content (buffer-substring-no-properties (point-min) (point-max))))
+              (my-gptel--emit-paged content (format "info:%s-%s" manual node)))))
       (error (format "Error reading Info node: %s" (error-message-string err)))))
 
   (defun my-gptel-eval-elisp-safely (code &optional start line-count)
@@ -576,14 +727,14 @@ so you (or the LLM) can continue via the `paged_read` tool."
       (format "Buffer not found: %s" buffer-name)))
 
   (defun my-gptel-list-buffers ()
-    "List up to 20 non-internal buffers with mode."
+    "List non-internal buffers with mode."
     (let* ((bufs (seq-filter (lambda (b) (not (string-prefix-p " " (buffer-name b))))
                              (buffer-list)))
-           (bufs (seq-take bufs 20)))
-      (mapconcat
-       (lambda (b)
-         (with-current-buffer b (format "%s [%s]" (buffer-name) major-mode)))
-       bufs "\n")))
+           (output (mapconcat
+                    (lambda (b)
+                      (with-current-buffer b (format "%s [%s]" (buffer-name) major-mode)))
+                    bufs "\n")))
+      (my-gptel--emit-paged output "buffers")))
 
   (defun my-gptel-project-files (&optional pattern project-dir)
     "List project files, optionally filtered by PATTERN.
@@ -591,24 +742,22 @@ PROJECT-DIR specifies which project (default: current directory)."
     (if-let* ((project-info (my-gptel--get-project project-dir))
               (proj (cdr project-info))
               (files (project-files proj)))
-        (string-join (let ((files (seq-take files 50)))
-                       (if pattern
-                           (seq-filter (lambda (f) (string-match-p pattern f)) files)
-                         files)) "\n")
+        (let ((filtered-files (if pattern
+                                  (seq-filter (lambda (f) (string-match-p pattern f)) files)
+                                files)))
+          (my-gptel--emit-paged (string-join filtered-files "\n") "project-files"))
       (format "Not in a project (checked: %s)" (or project-dir default-directory))))
 
   (defun my-gptel-grep-project (pattern &optional file-pattern project-dir)
-    "Return ≤30 matches via grep in project.
+    "Search for PATTERN in project files.
 PROJECT-DIR specifies which project (default: current directory)."
     (if-let* ((project-root (my-gptel--project-root project-dir))
               (default-directory project-root))
         (let* ((inc (if file-pattern (format "--include=%s" (shell-quote-argument file-pattern)) ""))
                (pat (shell-quote-argument pattern))
-               (cmd (format "grep -R -n %s %s . | head -30" inc pat))
+               (cmd (format "grep -R -n %s %s ." inc pat))
                (out (shell-command-to-string cmd)))
-          (if (> (length out) 5000)
-              (concat (substring out 0 5000) "\n... (output truncated)")
-            out))
+          (my-gptel--emit-paged out "grep"))
       (format "Not in a project (checked: %s)" (or project-dir default-directory))))
 
   ;; File helpers
@@ -824,7 +973,8 @@ START is 0-based (default 0), LIMIT defaults to 200."
     "Register tools with gptel."
     (interactive)
     (setq gptel-tools
-          (list
+          (append
+           (list
            (gptel-make-tool
             :function #'my-gptel-tool-list-files
             :name "list_files"
@@ -850,13 +1000,11 @@ START is 0-based (default 0), LIMIT defaults to 200."
                             :category "emacs")
            (gptel-make-tool :function #'my-gptel-function-completions :name "function_completions"
                             :description "Find functions matching a prefix pattern"
-                            :args (list '(:name "prefix" :type "string" :description "Function name prefix to match")
-                                        '(:name "limit" :type "number" :optional t :description "Max results (default 50)"))
+                            :args (list '(:name "prefix" :type "string" :description "Function name prefix to match"))
                             :category "emacs")
            (gptel-make-tool :function #'my-gptel-variable-completions :name "variable_completions"
                             :description "Find variables matching a prefix pattern"
-                            :args (list '(:name "prefix" :type "string" :description "Variable name prefix to match")
-                                        '(:name "limit" :type "number" :optional t :description "Max results (default 50)"))
+                            :args (list '(:name "prefix" :type "string" :description "Variable name prefix to match"))
                             :category "emacs")
            (gptel-make-tool :function #'my-gptel-helpful-function :name "help_function"
                             :description "Get detailed help for a function using helpful package (includes examples, source, references)"
@@ -906,9 +1054,9 @@ START is 0-based (default 0), LIMIT defaults to 200."
                             :args (list '(:name "buffer_name" :type "string" :description "Buffer name"))
                             :category "emacs")
            (gptel-make-tool :function #'my-gptel-list-buffers  :name "list_buffers"
-                            :description "List open buffers (≤20)" :args nil :category "emacs")
+                            :description "List open buffers" :args nil :category "emacs")
            (gptel-make-tool :function #'my-gptel-project-files :name "project_files"
-                            :description "List project files (≤50), optional filter"
+                            :description "List project files, optional filter"
                             :args (list '(:name "pattern" :type "string" :optional t
                                                 :description "Regex to filter")
                                         '(:name "project_dir" :type "string" :optional t
@@ -932,7 +1080,7 @@ START is 0-based (default 0), LIMIT defaults to 200."
 
            ;; Search / read / patch
            (gptel-make-tool :function #'my-gptel-grep-project :name "grep_project"
-                            :description "grep project (≤30 matches)"
+                            :description "Search project files with grep"
                             :args (list '(:name "pattern" :type "string" :description "Search pattern")
                                         '(:name "file_pattern" :type "string" :optional t
                                                 :description "grep --include pattern")
@@ -982,8 +1130,14 @@ START is 0-based (default 0), LIMIT defaults to 200."
             :function #'my-gptel-insert-at-line
             :args (list '(:name "buffer_name" :type "string" :description "Target buffer")
                         '(:name "line_number" :type "number" :description "1-based line")
-                        '(:name "content"     :type "string" :description "Text to insert"))))))
+                        '(:name "content"     :type "string" :description "Text to insert"))))
 
+           ;; Add tools defined with defgptel-tool macro
+           (reverse my-gptel-tool-registry)))
+
+    ;; Reload gptel transient to pick up updated tool descriptions
+    (when (fboundp 'gptel-menu--update-transient)
+      (gptel-menu--update-transient)))
 
   ;; Fix for gptel transient crash (if present)
   (ignore-errors (require 'gptel-menu-fix))
