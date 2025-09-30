@@ -1170,4 +1170,8 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
   :init
   (add-to-list 'auto-mode-alist '("\\.dot\\'" . graphviz-dot-mode)))
 
+;; disable the (buggy) ess-r-mode autodetection
+(after 'ess-r-package
+  (setq ess-r-package-auto-activate nil))
+
 (provide 'my-all-languages)

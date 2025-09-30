@@ -352,5 +352,4 @@ will hook in smartparens."
   ;; disable electric pair
   (electric-pair-mode -1))
 
-
 (provide 'my-core)
