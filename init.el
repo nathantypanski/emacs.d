@@ -84,6 +84,7 @@
 (require 'my-flycheck)
 (require 'my-term)
 (require 'my-vterm)
+(require 'my-remotes)
 (require 'my-magit)
 (require 'my-android)
 (require 'my-eshell)
