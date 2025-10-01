@@ -272,10 +272,12 @@ append instructions to page the rest via `paged_read'."
                         (> (string-bytes head) my-gptel-max-output-bytes))))
     (if (not truncated)
         trim
-      (let ((bufname (my-gptel--stash-in-temp-buffer full label)))
+      (let ((bufname (my-gptel--stash-in-temp-buffer full label))
+            ;; Calculate next page start based on actual lines in trimmed output
+            (trimmed-line-count (length (split-string trim "\n"))))
         (format "%s\n[OUTPUT TRUNCATED → %s]\nUse tool `paged_read` with:\n  file_or_buffer: \"%s\"\n  start: %d\n  line_count: %d\n…to continue reading."
                 trim bufname bufname
-                (1+ (length head-lines))       ; next page start (1-based)
+                (1+ trimmed-line-count)        ; next page start (1-based)
                 (min 200 my-gptel-max-lines))))))
 
 ;; -------- Dynamic Org response prefix (one level deeper than current) --------
@@ -929,17 +931,16 @@ START is 0-based (default 0), LIMIT defaults to 200."
                  start-line end-line line-count)))
       (save-excursion
         (goto-char (point-min))
-        (forward-line (1- start-line))
-        (let ((start (point))
-              (old-content))
-          (forward-line (1+ (- end-line start-line)))
-          (setq old-content (buffer-substring start (point)))
-          (delete-region start (point))
-          (insert new-content)
-          (unless (string-suffix-p "\n" new-content)
-            (insert "\n"))
-          (format "Replaced lines %d-%d:\nOLD:\n%s\nNEW:\n%s"
-                  start-line end-line old-content new-content)))))
+        (forward-line (1- start-line))  ; Go to start of start-line
+        (let ((start-pos (point)))
+          (forward-line (1+ (- end-line start-line)))  ; Go to start of line after end-line
+          (let ((old-content (buffer-substring start-pos (point))))
+            (delete-region start-pos (point))
+            (insert new-content)
+            (unless (string-suffix-p "\\n" new-content)
+              (insert "\\n"))
+            (format "Replaced lines %d-%d:\\nOLD:\\n%s\\nNEW:\\n%s"
+                    start-line end-line old-content new-content))))))
 
   (defun my-gptel-insert-at-line (buffer-name line-number content)
     "Insert CONTENT at LINE-NUMBER in BUFFER-NAME."
