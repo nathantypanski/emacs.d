@@ -366,7 +366,7 @@ Ensures conversation threads nest properly like a chat interface."
     "Variable to determine whether to call `my-gptel-setup-model-on-first-use'.")
 
   ;; Prompts / directives
-  (defvar my-gptel-tone-instruction
+  (defvar my-gptel-prompt-tone
     "<tone>
  1. Be terse and to the point.  Speak directly.
  2. Explain your reasoning.
@@ -377,30 +377,44 @@ Ensures conversation threads nest properly like a chat interface."
  7. Do NOT summarize your answers.
 </tone>")
 
-  (defvar my-gptel-system-prompt
-    (format "%s
 
-You are a LLM inside Emacs. Insert literal replies; use code comments for commentary (e.g., ;; for elisp). No Markdown/Org formatting." my-gptel-tone-instruction))
+  (defvar my-gptel-prompt-context
+    "<context>
+ 1. You are a LLM within emacs.
+</context>")
 
-  (defvar my-gptel-elisp-prompt
-    (format "%s
 
-You are a LLM inside Emacs. Help with Emacs Lisp config (Emacs
+  (defvar my-gptel-prompt-list
+    '((machine . "You are a LLM inside Emacs. Assist the user in what they wish.
+There is Nix configuring the home environment in =~/dotfiles/nix/arch/flake.nix=
+
+* ~/dotfiles -> ~/src/github.com/nathantypanski/dotfiles/
+* ~/.emacs.d -> ~/src/github.com/nathantypanski/dotfiles/emacs.d
+
+Ensure you are in the correct =project= before running any code.")
+
+      (Inline . "You are a LLM inside Emacs. Insert literal replies; use code comments for commentary (e.g., ;; for elisp). No Markdown/Org formatting.")
+
+      (Elisp . "You are a LLM inside Emacs. Help with Emacs Lisp config (Emacs
 30.1.90, use-package + straight). Write in an *idiomatic* and *modern*
 emacs style, avoiding clunkiness like =cl-lib= and instead use the
 recent builtin functions.
 
-Note you have a number of tools available to you. Use them as needed, but take care to use the size-limiting functionality in calls so the output size is not too large." my-gptel-tone-instruction))
+Note you have a number of tools available to you. Use them as needed, but take care to use the size-limiting functionality in calls so the output size is not too large.")
 
-  (defvar my-emacs-system-prompt
-    (format "%s
+      (Emacs . "You can introspect Emacs (buffers, eval). Be concise; tool output is costly. Prefer minimal I/O.")))
 
-You can introspect Emacs (buffers, eval). Be concise; tool output is costly. Prefer minimal I/O." my-gptel-tone-instruction))
+  (defun my-gptel-prompt-reload-directives ()
+    "Build my-gptel-directives from my-gptel-prompts with tone appended."
+    (interactive)
+    (setq my-gptel-prompt-directives
+          (mapcar (lambda (entry)
+                    (cons (car entry) (concat (cdr entry) "\n\n" my-gptel-prompt-tone "\n\n" my-gptel-prompt-context)))
+                  my-gptel-prompt-list))
+    (setq gptel-directives my-gptel-prompt-directives)
+    (message "Reloaded gptel directives"))
 
-  (defvar my-gptel-directives
-    `((Inline . ,my-gptel-system-prompt)
-      (Elisp  . ,my-gptel-elisp-prompt)
-      (Emacs  . ,my-emacs-system-prompt)))
+  (my-gptel-prompt-reload-directives)
 
   ;;;; Output clamps / timeouts (simplified)
   (defun my-gptel--with-timeout (thunk)
