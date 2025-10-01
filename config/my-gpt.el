@@ -360,7 +360,7 @@ Ensures conversation threads nest properly like a chat interface."
   (gptel-confirm-tool-calls t)
   (gptel-default-mode 'org-mode)
   (gptel-directives my-gptel-directives)
-  (gptel-org-branching-context t)
+  (gptel-org-branching-context nil)
   :init
   (defvar my-gptel--initial-setup t
     "Variable to determine whether to call `my-gptel-setup-model-on-first-use'.")
