@@ -19,14 +19,100 @@
         (eglot-ensure)
       (error (message "eglot-ensure failed: %s" err))))
 
+  ;; Comprehensive buffer filtering for LSP
+  (defun my-should-start-lsp-p ()
+    "Determine if LSP should start for the current buffer."
+    (and buffer-file-name
+         ;; Must be a real file on disk
+         (file-exists-p buffer-file-name)
+         ;; Not a temporary file
+         (not (string-match-p "~.*~$" (buffer-name)))
+         ;; Not a revision/backup file
+         (not (string-match-p "\\.#" (buffer-name)))
+         ;; Not in a temporary directory
+         (not (string-match-p "/tmp/" buffer-file-name))
+         ;; Not a TRAMP file (remote files can be slow)
+         (not (file-remote-p buffer-file-name))
+         ;; Not too large (LSP can struggle with huge files)
+         (< (buffer-size) (* 5 1024 1024)) ; 5MB limit
+         ;; Not a read-only file
+         (not buffer-read-only)
+         ;; In a project or reasonable directory
+         (or (project-current)
+             (string-match-p (regexp-quote (expand-file-name "~")) buffer-file-name))))
+
+  ;; Check if LSP server is available for current mode
+  (defun my-lsp-server-available-p ()
+    "Check if an LSP server is configured and available for current major mode."
+    (when-let ((server-config (assoc major-mode eglot-server-programs)))
+      (let ((server-command (cdr server-config)))
+        (cond
+         ;; Function-based server command
+         ((functionp server-command) t)
+         ;; List-based command - check first executable
+         ((listp server-command)
+          (executable-find (car server-command)))
+         ;; String command
+         ((stringp server-command)
+          (executable-find server-command))
+         (t nil)))))
+
+  ;; Enhanced logging for LSP issues
+  (defun my-log-lsp-status (action &optional details)
+    "Log LSP status with contextual information."
+    (message "[LSP %s] %s in %s (mode: %s, project: %s)"
+             action
+             (or details "")
+             (buffer-name)
+             major-mode
+             (if (project-current) "yes" "no")))
+
+  ;; Safe eglot-ensure wrapper with comprehensive checks
+  (defun my-safe-eglot-ensure ()
+    "Start eglot only for appropriate buffers with proper error handling."
+    (cond
+     ((not (my-should-start-lsp-p))
+      (my-log-lsp-status "SKIP" "buffer not suitable for LSP"))
+     ((not (my-lsp-server-available-p))
+      (my-log-lsp-status "SKIP" "no server available"))
+     (t
+      (condition-case err
+          (progn
+            (eglot-ensure)
+            (my-log-lsp-status "START" "server started successfully"))
+        (error
+         (my-log-lsp-status "ERROR" (error-message-string err)))))))
+
+  ;; Project-aware LSP management
+  (defun my-cleanup-unused-lsp-servers ()
+    "Clean up LSP servers for projects that are no longer open."
+    (interactive)
+    (dolist (server (eglot--all-major-modes))
+      (let ((server-instance (eglot-current-server)))
+        (when (and server-instance
+                   (not (seq-some (lambda (buf)
+                                    (with-current-buffer buf
+                                      (and (eglot--managed-p)
+                                           (eq (eglot-current-server) server-instance))))
+                                  (buffer-list))))
+          (eglot-shutdown server-instance)))))
+
+  ;; Auto-cleanup timer (run every 10 minutes)
+  (run-with-timer 600 600 'my-cleanup-unused-lsp-servers)
+
+  ;; Enhanced mode hook with delay for better startup
+  (defun my-delayed-eglot-ensure ()
+    "Start eglot after a short delay to avoid startup conflicts."
+    (run-with-idle-timer 0.5 nil 'my-safe-eglot-ensure))
+
   ;; Add hooks for both python-mode and python-ts-mode
-  (add-hook 'python-mode-hook 'eglot-ensure)
-  (add-hook 'python-ts-mode-hook 'eglot-ensure)
-  (add-hook 'rust-mode-hook 'eglot-ensure)
-  (add-hook 'go-mode-hook 'eglot-ensure)
-  (add-hook 'nix-mode-hook 'eglot-ensure)
-  (add-hook 'ruby-mode-hook 'eglot-ensure)
-  (add-hook 'ruby-ts-mode-hook 'eglot-ensure)
+  (add-hook 'python-mode-hook 'my-delayed-eglot-ensure)
+  (add-hook 'python-ts-mode-hook 'my-delayed-eglot-ensure)
+  (add-hook 'rust-mode-hook 'my-delayed-eglot-ensure)
+  (add-hook 'go-mode-hook 'my-delayed-eglot-ensure)
+  (add-hook 'nix-mode-hook 'my-delayed-eglot-ensure)
+  (add-hook 'ruby-mode-hook 'my-delayed-eglot-ensure)
+  (add-hook 'ruby-ts-mode-hook 'my-delayed-eglot-ensure)
   :custom
   ;; be more responsive
   (eglot-send-changes-idle-time 0.1)
