@@ -792,7 +792,7 @@ Returns result or error message."
             (format "Error: Buffer '%s' does not exist" name))
         ;; Handle as file
         (let* ((p (my-gptel--resolve name))
-               (validation-error (my-gptel--validate-file-path p :allow-directory nil :allow-missing nil)))
+               (validation-error (my-gptel--validate-file-path p)))
           (if validation-error
               validation-error
             (funcall file-fn p))))))
@@ -809,11 +809,12 @@ Returns result or error message."
           (file-name-directory (expand-file-name path)))
       default-directory))
 
-  (defun my-gptel--validate-file-path (path &optional allow-directory allow-missing)
+  (defun my-gptel--validate-file-path (path &rest options)
     "Validate PATH for file operations. Return error string or nil if valid.
-ALLOW-DIRECTORY: if non-nil, don't error on directories
-ALLOW-MISSING: if non-nil, don't error on non-existent files"
-    (let ((p (expand-file-name path)))
+OPTIONS is a plist supporting :allow-directory and :allow-missing."
+    (let ((allow-directory (plist-get options :allow-directory))
+          (allow-missing (plist-get options :allow-missing))
+          (p (expand-file-name path)))
       (cond
        ((not (my-gptel-path-allowed-p p))
         (format "Error: Path '%s' is outside allowed directories" path))
@@ -1094,7 +1095,7 @@ START is 0-based (default 0), LIMIT defaults to 200."
 
            ;; Search / read / patch
            (gptel-make-tool :function #'my-gptel-grep-project :name "grep_project"
-                            :description "Search project files with grep"
+                            :description "Search project files with grep. If output gets truncated, read the buffer with `paged_read'."
                             :args (list '(:name "pattern" :type "string" :description "Search pattern")
                                         '(:name "file_pattern" :type "string" :optional t
                                                 :description "grep --include pattern")
