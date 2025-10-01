@@ -911,8 +911,11 @@ START is 0-based (default 0), LIMIT defaults to 200."
                       (with-temp-buffer
                         (insert-file-contents file-or-buffer)
                         (buffer-string)))
-                     (t (user-error "Not found: %s" file-or-buffer)))))
-      (my-gptel--paginate-lines content start line-count)))
+                     (t (user-error "Not found: %s" file-or-buffer))))
+           (paginated-content (my-gptel--paginate-lines content start line-count)))
+      ;; Use emit-paged to handle truncation and continuation instructions
+      (my-gptel--emit-paged paginated-content file-or-buffer)))
+
 
   (defun my-gptel-replace-lines (buffer-name start-line end-line new-content)
     "Replace lines START-LINE to END-LINE with NEW-CONTENT."
