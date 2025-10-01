@@ -91,9 +91,8 @@
    "M-`"   'tmm-menubar
    "C-c M" 'my-show-messages-buffer)
 
-
   ;; Set up keybindings for dired
-  (after 'general
+  (after 'dired
     (general-define-key
      :keymap dired-mode-map
      :states '(normal)
