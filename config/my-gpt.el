@@ -795,10 +795,10 @@ Returns result or error message."
           (file-name-directory (expand-file-name path)))
       default-directory))
 
-  (defun my-gptel--validate-file-path (path &key allow-directory allow-missing)
+  (defun my-gptel--validate-file-path (path &optional allow-directory allow-missing)
     "Validate PATH for file operations. Return error string or nil if valid.
-ALLOW-DIRECTORY: if t, don't error on directories
-ALLOW-MISSING: if t, don't error on non-existent files"
+ALLOW-DIRECTORY: if non-nil, don't error on directories
+ALLOW-MISSING: if non-nil, don't error on non-existent files"
     (let ((p (expand-file-name path)))
       (cond
        ((not (my-gptel-path-allowed-p p))
