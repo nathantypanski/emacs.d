@@ -300,43 +300,6 @@ This ensures proper nesting like a chat conversation."
                   0)))
     (concat (make-string level ?*) " " label "\n")))
 
-(defun my-gptel--with-nested-prefix (orig &rest args)
-  "Around-advice for `gptel-send' to inject computed Org prompt/response prefixes.
-Ensures conversation threads nest properly like a chat interface."
-  (let* ((response-prefix (and (derived-mode-p 'org-mode)
-                               (my-gptel--nested-org-prefix "Assistant")))
-         (prompt-prefix (and (derived-mode-p 'org-mode)
-                             (my-gptel--nested-org-prefix "Human")))
-         ;; Ensure gptel sees a STRING, not a function/symbol.
-         (gptel-prompt-prefix-alist
-          (if prompt-prefix
-              `((org-mode . ,prompt-prefix))
-            gptel-prompt-prefix-alist))
-         (gptel-response-prefix-alist
-          (if response-prefix
-              `((org-mode . ,response-prefix))
-            gptel-response-prefix-alist)))
-    ;; Debug info (remove in production)
-    (when (and (derived-mode-p 'org-mode) response-prefix)
-      (message "GPT conversation: Using level %d for Human/Assistant headings"
-               (length (car (split-string response-prefix " ")))))
-    (apply orig args)))
-
-;;;###autoload
-(defun my-gptel-enable-dynamic-org-prefix ()
-  "Enable dynamic Org response prefix during `gptel-send'."
-  (interactive)
-  (advice-add 'gptel-send :around #'my-gptel--with-nested-prefix)
-  (message "my-gptel: dynamic Org response prefix enabled."))
-
-;;;###autoload
-(defun my-gptel-disable-dynamic-org-prefix ()
-  "Disable dynamic Org response prefix during `gptel-send'."
-  (interactive)
-  (advice-remove 'gptel-send #'my-gptel--with-nested-org-prefix)
-  (message "my-gptel: dynamic Org response prefix disabled."))
-
-
 (use-package gptel
   :straight (:repo "karthink/gptel" :branch "master" :files ("*.el"))
   :custom-face
