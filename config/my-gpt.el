@@ -521,6 +521,83 @@ Return the expanded absolute path (string)."
        ;; Must not match blocked patterns
        (not (seq-some (lambda (re) (string-match-p re resolved)) my-gptel-blocked-patterns)))))
 
+  ;;;; Tool discovery and help
+  (defun my-gptel-context-status ()
+    "Get current Emacs context (buffer, project, git) without changing anything."
+    (let* ((buf (current-buffer))
+           (buf-name (buffer-name buf))
+           (file (buffer-file-name buf))
+           (proj-root (my-gptel--project-root))
+           (git-root (and default-directory (vc-git-root default-directory)))
+           (git-branch (and git-root
+                            (let ((default-directory git-root))
+                              (string-trim (shell-command-to-string "git branch --show-current 2>/dev/null"))))))
+      (format "=== Current Context ===
+Buffer: %s [%s]
+File: %s
+Directory: %s
+Project: %s
+Git repo: %s
+Git branch: %s
+Point: %d (line %d)
+Modified: %s"
+              buf-name major-mode
+              (or file "not visiting a file")
+              default-directory
+              (or proj-root "no project")
+              (or git-root "not in git repo")
+              (or git-branch "N/A")
+              (point)
+              (line-number-at-pos)
+              (if (buffer-modified-p) "yes" "no"))))
+
+  (defun my-gptel-tools-help (&optional category)
+    "List available tools, optionally filtered by CATEGORY.
+Categories: file, edit, search, emacs, project, git"
+    (let* ((tools (or gptel-tools '()))
+           (filtered (if category
+                         (seq-filter (lambda (tool)
+                                       (equal (plist-get tool :category) category))
+                                     tools)
+                       tools))
+           (grouped (seq-group-by (lambda (tool)
+                                    (or (plist-get tool :category) "general"))
+                                  filtered)))
+      (mapconcat
+       (lambda (group)
+         (let ((cat (car group))
+               (tools (cdr group)))
+           (format "=== %s ===\n%s"
+                   (upcase cat)
+                   (mapconcat
+                    (lambda (tool)
+                      (format "• %s: %s%s"
+                              (plist-get tool :name)
+                              (plist-get tool :description)
+                              (if (plist-get tool :confirm) " [requires confirmation]" "")))
+                    tools "\n"))))
+       grouped "\n\n")))
+
+  (defun my-gptel-tool-help (tool-name)
+    "Get detailed help for a specific TOOL-NAME."
+    (if-let* ((tool (seq-find (lambda (t) (equal (plist-get t :name) tool-name))
+                               gptel-tools))
+              (args (plist-get tool :args)))
+        (format "%s\n\nDescription: %s\n\nParameters:\n%s\n\nCategory: %s%s"
+                tool-name
+                (plist-get tool :description)
+                (mapconcat
+                 (lambda (arg)
+                   (format "  - %s (%s): %s%s"
+                           (plist-get arg :name)
+                           (plist-get arg :type)
+                           (plist-get arg :description)
+                           (if (plist-get arg :optional) " [optional]" "")))
+                 args "\n")
+                (plist-get tool :category)
+                (if (plist-get tool :confirm) "\n⚠ Requires confirmation" ""))
+      (format "Tool '%s' not found. Use `tools_help` to list available tools." tool-name)))
+
   ;;;; Small tools
   (defun my-gptel-tool-list-files (path &optional start limit)
     "List files at PATH (non-dot), paging from START to LIMIT."
@@ -605,15 +682,23 @@ Return the expanded absolute path (string)."
                     (push (symbol-name sym) matches))))
       (my-gptel--emit-paged (string-join (sort matches #'string<) "\n") "variables")))
 
-  (defun my-gptel-helpful-function (symbol)
-    "Get detailed function help using helpful package."
+  (defun my-gptel-helpful-function (symbol &optional brief)
+    "Get function help. If BRIEF, just show signature."
     (when-let ((sym (intern-soft symbol)))
-      (if (fboundp sym)
-          (save-window-excursion
-            (helpful-function sym)
-            (with-current-buffer (helpful--buffer sym t)
-              (buffer-string)))
-        (format "Symbol '%s' is not a function" symbol))))
+      (cond
+       ((not (fboundp sym))
+        (format "Symbol '%s' is not a function" symbol))
+       (brief
+        (let ((args (help-function-arglist sym)))
+          (format "%s: %s\n%s"
+                  symbol
+                  (or (documentation sym t) "No documentation")
+                  (if args (format "Args: %s" args) "No args"))))
+       (t
+        (save-window-excursion
+          (helpful-function sym)
+          (with-current-buffer (helpful--buffer sym t)
+            (buffer-string)))))))
 
   (defun my-gptel-helpful-variable (symbol)
     "Get detailed variable help using helpful package."
@@ -681,14 +766,19 @@ so you (or the LLM) can continue via the `paged_read` tool."
 
   (defun my-gptel-git-status (&optional path)
     (let* ((dir (my-gptel--path-to-dir path))
-           (default-directory dir))
-      (if (vc-git-root dir)
+           (default-directory dir)
+           (git-root (vc-git-root dir)))
+      (if git-root
           (let* ((cmd (if path
                           (format "git status --porcelain -- %s" (shell-quote-argument path))
                         "git status --porcelain"))
-                 (output (shell-command-to-string cmd)))
-            (my-gptel--emit-paged output "git-status"))
-        "Not in a git repository")))
+                 (output (shell-command-to-string cmd))
+                 (branch (string-trim (shell-command-to-string "git branch --show-current"))))
+            (my-gptel--emit-paged
+             (format "Repository: %s\nBranch: %s\n\n%s"
+                     git-root branch output)
+             "git-status"))
+        (format "Not in a git repository (checked: %s)" dir))))
 
   (defun my-gptel-git-diff (&optional file)
     (let* ((dir (my-gptel--path-to-dir file))
@@ -700,9 +790,15 @@ so you (or the LLM) can continue via the `paged_read` tool."
                  (output (shell-command-to-string cmd)))
             (my-gptel--emit-paged output "git-diff"))
         "Not in a git repository")))
-  (defun my-gptel-switch-buffer (buffer-name)
+  (defun my-gptel-switch-buffer (buffer-name &optional no-switch)
+    "Switch to BUFFER-NAME, or just return info if NO-SWITCH is true."
     (if-let ((buf (get-buffer buffer-name)))
-        (progn (switch-to-buffer buf) (format "Switched to buffer: %s" buffer-name))
+        (if no-switch
+            (format "Buffer exists: %s [%s, %d lines]"
+                    buffer-name
+                    (with-current-buffer buf major-mode)
+                    (with-current-buffer buf (count-lines (point-min) (point-max))))
+          (progn (switch-to-buffer buf) (format "Switched to buffer: %s" buffer-name)))
       (format "Buffer not found: %s" buffer-name)))
 
   (defun my-gptel-list-buffers ()
@@ -727,16 +823,21 @@ PROJECT-DIR specifies which project (default: current directory)."
           (my-gptel--emit-paged (string-join filtered-files "\n") "project-files"))
       (format "Not in a project (checked: %s)" (or project-dir default-directory))))
 
-  (defun my-gptel-grep-project (pattern &optional file-pattern project-dir)
-    "Search for PATTERN in project files.
-PROJECT-DIR specifies which project (default: current directory)."
+  (defun my-gptel-grep-project (pattern &optional glob-pattern project-dir)
+    "Search using ripgrep. Automatically respects .gitignore.
+GLOB-PATTERN: optional file glob like '*.el' or '*.js'
+PROJECT-DIR: which project (default: current directory)"
     (if-let* ((project-root (my-gptel--project-root project-dir))
               (default-directory project-root))
-        (let* ((inc (if file-pattern (format "--include=%s" (shell-quote-argument file-pattern)) ""))
-               (pat (shell-quote-argument pattern))
-               (cmd (format "grep -R -n %s %s ." inc pat))
+        (let* ((cmd (concat "rg --line-number --no-heading --color=never"
+                            (if glob-pattern
+                                (format " --glob '%s'" glob-pattern)
+                              "")
+                            (format " %s" (shell-quote-argument pattern))))
                (out (shell-command-to-string cmd)))
-          (my-gptel--emit-paged out "grep"))
+          (if (string-empty-p out)
+              (format "No matches found for '%s'" pattern)
+            (my-gptel--emit-paged out "grep")))
       (format "Not in a project (checked: %s)" (or project-dir default-directory))))
 
   ;; File helpers
@@ -820,12 +921,18 @@ START is 0-based (default 0), LIMIT defaults to 200."
                     (string= (file-name-nondirectory f) basename))
                   (mapcar (lambda (f) (expand-file-name f root)) files))))
 
-  (defun my-gptel-open-file (path)
-    "Open existing file by absolute or relative path."
+  (defun my-gptel-open-file (path &optional preview)
+    "Open existing file by absolute or relative path, optionally as preview only."
     (let ((full-path (expand-file-name path)))
       (if (file-exists-p full-path)
-          (let ((buffer (find-file-noselect full-path)))
-            (format "Opened file: %s\nBuffer name: %s" full-path (buffer-name buffer)))
+          (if preview
+              ;; Preview mode: just show first 50 lines without opening buffer
+              (with-temp-buffer
+                (insert-file-contents full-path nil 0 8192)
+                (my-gptel--emit-paged (buffer-string) (format "preview:%s" (file-name-nondirectory full-path))))
+            ;; Normal mode: open buffer
+            (let ((buffer (find-file-noselect full-path)))
+              (format "Opened file: %s\nBuffer name: %s\nUse `paged_read` to read contents" full-path (buffer-name buffer))))
         (format "File does not exist: %s" full-path))))
 
   (defun my-gptel-create-file-at-path (path content)
@@ -836,14 +943,20 @@ START is 0-based (default 0), LIMIT defaults to 200."
       (let ((buffer (find-file-noselect full-path)))
         (format "Created file: %s\nBuffer name: %s" full-path (buffer-name buffer)))))
 
-  (defun my-gptel-make-directory (parent name)
-    "Create directory NAME under PARENT."
-    (condition-case err
-        (progn
-          (make-directory (expand-file-name name parent) t)
-          (format "Directory %s created/verified in %s" name parent))
-      (error (format "Error creating directory %s in %s: %s"
-                     name parent (error-message-string err)))))
+  (defun my-gptel-make-directory (parent name &optional dry-run)
+    "Create directory NAME under PARENT. If DRY-RUN, only show what would be created."
+    (let ((full-path (expand-file-name name parent)))
+      (cond
+       (dry-run
+        (format "[DRY RUN] Would create: %s" full-path))
+       ((file-exists-p full-path)
+        (format "Directory already exists: %s" full-path))
+       (t
+        (condition-case err
+            (progn
+              (make-directory full-path t)
+              (format "Created directory: %s" full-path))
+          (error (format "Error creating directory: %s" (error-message-string err))))))))
 
   (defun my-gptel-create-file (path filename content)
     "Create file FILENAME in PATH with CONTENT."
@@ -957,6 +1070,28 @@ START is 0-based (default 0), LIMIT defaults to 200."
     (setq gptel-tools
           (append
            (list
+           ;; Tool discovery (add first for visibility)
+           (gptel-make-tool
+            :function #'my-gptel-context-status
+            :name "context"
+            :description "Show current context (buffer, project, git) - safe, read-only"
+            :args nil
+            :category "help")
+
+           (gptel-make-tool
+            :function #'my-gptel-tools-help
+            :name "tools_help"
+            :description "List available tools by category (file/edit/search/emacs/project/git)"
+            :args (list '(:name "category" :type "string" :optional t :description "Filter by category"))
+            :category "help")
+
+           (gptel-make-tool
+            :function #'my-gptel-tool-help
+            :name "tool_help"
+            :description "Get detailed help for a specific tool"
+            :args (list '(:name "tool_name" :type "string" :description "Name of the tool"))
+            :category "help")
+
            (gptel-make-tool
             :function #'my-gptel-tool-list-files
             :name "list_files"
@@ -989,8 +1124,9 @@ START is 0-based (default 0), LIMIT defaults to 200."
                             :args (list '(:name "prefix" :type "string" :description "Variable name prefix to match"))
                             :category "emacs")
            (gptel-make-tool :function #'my-gptel-helpful-function :name "help_function"
-                            :description "Get detailed help for a function using helpful package (includes examples, source, references)"
-                            :args (list '(:name "symbol" :type "string" :description "Function name"))
+                            :description "Get help for a function (use brief=true for just signature)"
+                            :args (list '(:name "symbol" :type "string" :description "Function name")
+                                        '(:name "brief" :type "boolean" :optional t :description "Just show signature, not full help"))
                             :category "emacs")
            (gptel-make-tool :function #'my-gptel-helpful-variable :name "help_variable"
                             :description "Get detailed help for a variable using helpful package (includes current value, references)"
@@ -1032,8 +1168,9 @@ START is 0-based (default 0), LIMIT defaults to 200."
 
            ;; Buffers / project / files
            (gptel-make-tool :function #'my-gptel-switch-buffer :name "switch_buffer"
-                            :description "Switch to buffer by name"
-                            :args (list '(:name "buffer_name" :type "string" :description "Buffer name"))
+                            :description "Switch to buffer by name (or check if exists with no_switch)"
+                            :args (list '(:name "buffer_name" :type "string" :description "Buffer name")
+                                        '(:name "no_switch" :type "boolean" :optional t :description "Just check if exists, don't switch"))
                             :category "emacs")
            (gptel-make-tool :function #'my-gptel-list-buffers  :name "list_buffers"
                             :description "List open buffers" :args nil :category "emacs")
@@ -1045,8 +1182,9 @@ START is 0-based (default 0), LIMIT defaults to 200."
                                                 :description "Project directory (default: current)"))
                             :category "project")
            (gptel-make-tool :function #'my-gptel-open-file :name "open_file"
-                            :description "Open existing file by absolute or relative path"
-                            :args (list '(:name "path" :type "string" :description "File path (absolute or relative to current directory)"))
+                            :description "Open existing file (preview mode available for safe exploration)"
+                            :args (list '(:name "path" :type "string" :description "File path (absolute or relative)")
+                                        '(:name "preview" :type "boolean" :optional t :description "Preview first 50 lines without opening buffer"))
                             :category "file")
 
            (gptel-make-tool :function #'my-gptel-create-file-at-path :name "create_file_at_path"
@@ -1062,10 +1200,10 @@ START is 0-based (default 0), LIMIT defaults to 200."
 
            ;; Search / read / patch
            (gptel-make-tool :function #'my-gptel-grep-project :name "grep_project"
-                            :description "Search project files with grep. If output gets truncated, read the buffer with `paged_read'."
-                            :args (list '(:name "pattern" :type "string" :description "Search pattern")
-                                        '(:name "file_pattern" :type "string" :optional t
-                                                :description "grep --include pattern")
+                            :description "Fast project search with ripgrep (respects .gitignore)"
+                            :args (list '(:name "pattern" :type "string" :description "Search pattern or regex")
+                                        '(:name "glob_pattern" :type "string" :optional t
+                                                :description "File glob like '*.el' or '*.js'")
                                         '(:name "project_dir" :type "string" :optional t
                                                 :description "Project directory (default: current)"))
                             :category "search")
@@ -1077,9 +1215,10 @@ START is 0-based (default 0), LIMIT defaults to 200."
                             :category "emacs")
            ;; Simple file creation / mkdir (kept; confirm writes)
            (gptel-make-tool :function #'my-gptel-make-directory :name "make_directory"
-                            :description "Create directory NAME under PARENT"
+                            :description "Create directory NAME under PARENT (supports dry-run)"
                             :args (list '(:name "parent" :type "string" :description "Parent directory")
-                                        '(:name "name"   :type "string" :description "New directory name"))
+                                        '(:name "name"   :type "string" :description "New directory name")
+                                        '(:name "dry_run" :type "boolean" :optional t :description "Show what would be created without doing it"))
                             :category "file" :confirm t)
 
            (gptel-make-tool :function #'my-gptel-create-file :name "create_file"
