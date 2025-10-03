@@ -111,7 +111,21 @@ If this is nil, then filter groups will be restored from `ibuffer-saved-filter-g
     "Kill current buffer with confirmation prompt."
     (interactive)
     (when (yes-or-no-p (format "Kill buffer '%s'? " (buffer-name)))
-      (kill-current-buffer))))
+      (kill-current-buffer)))
+
+  ;; (define-ibuffer-filter unsaved-file-buffers
+  ;;     "Toggle current view to buffers whose file is unsaved."
+  ;;   (:description "file is unsaved")
+  ;;   (ignore qualifier)
+  ;;   (and (buffer-local-value 'buffer-file-name buf)
+  ;;        (buffer-modified-p buf)))
+
+  ;; (after 'general
+  ;;   (general-define-key
+  ;;    :maps ibuffer-mode-map
+  ;;    :states '(emacs)
+  ;;    "/u" #'ibuffer-filter-by-unsaved-file-buffers))
+  )
 
 (use-package ibuffer-vc
   :straight t
