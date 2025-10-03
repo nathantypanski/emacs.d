@@ -27,9 +27,11 @@
   (defun my-vertico-toggle-capf ()
     "Use `consult-completion-in-region` when Vertico is on, else default."
     (setq-local completion-in-region-function
-                (if vertico-mode
+                (if (bound-and-true-p vertico-mode)
                     #'consult-completion-in-region
-                  #'completion--in-region))))
+                  #'completion--in-region)))
+
+  )
 
 
 (use-package orderless
@@ -45,24 +47,19 @@
   :ensure t
   :init
   (setq completion-in-region-function #'consult-completion-in-region)
-  :config
   (marginalia-mode))
 
 (use-package consult
   :ensure t
   :demand t
-  :after 'evil 'general
-  :bind
-  (("C-s" . consult-line)
-   ("M-y" . consult-yank-pop)
-   ("C-x b" . consult-buffer))
   :custom
   (consult-async-min-input 0)
   :config
-  (general-define-key
-   :keymaps 'evil-normal-state-map
-                      (kbd "P") 'consult-yank-from-kill-ring
-                      (kbd "SPC `") 'consult-mark))
+  (after 'general
+    (general-define-key
+     :keymaps 'evil-normal-state-map
+     (kbd "P") 'consult-yank-from-kill-ring
+     (kbd "SPC `") 'consult-mark)))
 
 (use-package embark
   :ensure t
@@ -150,25 +147,38 @@
     (corfu-terminal-mode +1)))
 
 ;; Global pcomplete settings - less aggressive
-(setq pcomplete-ignore-case t)
+(setq completion-ignore-case t)
 (setq pcomplete-autolist nil)
 (setq pcomplete-cycle-completions nil)
 
-;; Disable ALL completion in git commit messages - it's useless there
-(defun my-disable-completion-in-git-commit ()
-  "Disable all completion in git-commit buffers."
-  (setq-local completion-at-point-functions nil)
-  (when (bound-and-true-p company-mode)
-    (company-mode -1))
-  (when (bound-and-true-p corfu-mode)
-    (corfu-mode -1))
-  (message "Disabled completion in git-commit buffer"))
 
+;; Disable ALL completion in git commit messages - it's useless there
+(defun my-disable-completion-in-git-commit (&optional buffer)
+  "Disable all completion in git-commit buffers.
+If BUFFER is provided, operate on that buffer. Otherwise use current buffer."
+  (interactive)
+  (with-current-buffer (or buffer (current-buffer))
+    (setq-local completion-at-point-functions nil)
+    (when (bound-and-true-p company-mode)
+      (company-mode -1))
+    (when (bound-and-true-p corfu-mode)
+      (corfu-mode -1))
+    (message "Disabled completion in buffer %s" (buffer-name))))
 (add-hook 'git-commit-mode-hook 'my-disable-completion-in-git-commit)
 
-(use-package helpful
-  :bind (("C-h f" . helpful-function)
-         ("C-h v" . helpful-variable)))
+(use-package helpful)
+
+(defun my-disable-completion (&optional buffer)
+  "Disable all completion in buffer.
+If BUFFER is provided, operate on that buffer. Otherwise use current buffer."
+  (interactive)
+  (with-current-buffer (or buffer (current-buffer))
+    (setq-local completion-at-point-functions nil)
+    (when (bound-and-true-p company-mode)
+      (company-mode -1))
+    (when (bound-and-true-p corfu-mode)
+      (corfu-mode -1))
+    (message "Disabled completion in buffer %s" (buffer-name))))
 
 (provide 'my-completion)
 ;;; my-completion.el ends here
