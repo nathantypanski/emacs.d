@@ -325,7 +325,7 @@ This ensures proper nesting like a chat conversation."
   (gptel-confirm-tool-calls t)
   (gptel-default-mode 'org-mode)
   (gptel-directives my-gptel-directives)
-  (gptel-org-branching-context nil)
+  (gptel-org-branching-context t)
   :init
   (defvar my-gptel--initial-setup t
     "Variable to determine whether to call `my-gptel-setup-model-on-first-use'.")
@@ -1158,6 +1158,13 @@ START is 0-based (default 0), LIMIT defaults to 200."
   (add-hook 'find-file-hook #'my-auto-enable-gptel-mode)
   (add-hook 'gptel-mode-hook #'my-gptel-clean-completion))
 
+
+(use-package ai-org-chat
+  :straight (:type git :host github :repo "ultronozm/ai-org-chat.el")
+  :custom
+  (ai-org-chat-user-name "ndt")
+  (ai-org-chat-dir "~/notes/gpt")  ; Directory for saving chat files
+  :config)
 
 (provide 'my-gpt)
 ;;; my-gpt.el ends here
