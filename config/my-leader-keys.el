@@ -199,8 +199,6 @@
   "a RET"      'gptel-send
   "ag"         'gptel
   "ac"         'my-gptel-switch-model
-  "ae"         'my-gptel-explain
-  "ar"         'my-gptel-review
   "aT"         'my-gptel-check-tokens
   "ata"        'gptel-tool-confirm
   "ata"        'gptel--accept-tool-calls
