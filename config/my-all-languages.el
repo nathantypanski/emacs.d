@@ -1099,7 +1099,7 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
   (add-to-list 'auto-mode-alist '("\\.page\\'" . markdown-mode))
   (add-hook 'markdown-mode-hook 'visual-line-mode)
   :custom-face
-  (markdown-pre-face ((t (:family "Departure Mono" :height 100)))))
+  (markdown-pre-face ((t (:family "DepartureMono Nerd Font" :height 100)))))
 
 
 ;; -*- lexical-binding: t; -*-
