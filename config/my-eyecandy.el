@@ -184,6 +184,7 @@ FONT is the name of a xft font, like `Monospace-10'."
   "Set the frame font to the font name in the variable my-graphical-font.
   This command only has an effect on graphical frames."
   (interactive)
+  (my-enforce-consistent-font-height)
   (my-set-window-font my-graphical-font)
   ;; Essential font fallback prevention - prevent wrong-sized fonts
   (when (display-graphic-p)
@@ -283,7 +284,8 @@ FONT is the name of a xft font, like `Monospace-10'."
   (display-graphic-p))
 
 (defun my-enforce-consistent-font-height ()
-  "Force ALL faces to use the same height as default face, preserving other styling."
+  "Force ALL faces to use the same height as default face, preserving
+other styling."
   (interactive)
   (let ((base-height (face-attribute 'default :height)))
     ;; Only change height, preserve all other face attributes
