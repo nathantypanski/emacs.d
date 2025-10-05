@@ -92,7 +92,7 @@
         (when (and server-instance
                    (not (seq-some (lambda (buf)
                                     (with-current-buffer buf
-                                      (and (eglot--managed-p)
+                                      (and (eglot-managed-p)
                                            (eq (eglot-current-server) server-instance))))
                                   (buffer-list))))
           (eglot-shutdown server-instance)))))
