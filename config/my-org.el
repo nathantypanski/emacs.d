@@ -35,6 +35,18 @@
     (when (file-exists-p notes-file)
       (setq org-default-notes-file notes-file)))
 
+  (defun my-org-flatten-headings (depth)
+    "Convert all headings to level 2."
+    (interactive "p")
+    (save-excursion
+      (goto-char (point-min))
+      (while (re-search-forward "^\\*+" nil t)
+        (replace-match "**")))
+    (save-excursion
+     (goto-char (point-min))
+     (while (re-search-forward "^\\*[^\*]" nil t)
+       (replace-match "**"))))
+
   (defun my-org-fontify-tool-blocks (limit)
     "Fontify #+begin_tool … #+end_tool like src blocks."
     (let ((case-fold-search t)
