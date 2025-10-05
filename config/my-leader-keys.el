@@ -157,9 +157,8 @@
   "gz"         'eglot-inlay-hints-mode
 
   ;; tabs
+  "t <TAB>"    'tab-bar-switch-to-recent-tab
   "tt"         'tab-bar-switch-to-tab
-  "T"          'tab-switch
-  "tl"         'tab-list
   "tc"         'tab-bar-new-tab
   "tq"         'tab-bar-close-tab
   "tn"         'tab-bar-switch-to-next-tab
