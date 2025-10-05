@@ -90,14 +90,6 @@
    "C-c d" 'describe-symbol               ; Full documentation with descriptions
    "M-`"   'tmm-menubar
    "C-c M" 'my-show-messages-buffer)
-
-  ;; Set up keybindings for dired
-  (after 'dired
-    (general-define-key
-     :keymap dired-mode-map
-     :states '(normal)
-     "j" 'my-dired-next-line
-     "k" 'my-dired-prev-line))
   (message "loaded general.el"))
 
   ;; Clean undo system - no external packages needed
