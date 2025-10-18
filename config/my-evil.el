@@ -317,6 +317,7 @@ If LSP isn’t active here, signal a user‑friendly error."
    "C-w }"          'evil-window-rotate-downwards
    "C-w {"          'evil-window-rotate-upwards
    "SPC SPC"        'execute-extended-command
+   "SPC TAB"        (lambda () (switch-to-buffer (other-buffer)))
    "SPC p"          'execute-extended-command
    "C-q"            'universal-argument
    "C-h"            'evil-window-left
