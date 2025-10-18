@@ -196,10 +196,8 @@ FONT is the name of a xft font, like `Monospace-10'."
 
     ;; Scale down problematic fonts if they ever appear
     (when (boundp 'face-font-rescale-alist)
-      (setq face-font-rescale-alist '(("Droid Sans" . 1.0)
+      (setq face-font-rescale-alist '(("Droid Sans" . 0.75)
                                       ("Adwaita" . 1.0)
-                                      ("Cantarell" . 1.0)
-                                      ("DepartureMono Nerd Font" . 1.0)
                                       ("DejaVu Sans" . 1.0))))))
 
 (defun my-enforce-consistent-font-height-ultimate ()
@@ -215,7 +213,7 @@ FONT is the name of a xft font, like `Monospace-10'."
                     org-inline-src-block org-block-begin-line
                     org-block-end-line org-meta-line))
       (when (facep face)
-        (set-face-attribute face nil :height 0.7)))
+        (set-face-attribute face nil :height 1.0)))
 
     ;; Add advice to prevent height changes
     (advice-add 'set-face-attribute :before
