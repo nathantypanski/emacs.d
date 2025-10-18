@@ -83,23 +83,6 @@
         (error
          (my-log-lsp-status "ERROR" (error-message-string err)))))))
 
-  ;; Project-aware LSP management
-  (defun my-cleanup-unused-lsp-servers ()
-    "Clean up LSP servers for projects that are no longer open."
-    (interactive)
-    (dolist (server (eglot--all-major-modes))
-      (let ((server-instance (eglot-current-server)))
-        (when (and server-instance
-                   (not (seq-some (lambda (buf)
-                                    (with-current-buffer buf
-                                      (and (eglot-managed-p)
-                                           (eq (eglot-current-server) server-instance))))
-                                  (buffer-list))))
-          (eglot-shutdown server-instance)))))
-
-  ;; Auto-cleanup timer (run every 10 minutes)
-  (run-with-timer 600 600 'my-cleanup-unused-lsp-servers)
-
   ;; Enhanced mode hook with delay for better startup
   (defun my-delayed-eglot-ensure ()
     "Start eglot after a short delay to avoid startup conflicts."
@@ -115,7 +98,7 @@
   (add-hook 'ruby-ts-mode-hook 'my-delayed-eglot-ensure)
   :custom
   ;; be more responsive
-  (eglot-send-changes-idle-time 0.1)
+  (eglot-send-changes-idle-time 0.5)
   ;; shut down unused servers
   (eglot-autoshutdown t)
   (eglot-code-action-indicator "*")
@@ -156,12 +139,14 @@
 
   ;; Helper function to build pylsp command
   (defun my-pylsp-command (&rest _ignored)
-    "Return pylsp command with appropriate Python executable."
-    (interactive)
-    (executable-find "pylsp")
-    (let ((name "pylsp")) (start-process-shell-command name (get-buffer-create name) (list (my-python-find-executable) "-m" name)))
-
-    )
+  "Build pylsp command using the project’s Python if possible."
+  (let* ((python (or (my-python-find-executable)
+                     (executable-find "python3")
+                     (executable-find "python"))))
+    (unless python
+      (user-error "No Python interpreter found for pylsp"))
+    ;; Prefer `python -m pylsp` so venv-installed pylsp is used.
+    (list python "-m" "pylsp")))
 
   ;; Debug eglot startup
   (defun my-debug-eglot ()
@@ -277,7 +262,6 @@ Detects project gemfile configuration and uses the right bundler command."
     "Run eldoc mode setup."
     (interactive)
     (eldoc-mode 1)
-
     (setq eldoc-display-functions
           '(eldoc-display-in-echo-area eldoc-display-in-buffer))
     (setq-local eldoc-idle-delay 0.5))
@@ -285,6 +269,33 @@ Detects project gemfile configuration and uses the right bundler command."
   ;; Enable eldoc only in eglot-managed buffers
   (add-hook 'eglot-managed-mode-hook
             'my-configure-eldoc-mode)
+
+  (defun my-should-start-lsp-p ()
+    "Decide if LSP should start in the current buffer."
+    (let* ((fname (or buffer-file-name ""))
+           (bn (buffer-name))
+           (tmpdir (file-name-as-directory (or temporary-file-directory "/tmp/")))
+           (in-tmp (and (stringp fname)
+                        (file-name-absolute-p fname)
+                        (file-in-directory-p fname tmpdir))))
+      (and
+       ;; real file we can read (and preferably write)
+       (and fname (file-exists-p fname))
+       ;; skip autosaves/backups
+       (not (string-match-p "^#.*#$" bn))   ; e.g. #foo.py#
+       (not (string-match-p "\\`\\.?#" bn)) ; e.g. .#foo.py / #foo.py#
+       (not (string-match-p "~\\'" bn))     ; e.g. foo.py~
+       ;; skip temp dirs (Org babel etc. often land here)
+       (not in-tmp)
+       ;; skip remote (TRAMP)
+       (not (file-remote-p fname))
+       ;; size guard
+       (< (buffer-size) (* 5 1024 1024))
+       ;; writable or at least not read-only buffer
+       (not buffer-read-only)
+       ;; be in a project or $HOME to avoid e.g., /etc/
+       (or (project-current nil fname)
+           (string-prefix-p (expand-file-name "~") (expand-file-name fname))))))
 
   ;; Documentation buffer names for different modes
   (defconst my-doc-buffer-names
