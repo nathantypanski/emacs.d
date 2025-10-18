@@ -1,48 +1,9 @@
 ;;; my-gpt.el --- Streamlined LLM config for gptel / Claude -*- lexical-binding:t; -*-
 
-;;;; Deps
-(use-package request :ensure t)
-(require 'subr-x) ; string-empty-p / string-blank-p
+(require 'cl-lib)
+(require 'subr-x) ;; for string-join / string-empty-p / string-blank-p
 
-;;;;; Tool Architecture Philosophy
-;;
-;; This configuration implements a tightly scoped interface between LLM tool agents
-;; and the user's Emacs editing session, following these core principles:
-;;
-;; 1. NON-INTRUSIVE OPERATION
-;;    - Tools operate in the background without disrupting the user's workflow
-;;    - Use `save-window-excursion` to prevent buffer displays during tool execution
-;;    - Return data rather than showing UI - let the LLM consume information quietly
-;;
-;; 2. BUFFER-FIRST DESIGN
-;;    - Tools accept either buffer names or file paths as primary arguments
-;;    - Buffer operations are preferred when possible (faster, no filesystem I/O)
-;;    - Explicit `type` parameter ('buffer' or 'file') allows precise control
-;;    - Generic `my-gptel--with-buffer-or-file` helper standardizes this pattern
-;;
-;; 3. SCOPED ACCESS CONTROL
-;;    - Path validation ensures tools only access allowed directories
-;;    - Git-tracked files preference maintains project scope
-;;    - Security functions prevent dangerous operations
-;;    - Confirmation required for state-changing operations (edit, delete, bash)
-;;
-;; 4. INTELLIGENT OUTPUT MANAGEMENT
-;;    - Automatic pagination for large outputs (pages of ~50 lines)
-;;    - Truncation with continuation markers for extremely large data
-;;    - Structured output formatting for different tool categories
-;;    - Context-aware responses (error messages, validation feedback)
-;;
-;; 5. UNIFIED TOOL ECOSYSTEM
-;;    - Categories: file, edit, search, info, emacs, project
-;;    - Consistent parameter patterns across related tools
-;;    - Extensible architecture - easy to add new tool types
-;;    - Integration with existing Emacs packages (helpful, project.el, etc.)
-;;
-;; The goal is to create an invisible but powerful bridge where the LLM can
-;; efficiently explore and manipulate the codebase without disrupting the human
-;; developer's flow, while maintaining appropriate security boundaries.
-;;
-;;;;
+(use-package request :ensure t)
 
 (use-package claude-code-ide
   :straight (:type git :host github :repo "manzaltu/claude-code-ide.el")
@@ -94,6 +55,47 @@
   :straight (:type git :host github :repo "lizqwerscott/mcp.el")
   :config
   (setq mcp-hub-servers '(("memory" :command "mcp-server-memory"))))
+
+;;;;; gptel interaction philosophy
+;;
+;; This configuration implements a tightly scoped interface between LLM tool agents
+;; and the user's Emacs editing session, following these core principles:
+;;
+;; 1. NON-INTRUSIVE OPERATION
+;;    - Tools operate in the background without disrupting the user's workflow
+;;    - Use `save-window-excursion` to prevent buffer displays during tool execution
+;;    - Return data rather than showing UI - let the LLM consume information quietly
+;;
+;; 2. BUFFER-FIRST DESIGN
+;;    - Tools accept either buffer names or file paths as primary arguments
+;;    - Buffer operations are preferred when possible (faster, no filesystem I/O)
+;;    - Explicit `type` parameter ('buffer' or 'file') allows precise control
+;;    - Generic `my-gptel--with-buffer-or-file` helper standardizes this pattern
+;;
+;; 3. SCOPED ACCESS CONTROL
+;;    - Path validation ensures tools only access allowed directories
+;;    - Git-tracked files preference maintains project scope
+;;    - Security functions prevent dangerous operations
+;;    - Confirmation required for state-changing operations (edit, delete, bash)
+;;
+;; 4. INTELLIGENT OUTPUT MANAGEMENT
+;;    - Automatic pagination for large outputs (pages of ~50 lines)
+;;    - Truncation with continuation markers for extremely large data
+;;    - Structured output formatting for different tool categories
+;;    - Context-aware responses (error messages, validation feedback)
+;;
+;; 5. UNIFIED TOOL ECOSYSTEM
+;;    - Categories: file, edit, search, info, emacs, project
+;;    - Consistent parameter patterns across related tools
+;;    - Extensible architecture - easy to add new tool types
+;;    - Integration with existing Emacs packages (helpful, project.el, etc.)
+;;
+;; The goal is to create an invisible but powerful bridge where the LLM can
+;; efficiently explore and manipulate the codebase without disrupting the human
+;; developer's flow, while maintaining appropriate security boundaries.
+;;
+;;;;
+
 
 ;;;; gptel core
 (defgroup my-gptel nil
@@ -259,46 +261,65 @@ Example:
       (goto-char (point-min)))
     name))
 
+(defun my-gptel--truncate-bytes (s max-bytes)
+  "Return S truncated to at most MAX-BYTES bytes, without cutting a multibyte char."
+  (setq s (or s ""))
+  (cond
+   ((<= max-bytes 0) "")
+   ((<= (string-bytes s) max-bytes) s)
+   (t
+    ;; Binary search for the largest character count whose byte size <= max-bytes
+    (let ((lo 0)
+          (hi (length s))
+          (best 0))
+      (while (<= lo hi)
+        (let* ((mid (/ (+ lo hi) 2))
+               (probe (substring s 0 mid)))
+          (if (<= (string-bytes probe) max-bytes)
+              (setq best mid
+                    lo (1+ mid))
+            (setq hi (1- mid)))))
+      (substring s 0 best)))))
+
+(defun my-gptel--line-count-in-string (s)
+  "Count logical lines in S (0 if empty)."
+  (setq s (or s ""))
+  (if (string-empty-p s)
+      0
+    (1+ (cl-loop for i from 0 below (length s)
+                 count (eq (aref s i) ?\n)))))
+
 (defun my-gptel--emit-paged (full &optional label)
-  "Emit a clamped page of FULL. If truncated, stash FULL in a temp buffer and
-append instructions to page the rest via `paged_read'."
-  (let* ((lines (split-string (or full "") "\n"))
-         (head-lines (seq-take lines my-gptel-max-lines))
+  "Emit a clamped page of FULL. If truncated, stash FULL and append
+instructions to page the rest via `paged_read`."
+  (let* ((full (or full ""))
+         (max-lines (or my-gptel-max-lines 100))
+         (max-bytes (or my-gptel-max-output-bytes 65536))
+         ;; Keep empty lines; we want true line counts, not a whitespace collapse.
+         (lines (split-string full "\n" nil))      ;; <— correct newline regex
+         (head-lines (cl-subseq lines 0 (min max-lines (length lines))))
          (head (string-join head-lines "\n"))
-         (trim (if (> (string-bytes head) my-gptel-max-output-bytes)
-                   (substring head 0 my-gptel-max-output-bytes)
-                 head))
-         (truncated (or (> (length lines) my-gptel-max-lines)
-                        (> (string-bytes head) my-gptel-max-output-bytes))))
+         ;; Trim by BYTES without breaking multibyte chars.
+         (trim (my-gptel--truncate-bytes head max-bytes))
+         (truncated (or (> (length lines) max-lines)
+                        (> (string-bytes head) max-bytes))))
     (if (not truncated)
         trim
-      (let ((bufname (my-gptel--stash-in-temp-buffer full label))
-            ;; Calculate next page start based on actual lines in trimmed output
-            (trimmed-line-count (length (split-string trim "\n"))))
-        (format "%s\n[OUTPUT TRUNCATED → %s]\nUse tool `paged_read` with:\n  file_or_buffer: \"%s\"\n  start: %d\n  line_count: %d\n…to continue reading."
-                trim bufname bufname
-                (1+ trimmed-line-count)        ; next page start (1-based)
-                (min 200 my-gptel-max-lines))))))
+      (let* ((buf (my-gptel--stash-in-temp-buffer full label))
+             ;; Be resilient: handle a buffer object or a name.
+             (bufname (if (bufferp buf) (buffer-name buf) buf))
+             ;; Next page starts at the line *after* what we actually emitted.
+             (trimmed-line-count (my-gptel--line-count-in-string trim))
+             (next-start (1+ trimmed-line-count)))
+        (format (concat "%s\n[OUTPUT TRUNCATED \u2192 %s]\n"
+                        "Use tool `paged_read` with:\n"
+                        "  file_or_buffer: \"%s\"\n"
+                        "  start: %d\n"
+                        "  line_count: %d\n"
+                        "…to continue reading.")
+                trim bufname bufname next-start max-lines)))))
 
 ;; -------- Dynamic Org response prefix (one level deeper than current) --------
-
-(defun my-gptel--nested-org-prefix (&optional label)
-  "Return an Org heading prefix that continues the conversation thread.
-LABEL defaults to 'Assistant' but can be 'Human' or other text.
-This ensures proper nesting like a chat conversation."
-  (let* ((label (or label "Assistant"))
-         (level (if (derived-mode-p 'org-mode)
-                    (or (my-gptel--find-conversation-context)
-                        ;; Fallback: nest under current heading
-                        (save-excursion
-                          (beginning-of-line)
-                          (or (org-current-level)
-                              (progn
-                                (ignore-errors (org-back-to-heading t))
-                                (org-current-level))
-                              0)))
-                  0)))
-    (concat (make-string level ?*) " " label "\n")))
 
 (use-package gptel
   :straight (:repo "karthink/gptel" :branch "master" :files ("*.el"))
@@ -350,7 +371,30 @@ This ensures proper nesting like a chat conversation."
 
 
   (defvar my-gptel-prompt-list
-    '((machine . "You are a LLM inside Emacs. Assist the user in what they wish.
+    '((rationalist . "* GPT Eigenprompt: LessWrong-Style Rationalist
+This GPT is instantiated for epistemic rigor, clarity of reasoning, and intellectual honesty, modeled on the aesthetics and norms of the LessWrong community.
+
+** Personality and Response Goals
+1. Prioritize truth-seeking above social harmony. Do not mislead for politeness.
+2. Defer to reductionism and transparency; recursively unpack abstractions.
+3. Use probabilistic thinking. Where models disagree, state uncertainties.
+4. Be comfortable admitting ignorance or confusion.
+5. Encourage curiosity, calibration, and strong discourse norms.
+
+** Linguistic Style
+- Use precise, plain language. Minimize jargon unless it compresses concepts effectively.
+- Numbered lists are preferred for unpacking complex ideas.
+- Occasionally include LessWrong idioms (e.g. “beliefs should pay rent in anticipated experience”).
+- Prefer analogies that expose the gears of a model rather than just the vibe.
+
+** Epistemics and Meta
+- Explicitly separate normative (moral) from descriptive (factual) statements.
+- Model arguments from an inside-view before passing judgment.
+- Maintain meta-awareness of cognitive biases, including your own.
+- Avoid strawmanning. Steelman accurately, but not beyond plausibility.
+- Reference decision theory, even if only marginally relevant.
+")
+      (machine . "You are a LLM inside Emacs. Assist the user in what they wish.
 There is Nix configuring the home environment in =~/dotfiles/nix/arch/flake.nix=
 
 * ~/dotfiles -> ~/src/github.com/nathantypanski/dotfiles/
@@ -447,25 +491,44 @@ LABEL is used for the temp buffer name if output is truncated."
   (advice-add 'gptel :before #'my-gptel-setup-model-on-first-use)
   (advice-add 'gptel-send :before #'my-gptel-setup-model-on-first-use)
 
+  ;; Dynamic org heading prefixes that respect current context
+  (defun my-gptel-dynamic-org-response-prefix (orig-fun)
+    "Generate org response prefix that matches current heading level."
+    (if (derived-mode-p 'org-mode)
+        (save-excursion
+          (let* ((level (or (org-outline-level) 0)))
+            (concat (make-string (1+ level) ?*) " Assistant\n")))
+      (funcall orig-fun)))
+
+  (defun my-gptel-dynamic-org-user-prefix (orig-fun)
+    "Generate org user prefix that matches current heading level."
+    (if (derived-mode-p 'org-mode)
+        (save-excursion
+          (let* ((level (or (org-outline-level) 0)))
+            (concat (make-string (1+ level) ?*) " Human\n")))
+      (funcall orig-fun)))
+
+  (advice-add 'gptel-response-prefix-string :around #'my-gptel-dynamic-org-response-prefix)
+  (advice-add 'gptel-prompt-prefix-string :around #'my-gptel-dynamic-org-user-prefix)
+
   ;; Buffer behavior
   (defun my-gptel-setup-behavior ()
     (visual-line-mode 1)
     (setq-local auto-save-timeout 60
                 auto-save-visited-mode nil))
 
-  (defun my-gptel--get-project (&optional project-dir)
-    "Get project info for PROJECT-DIR (default: current directory).
+(defun my-gptel--get-project (&optional project-dir)
+  "Get project info for PROJECT-DIR (default: current directory).
 Returns (project-root . project-instance) or nil if no project."
-    (when (fboundp 'project-current)
-      (let* ((dir (or project-dir default-directory))
-             (default-directory dir)
-             (proj (project-current nil)))
-        (when proj
-          (cons (project-root proj) proj)))))
+  (when (fboundp 'project-current)
+    (let* ((default-directory (or project-dir default-directory))
+           (proj (project-current nil)))
+      (when proj
+        (cons (project-root proj) proj)))))
 
-  (defun my-gptel--project-root (&optional project-dir)
-    "Get project root for PROJECT-DIR (default: current directory)."
-    (car (my-gptel--get-project project-dir)))
+(defun my-gptel--project-root (&optional project-dir)
+  "Get project root for PROJECT-DIR (default: current directory)."
+  (car (my-gptel--get-project project-dir)))
 
   (defun my-gptel--resolve (path-or-dir)
     "Resolve PATH-OR-DIR robustly.
@@ -994,29 +1057,28 @@ START is 0-based (default 0), LIMIT defaults to 200."
       ;; Use emit-paged to handle truncation and continuation instructions
       (my-gptel--emit-paged paginated-content file-or-buffer)))
 
-
-  (defun my-gptel-replace-lines (buffer-name start-line end-line new-content)
-    "Replace lines START-LINE to END-LINE with NEW-CONTENT."
-    (unless (get-buffer buffer-name)
-      (error "Buffer %s does not exist" buffer-name))
-    (with-current-buffer buffer-name
-      (let ((line-count (line-number-at-pos (point-max))))
-        (when (or (< start-line 1) (> start-line line-count)
-                  (< end-line start-line) (> end-line line-count))
-          (error "Invalid line range: %d-%d (buffer has %d lines)"
-                 start-line end-line line-count)))
-      (save-excursion
-        (goto-char (point-min))
-        (forward-line (1- start-line))  ; Go to start of start-line
-        (let ((start-pos (point)))
-          (forward-line (1+ (- end-line start-line)))  ; Go to start of line after end-line
-          (let ((old-content (buffer-substring start-pos (point))))
-            (delete-region start-pos (point))
-            (insert new-content)
-            (unless (string-suffix-p "\\n" new-content)
-              (insert "\\n"))
-            (format "Replaced lines %d-%d:\\nOLD:\\n%s\\nNEW:\\n%s"
-                    start-line end-line old-content new-content))))))
+(defun my-gptel-replace-lines (buffer-name start-line end-line new-content)
+  "Replace lines START-LINE to END-LINE with NEW-CONTENT."
+  (unless (get-buffer buffer-name)
+    (error "Buffer %s does not exist" buffer-name))
+  (with-current-buffer buffer-name
+    (let ((line-count (line-number-at-pos (point-max))))
+      (when (or (< start-line 1) (> start-line line-count)
+                (< end-line start-line) (> end-line line-count))
+        (error "Invalid line range: %d-%d (buffer has %d lines)"
+               start-line end-line line-count)))
+    (save-excursion
+      (goto-char (point-min))
+      (forward-line (1- start-line))                  ; start of start-line
+      (let ((start-pos (point)))
+        (forward-line (1+ (- end-line start-line)))   ; start of line after end-line
+        (let ((old-content (buffer-substring start-pos (point))))
+          (delete-region start-pos (point))
+          (insert new-content)
+          (unless (string-suffix-p "\n" new-content)  ; << was "\\n"
+            (insert "\n"))
+          (format "Replaced lines %d-%d:\nOLD:\n%s\nNEW:\n%s"
+                  start-line end-line old-content new-content))))))
 
   (defun my-gptel-insert-at-line (buffer-name line-number content)
     "Insert CONTENT at LINE-NUMBER in BUFFER-NAME."
@@ -1208,7 +1270,7 @@ START is 0-based (default 0), LIMIT defaults to 200."
                                                 :description "Project directory (default: current)"))
                             :category "search")
            (gptel-make-tool :function #'my-gptel-paged-read :name "paged_read"
-                            :description "Read N lines from buffer or file (buffer-first auto-detect)"
+                            :description "Read `line_count' lines from buffer or file (buffer-first auto-detect)"
                             :args (list '(:name "file_or_buffer" :type "string" :description "Buffer name or file path")
                                         '(:name "start" :type "number" :optional t :description "1-based start line (default: 1)")
                                         '(:name "line_count" :type "number" :optional t :description "Lines to read (default: 200)"))
