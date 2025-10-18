@@ -389,4 +389,27 @@ see docs for `add-hook'."
                 (read-only-mode 1)))))
     (pop-to-buffer buf)))
 
+(defun my-grep-multiline (pattern &optional glob-pattern project-dir)
+  "Search using ripgrep with multiline support (-U flag).
+PATTERN can contain \\\\n and will match across multiple lines.
+GLOB-PATTERN: optional file glob like '*.org' or '*.el'
+PROJECT-DIR: which project (default: current directory)"
+  (interactive "sMultiline pattern: \\nsFile glob (optional): ")
+  (if-let* ((project-root (my-gptel--project-root project-dir))
+            (default-directory project-root))
+      (let* ((cmd (concat "rg --line-number --no-heading --color=never -U"
+                          (if (and glob-pattern (not (string-empty-p glob-pattern)))
+                              (format " --glob '%s'" glob-pattern)
+                            "")
+                          (format " %s" (shell-quote-argument pattern))))
+             (out (shell-command-to-string cmd)))
+        (if (string-empty-p out)
+            (message "No matches found for '%s'" pattern)
+          (with-current-buffer (get-buffer-create "*multiline-grep*")
+            (erase-buffer)
+            (insert out)
+            (goto-char (point-min))
+            (pop-to-buffer (current-buffer)))))
+    (message "Not in a project (checked: %s)" (or project-dir default-directory))))
+
 (provide 'my-functions)
