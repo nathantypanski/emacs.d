@@ -112,7 +112,8 @@
   (org-capture-restore-windows-after-quit    t)
   (org-refile-restore-windows-after-quit     t)
   :config
-  (defface org-block-begin-line '((t (:inherit org-meta-line :background "gray27" :overline "gray20" :underline "gray20" :height 0.8)))
+  (defface org-block-begin-line
+    '((t (:inherit org-meta-line :background "gray27" :overline "gray20" :underline "gray20" :height 0.8)))
     "Face used for the line delimiting the begin of source blocks.")
 
   (defface org-block-background
@@ -226,7 +227,6 @@
   (org-modern-block-name t)
   :config
   (global-org-modern-mode)
-
   (defun my-setup-org-faces (&optional height)
     "Do the org face setup (code block style, etc.)."
     (interactive)
@@ -274,7 +274,22 @@
           (when (derived-mode-p 'org-mode)
         (font-lock-flush))))))
 
-  (add-hook 'org-mode-hook 'my-setup-org-faces)
+  (add-hook 'org-mode-hook 'my-setup-org-faces))
+
+(use-package hyperbole
+  :ensure t
+  :config)
+
+(use-package org-roam
+  :ensure t
+  :custom
+  (org-roam-directory "~/roam")
+  :config)
+
+(use-package org-ref
+  :ensure t
+  :after '(org-mode)
+  :config)
   )
 
 (provide 'my-org)
