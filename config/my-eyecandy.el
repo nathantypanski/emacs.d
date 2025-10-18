@@ -196,12 +196,11 @@ FONT is the name of a xft font, like `Monospace-10'."
 
     ;; Scale down problematic fonts if they ever appear
     (when (boundp 'face-font-rescale-alist)
-      (setq face-font-rescale-alist
-            (append '(("Droid Sans" . 0.75)
-                      ("Adwaita" . 0.75)
-                      ("Cantarell" . 0.75)
-                      ("DejaVu Sans" . 0.75))
-                    face-font-rescale-alist)))))
+      (setq face-font-rescale-alist '(("Droid Sans" . 1.0)
+                                      ("Adwaita" . 1.0)
+                                      ("Cantarell" . 1.0)
+                                      ("DepartureMono Nerd Font" . 1.0)
+                                      ("DejaVu Sans" . 1.0))))))
 
 (defun my-enforce-consistent-font-height-ultimate ()
   "Aggressively enforce consistent font height, including hooks to prevent changes"
