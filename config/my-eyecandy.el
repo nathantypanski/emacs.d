@@ -179,6 +179,43 @@ FONT is the name of a xft font, like `Monospace-10'."
                       :height 100)
   (set-frame-font font nil t))
 
+(defun my-setup-consistent-fonts (pixel-size)
+  "Set up fonts with consistent heights using direct pixel sizing.
+Preserves org-mode DepartureMono configuration for code blocks."
+  (interactive "nPixel size: ")
+  (let* ((base-font "Terminus (TTF)")
+         (font-spec (format "%s:pixelsize=%d" base-font pixel-size)))
+
+    ;; Set frame font at the desired size
+    (set-frame-font font-spec nil t)
+
+    ;; Configure fontset for consistent symbol rendering
+    (set-fontset-font t 'unicode font-spec nil 'prepend)
+
+    ;; Handle specific script ranges
+    (dolist (range '(latin greek cyrillic symbol unicode))
+      (set-fontset-font t range font-spec nil 'prepend))
+
+    ;; Fallback fonts at same pixel size
+    (let ((fallback-fonts '("DejaVu Sans Mono" "Liberation Mono" "Courier New")))
+      (dolist (fallback fallback-fonts)
+        (when (find-font (font-spec :name fallback))
+          (let ((fallback-spec (format "%s:pixelsize=%d" fallback pixel-size)))
+            (set-fontset-font t 'unicode fallback-spec nil 'append)))))
+
+    ;; Clear the problematic rescale alist
+    (setq face-font-rescale-alist nil)
+
+    ;; Clear height overrides to let pixel size take precedence
+    ;; BUT preserve org-mode block faces that should use DepartureMono
+    (dolist (face '(default fixed-pitch variable-pitch))
+      (set-face-attribute face nil :height 'unspecified))
+
+    ;; Re-trigger org-mode face setup to preserve DepartureMono for blocks
+    (when (fboundp 'my-setup-org-faces)
+      (my-setup-org-faces))
+
+    (message "Consistent font setup: %s at %dpx (preserving org-mode DepartureMono)" base-font pixel-size)))
 
 (defun my-use-default-font (&optional frame)
   "Set the frame font to the font name in the variable my-graphical-font.
