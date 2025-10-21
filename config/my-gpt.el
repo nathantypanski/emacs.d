@@ -348,6 +348,8 @@ instructions to page the rest via `paged_read`."
   (gptel-directives my-gptel-directives)
   (gptel-org-branching-context t)
   :init
+  (require 'gptel-org)
+
   (defvar my-gptel--initial-setup t
     "Variable to determine whether to call `my-gptel-setup-model-on-first-use'.")
 
