@@ -12,7 +12,17 @@
 ;; undo visualization tool
 (use-package vundo
   :ensure t
-  :demand t)
+  :demand t
+  :custom
+  ;; Print info when we undo
+  (vundo--message t)
+  :config
+  (general-define-key
+   :states '(normal insert)
+   :keymaps '(vundo-mode-map)
+   (kbd "RET") 'vundo-confirm
+   "j" 'vundo-next
+   "k" 'vundo-previous))
 
 ;; https://github.com/emacs-evil/evil-collection/issues/60
 (setq evil-want-integration t)
@@ -169,16 +179,19 @@ Not buffer-local, so it really is per frame.")
       (delete-trailing-whitespace begin end)))
 
   (evil-define-command my-ret-and-indent (count)
-  "Like RET+indent in insert state, or click a button if on one."
-  (interactive "p")
-  (let ((b (button-at (point))))
-    (cond
-     (b (push-button (point)))
-     (t
-      (my-delete-trailing-whitespace-at-line)
-      (evil-ret-gen count nil)
-      (when (my-sensible-to-indent-p)
-        (indent-according-to-mode))))))
+    "Smart RET that delegates to mode-specific behavior when appropriate."
+    (interactive "p")
+    (let ((b (button-at (point))))
+      (cond
+       (b (push-button (point)))
+       ((derived-mode-p 'eshell-mode) (eshell-send-input))
+       ((derived-mode-p 'comint-mode) (comint-send-input))
+       ;; Add more as needed
+       (t
+        (my-delete-trailing-whitespace-at-line)
+        (evil-ret-gen count nil)
+        (when (my-sensible-to-indent-p)
+          (indent-according-to-mode))))))
 
   (defun my-electric-append-with-indent (count &optional vcount)
     "Indent the current line if it is empty. Otherwise, just do a normal append-line."
