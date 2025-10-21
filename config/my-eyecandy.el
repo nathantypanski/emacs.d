@@ -3,7 +3,9 @@
 (defvar my-graphical-font
   (cond
     ((my-system-is-mac) "Monaco 12")
-    ((my-system-is-linux) "Terminus (TTF)-12"))
+    ((my-system-is-linux)
+     ;; "Terminus (TTF)-12"))
+     "DepartureMono Nerd Font"))
   "Font used for graphical editing sessions.")
 
 (use-package zenburn-theme
@@ -161,138 +163,49 @@
 (add-hook 'prog-mode-hook #'my-enable-line-numbers)
 (add-hook 'text-mode-hook #'my-enable-line-numbers)
 
-(defun my-set-window-font (font)
-  "Set the frame font to FONT.
-FONT is the name of a xft font, like `Monospace-10'."
-  (interactive "sFont: ")
-  ;; (set-face-attribute 'default nil :height 125 :family "Fira Mono"))
-  (set-face-attribute 'fixed-pitch nil
-                      :font font
-                      :height 100)
-  (set-face-attribute 'default nil
-                      :font font
-                      :height 100)
-  (set-face-attribute 'variable-pitch nil
-                      :font font
-                      :height 100)
-  (set-face-attribute 'info-menu-header nil
-                      :height 100)
-  (set-frame-font font nil t))
-
-(defun my-setup-consistent-fonts (pixel-size)
-  "Set up fonts with consistent heights using direct pixel sizing.
-Preserves org-mode DepartureMono configuration for code blocks."
-  (interactive "nPixel size: ")
-  (let* ((base-font "Terminus (TTF)")
-         (font-spec (format "%s:pixelsize=%d" base-font pixel-size)))
-
-    ;; Set frame font at the desired size
-    (set-frame-font font-spec nil t)
-
-    ;; Configure fontset for consistent symbol rendering
-    (set-fontset-font t 'unicode font-spec nil 'prepend)
-
-    ;; Handle specific script ranges
-    (dolist (range '(latin greek cyrillic symbol unicode))
-      (set-fontset-font t range font-spec nil 'prepend))
-
-    ;; Fallback fonts at same pixel size
-    (let ((fallback-fonts '("DejaVu Sans Mono" "Liberation Mono" "Courier New")))
-      (dolist (fallback fallback-fonts)
-        (when (find-font (font-spec :name fallback))
-          (let ((fallback-spec (format "%s:pixelsize=%d" fallback pixel-size)))
-            (set-fontset-font t 'unicode fallback-spec nil 'append)))))
-
-    ;; Clear the problematic rescale alist
-    (setq face-font-rescale-alist nil)
-
-    ;; Clear height overrides to let pixel size take precedence
-    ;; BUT preserve org-mode block faces that should use DepartureMono
-    (dolist (face '(default fixed-pitch variable-pitch))
-      (set-face-attribute face nil :height 'unspecified))
-
-    ;; Re-trigger org-mode face setup to preserve DepartureMono for blocks
-    (when (fboundp 'my-setup-org-faces)
-      (my-setup-org-faces))
-
-    (message "Consistent font setup: %s at %dpx (preserving org-mode DepartureMono)" base-font pixel-size)))
-
 (defun my-use-default-font (&optional frame)
   "Set the frame font to the font name in the variable my-graphical-font.
-  This command only has an effect on graphical frames."
+ This command only has an effect on graphical frames."
   (interactive)
-  (my-enforce-consistent-font-height)
-  (my-set-window-font my-graphical-font)
-  ;; Essential font fallback prevention - prevent wrong-sized fonts
   (when (display-graphic-p)
-    ;; Prevent problematic fonts from being used as fallbacks
-    (dolist (bad-font '("Droid Sans" "Adwaita" "Cantarell" "DejaVu Sans"))
-      (when (find-font (font-spec :name bad-font))
-        ;; Override fallbacks to these fonts with our preferred font at correct size
-        (set-fontset-font t 'unicode "Terminus (TTF):pixelsize=12" nil 'prepend)))
-
-    ;; Scale down problematic fonts if they ever appear
-    (when (boundp 'face-font-rescale-alist)
-      (setq face-font-rescale-alist '(("Droid Sans" . 0.75)
-                                      ("Adwaita" . 1.0)
-                                      ("DejaVu Sans" . 1.0))))))
-
-(defun my-enforce-consistent-font-height-ultimate ()
-  "Aggressively enforce consistent font height, including hooks to prevent changes"
-  (interactive)
-  (let ((base-height (face-attribute 'default :height)))
-    ;; First, set all face heights
-    (dolist (face (face-list))
-      (set-face-attribute face nil :height 'unspecified))
-
-    ;; Specifically target org faces
-    (dolist (face '(org-code org-block org-verbatim org-table
-                    org-inline-src-block org-block-begin-line
-                    org-block-end-line org-meta-line))
-      (when (facep face)
-        (set-face-attribute face nil :height 1.0)))
-
-    ;; Add advice to prevent height changes
-    (advice-add 'set-face-attribute :before
-                (lambda (face frame &rest args)
-                  (when (and (plist-member args :height)
-                            (not (equal (plist-get args :height) 'unspecified)))
-                    (message \"Blocking height change for %s\" face)
-                    (plist-put args :height 'unspecified)))
-                '((name . enforce-font-height)))
-
-    (message "Enforced consistent font heights and installed protection")))
+    (let ((font-name my-graphical-font))
+      (message "Setting font to: %s" font-name)
+      (when font-name
+        ;; Use set-frame-font to properly apply the font
+        (set-frame-font font-name nil t)
+        ;; Set height separately
+        (set-face-attribute 'default nil :height 100)
+        ;; Set for future frames
+        (add-to-list 'default-frame-alist `(font . ,font-name))
+        (message "Font successfully set to: %s" font-name)))))
 
 (defun my-get-faces-with-custom-sizes ()
   "Return list of faces with non-default font sizes."
-  (let ((faces-with-sizes '()))
-    (dolist (face (face-list))
-      (let ((height (face-attribute face :height nil t))
-            (family (face-attribute face :family nil t)))
-        (when (and (numberp height) (not (eq height 'unspecified)))
-          (push (list face height family) faces-with-sizes))))
-    (sort faces-with-sizes
-          (lambda (a b) (string< (symbol-name (car a))
-                                (symbol-name (car b)))))))
-
-(defun my-insert-customize-link (face)
-  "Insert a clickable link to customize FACE."
-  (insert-button (format "%s" face)
-                 'face 'link
-                 'action `(lambda (_) (customize-face ',face))
-                 'help-echo (format "Click to customize %s" face)))
-
-(defun my-insert-source-link (face)
-  "Insert a clickable link to view source of FACE."
-  (insert-button "source"
-                 'face 'link
-                 'action `(lambda (_) (find-function-other-window ',face))
-                 'help-echo (format "Click to view source of %s" face)))
+  (let ((faces-with-sizes '())
+        (dolist (face (face-list))
+          (let ((height (face-attribute face :height nil t))
+                (family (face-attribute face :family nil t)))
+            (when (and (numberp height) (not (eq height 'unspecified)))
+              (push (list face height family) faces-with-sizes))))
+        (sort faces-with-sizes
+              (lambda (a b) (string< (symbol-name (car a))
+                                     (symbol-name (car b))))))))
 
 (defun my-list-font-faces-with-sizes ()
   "Display faces with custom font sizes with clickable links."
   (interactive)
-  (let ((faces-with-sizes (my-get-faces-with-custom-sizes)))
+  (let* ((faces-with-sizes (my-get-faces-with-custom-sizes))
+         (my-insert-customize-link
+          (lambda (face)
+            (insert-button (format "%s" face)
+                           'face 'link
+                           'action `(lambda (_) (customize-face ',face))
+                           'help-echo (format "Click to customize %s" face))))
+         (my-insert-source-link
+          (lambda (face) (insert-button "source"
+                                        'face 'link
+                                        'action `(lambda (_) (find-function-other-window ',face))
+                                        'help-echo (format "Click to view source of %s" face)))) )
     (with-current-buffer (get-buffer-create "*Font Faces*")
       (erase-buffer)
       (insert "Font Faces with Custom Sizes\n")
@@ -317,29 +230,6 @@ Preserves org-mode DepartureMono configuration for code blocks."
   "Return t if running in GUI mode, nil if terminal."
   (display-graphic-p))
 
-(defun my-enforce-consistent-font-height ()
-  "Force ALL faces to use the same height as default face, preserving
-other styling."
-  (interactive)
-  (let ((base-height (face-attribute 'default :height)))
-    ;; Only change height, preserve all other face attributes
-    (dolist (face (face-list))
-      (let ((current-height (face-attribute face :height nil t)))
-        (when (and current-height
-                   (not (eq current-height 'unspecified))
-                   (not (equal current-height base-height)))
-          ;; Only set :height, don't touch other attributes
-          (set-face-attribute face nil :height base-height))))
-    (message "Enforced height %s on all faces" base-height)))
-
-(defun my-reset-to-inherited-fonts ()
-  "Reset most faces to inherit from base faces instead of having explicit heights."
-  (interactive)
-  (dolist (face (face-list))
-    (unless (member face '(default fixed-pitch variable-pitch))
-      (set-face-attribute face nil :height 'unspecified :family 'unspecified)))
-  (message "Reset font inheritance"))
-
 (defun my-graphical-ui-setup ()
   "Do setup for graphical terminals, like enabling the menu bar."
   (interactive)
@@ -358,10 +248,12 @@ other styling."
   (add-to-list 'default-frame-alist '(undecorated . t))
   (setq x-gtk-use-system-tooltips nil)
   (setq x-gtk-use-old-file-dialog t)
-  ;; Most importantly - disable GTK menu bar
-  (setq x-gtk-use-system-menu-bar nil)
+  ;; Set up fonts using the modern approach
+  ;; Keep the symbol font setup
+  ;; ;; Is this supposed to set the fallback?
+  ;; (set-fontset-font t '(#x2700 . #x27BF) "DepartureMono Nerd Font")
   (my-use-default-font)
-  (set-fontset-font t '(#x2700 . #x27BF) "DepartureMono Nerd Font"))
+    )
 
 (defun my-terminal-ui-setup ()
   "Do setup for non-graphical terminals, like disabling the toolbar."
@@ -373,6 +265,7 @@ other styling."
 
 (defun my-general-ui-setup ()
   "Do setup for both terminal and non-graphical modes."
+  (interactive)
   (tab-bar-mode 1)
   ;; don't break long lines at word boundaries
   (global-visual-line-mode 1)
