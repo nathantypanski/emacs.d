@@ -338,7 +338,7 @@ instructions to page the rest via `paged_read`."
   (gptel-use-header-line t)
   (gptel-prompt-prefix-alist '((org-mode . "** Human\n")))
   (gptel-response-prefix-alist '((org-mode . "** Assistant\n")))
-  (gptel-model 'claude-sonnet-4-20250514)
+  (gptel-model 'claude-haiku-4-5-20251001)
   (gptel-max-tokens 1000)
   (gptel-use-tools t)
   (gptel-auto-repair-invalid-state t)
@@ -449,7 +449,8 @@ LABEL is used for the temp buffer name if output is truncated."
 
   ;; Model switcher (small + clear)
   (defvar my-gptel-models
-    '(("Claude Sonnet" . (claude-sonnet-4-20250514 anthropic))
+    '(("Claude Haiku"  . (claude-sonnet-4-20250514 anthropic))
+      ("Claude Sonnet" . (claude-sonnet-4-20250514 anthropic))
       ("Claude Opus"   . (claude-opus-4-20250514   anthropic))
       ("GPT-4o"        . (gpt-4o                   openai))
       ("GPT-4o Mini"   . (gpt-4o-mini              openai))))
