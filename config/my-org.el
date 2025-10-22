@@ -154,8 +154,13 @@
     (general-define-key
      :states '(insert)
      :keymaps 'org-mode-map
-     (kbd "<tab>")   #'my-org-tab-action
      (kbd "<RET>")   #'org-return)
+
+    (general-define-key
+     :states '(normal motion insert)
+     :keymaps 'org-mode-map
+     [tab]   #'org-cycle
+     (kbd "<tab>")   #'org-cycle)
 
     (general-define-key
      :states '(insert)
