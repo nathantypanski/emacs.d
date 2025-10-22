@@ -181,6 +181,7 @@
 
 (defun my-get-faces-with-custom-sizes ()
   "Return list of faces with non-default font sizes."
+  (interactive)
   (let ((faces-with-sizes '())
         (dolist (face (face-list))
           (let ((height (face-attribute face :height nil t))
