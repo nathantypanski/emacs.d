@@ -194,6 +194,9 @@
 
   ;; modify
   "m f"            'text-scale-adjust ; modify font scale
+  ; unlike Consult, this shows all my nix-installed packages' man
+  ; pages
+  "m m"            'helm-man-woman
 
   ;; gptel
   "aa"             'gptel-add
