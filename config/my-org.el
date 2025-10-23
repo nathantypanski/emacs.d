@@ -248,4 +248,9 @@
   :after '(org-mode)
   :config)
 
+(use-package org-download
+  :ensure t
+  :after '(org-mode)
+  :config)
+
 (provide 'my-org)
