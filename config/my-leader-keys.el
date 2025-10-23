@@ -92,6 +92,7 @@
   "<RET>"          'my-spawn-terminal-here
   "<SPC><RET>"     'my-tmux-new-frame
   "<SPC>-"         'my-tmux-new-pane
+  "<SPC><SPC>"     'helm-M-x
 
   "B"              'ibuffer
   "/"              'evilnc-comment-or-uncomment-lines
