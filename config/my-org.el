@@ -157,10 +157,10 @@
      (kbd "<RET>")   #'org-return)
 
     (general-define-key
-     :states '(normal motion insert)
-     :keymaps 'org-mode-map
-     [tab]   #'org-cycle
-     (kbd "<tab>")   #'org-cycle)
+     :states '(normal motion)
+     :keymaps 'local
+     [tab]         #'org-cycle
+     (kbd "TAB")   #'org-cycle)
 
     (general-define-key
      :states '(insert)
