@@ -956,12 +956,27 @@ OPTIONS is a plist supporting :allow-directory and :allow-missing."
         (format "Error: '%s' is a directory" path))
        (t nil))))
 
-  (defun my-gptel--safe-file-create (path content)
-    "Safely create file at PATH with CONTENT, creating directories as needed."
-    (make-directory (file-name-directory path) t)
-    (with-temp-buffer
-      (insert content)
-      (write-file path)))
+  (defun my-gptel-create-file (path content)
+    "Create file at PATH with CONTENT. Creates parent directories as needed."
+    (let ((full-path (expand-file-name path)))
+      (cond
+       ;; Validate path first
+       ((not (my-gptel-path-allowed-p full-path))
+        (format "Error: Path '%s' is outside allowed directories" path))
+       ;; Check if file already exists
+       ((file-exists-p full-path)
+        (format "Error: File already exists: %s" full-path))
+       ;; Try to create
+       (t
+        (condition-case err
+            (progn
+              (make-directory (file-name-directory full-path) t)
+              (write-region content nil full-path nil 'no-message)
+              (if (file-exists-p full-path)
+                  (format "Created: %s (%d bytes)" full-path (length content))
+                (format "Error: Failed to create file %s" full-path)))
+          (file-error (format "File error: %s" (error-message-string err)))
+          (error (format "Error: %s" (error-message-string err))))))))
 
   (defun my-gptel--paginate-lines (content &optional start line-count)
     "Return a paginated slice of CONTENT lines.
@@ -1001,14 +1016,6 @@ START is 0-based (default 0), LIMIT defaults to 200."
               (format "Opened file: %s\nBuffer name: %s\nUse `paged_read` to read contents" full-path (buffer-name buffer))))
         (format "File does not exist: %s" full-path))))
 
-  (defun my-gptel-create-file-at-path (path content)
-    "Create new file at specific path with content."
-    (let ((full-path (expand-file-name path)))
-      (make-directory (file-name-directory full-path) t)
-      (my-gptel--safe-file-create full-path content)
-      (let ((buffer (find-file-noselect full-path)))
-        (format "Created file: %s\nBuffer name: %s" full-path (buffer-name buffer)))))
-
   (defun my-gptel-make-directory (parent name &optional dry-run)
     "Create directory NAME under PARENT. If DRY-RUN, only show what would be created."
     (let ((full-path (expand-file-name name parent)))
@@ -1024,11 +1031,7 @@ START is 0-based (default 0), LIMIT defaults to 200."
               (format "Created directory: %s" full-path))
           (error (format "Error creating directory: %s" (error-message-string err))))))))
 
-  (defun my-gptel-create-file (path filename content)
-    "Create file FILENAME in PATH with CONTENT."
-    (let ((full (expand-file-name filename path)))
-      (my-gptel--safe-file-create full content)
-      (format "Created file %s in %s" filename path)))
+
 
   (defun my-gptel-tool-wc (name &optional type)
    "Get word count for NAME. TYPE can be 'buffer' or 'file' (default: auto-detect)."
@@ -1252,7 +1255,7 @@ START is 0-based (default 0), LIMIT defaults to 200."
                                         '(:name "preview" :type "boolean" :optional t :description "Preview first 50 lines without opening buffer"))
                             :category "file")
 
-           (gptel-make-tool :function #'my-gptel-create-file-at-path :name "create_file_at_path"
+           (gptel-make-tool :function #'my-gptel-create-file :name "create_file"
                             :description "Create new file at specific path with content"
                             :args (list '(:name "path" :type "string" :description "File path to create")
                                         '(:name "content" :type "string" :description "File content"))
@@ -1284,13 +1287,6 @@ START is 0-based (default 0), LIMIT defaults to 200."
                             :args (list '(:name "parent" :type "string" :description "Parent directory")
                                         '(:name "name"   :type "string" :description "New directory name")
                                         '(:name "dry_run" :type "boolean" :optional t :description "Show what would be created without doing it"))
-                            :category "file" :confirm t)
-
-           (gptel-make-tool :function #'my-gptel-create-file :name "create_file"
-                            :description "Create file with content"
-                            :args (list '(:name "path"     :type "string" :description "Directory")
-                                        '(:name "filename" :type "string" :description "File name")
-                                        '(:name "content"  :type "string" :description "Content"))
                             :category "file" :confirm t)
            (gptel-make-tool
             :name "replace_lines" :category "edit" :confirm t
