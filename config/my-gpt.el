@@ -451,11 +451,11 @@ LABEL is used for the temp buffer name if output is truncated."
 
   ;; Model switcher (small + clear)
   (defvar my-gptel-models
-    '(("Claude Haiku"  . (claude-sonnet-4-20250514 anthropic))
-      ("Claude Sonnet" . (claude-sonnet-4-20250514 anthropic))
-      ("Claude Opus"   . (claude-opus-4-20250514   anthropic))
-      ("GPT-4o"        . (gpt-4o                   openai))
-      ("GPT-4o Mini"   . (gpt-4o-mini              openai))))
+    '(("Claude Haiku"  . (claude-haiku-4-5-20251001 anthropic))
+      ("Claude Sonnet" . (claude-sonnet-4-20250514  anthropic))
+      ("Claude Opus"   . (claude-opus-4-1-20250805  anthropic))
+      ("GPT-4o"        . (gpt-4o                    openai))
+      ("GPT-4o Mini"   . (gpt-4o-mini               openai))))
 
   (defun my-gptel-switch-model ()
     "Interactively switch gptel model + backend."
