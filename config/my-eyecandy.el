@@ -4,9 +4,11 @@
   (cond
     ((my-system-is-mac) "Monaco 12")
     ((my-system-is-linux)
-     ;; "Terminus (TTF)-12"))
-     "DepartureMono Nerd Font"))
+     "Terminus (TTF)"))
+     ;; "DepartureMono Nerd Font"))
   "Font used for graphical editing sessions.")
+
+(defvar my-default-font-size 100 "My preferred font size.")
 
 (use-package zenburn-theme
   :ensure zenburn-theme
@@ -162,6 +164,33 @@
 (add-hook 'prog-mode-hook #'my-enable-line-numbers)
 (add-hook 'text-mode-hook #'my-enable-line-numbers)
 
+(defvar my-clamped-good-sizes
+  '(60 70 80 90 91 92 93 94 102 ; XXX: *Not* 100/101 - blurry!
+    117 118 119 120 130 143)
+  "List of good Terminus font sizes.")
+
+(defun my-clamp-font-size (size)
+  "Clamp SIZE to nearest good size."
+  (let* ((good-sizes my-clamped-good-sizes)
+         (clamped (car (sort good-sizes
+               (lambda (a b)
+                 (< (abs (- a size))
+                    (abs (- b size))))))))
+    (message "clamped %s to %s" size clamped)
+    clamped))
+
+(defun my-set-font-size (size)
+  "Set Terminus font to SIZE (clamped to good values)."
+  (interactive "nFont size: ")
+  (unless (numberp size)
+    (user-error "SIZE must be a number"))
+  (let ((clamped (my-clamp-font-size size)))
+    (setq my-default-font-size size)
+    (set-face-attribute 'default nil
+                        :family my-graphical-font
+                        :height clamped)
+    (message "Font size set to %d" clamped)))
+
 (defun my-use-default-font (&optional frame)
   "Set the frame font to the font name in the variable my-graphical-font.
  This command only has an effect on graphical frames."
@@ -173,23 +202,35 @@
         ;; Use set-frame-font to properly apply the font
         (set-frame-font font-name nil t)
         ;; Set height separately
-        (set-face-attribute 'default nil :height 100)
+        (set-face-attribute 'default nil :height my-default-font-size)
         ;; Set for future frames
         (add-to-list 'default-frame-alist `(font . ,font-name))
-        (message "Font successfully set to: %s" font-name)))))
+        (message "Font successfully set to: %s" font-name))))
+  (my-set-font-size my-default-font-size))
+
+(defun my-insert-customize-link (face)
+  "Insert a clickable link to customize FACE."
+  (insert-button (format "%s" face)
+                 'face 'link
+                 'action `(lambda (_) (customize-face ',face))
+                 'help-echo (format "Click to customize %s" face)))
+
+(defun my-insert-source-link (face)
+  "Insert a clickable link to view source of FACE."
+  (insert-button "source"
+                 'face 'link
+                 'action `(lambda (_) (find-function-other-window ',face))
+                 'help-echo (format "Click to view source of %s" face)))
 
 (defun my-get-faces-with-custom-sizes ()
-  "Return list of faces with non-default font sizes."
-  (interactive)
-  (let ((faces-with-sizes '())
-        (dolist (face (face-list))
-          (let ((height (face-attribute face :height nil t))
-                (family (face-attribute face :family nil t)))
-            (when (and (numberp height) (not (eq height 'unspecified)))
-              (push (list face height family) faces-with-sizes))))
-        (sort faces-with-sizes
-              (lambda (a b) (string< (symbol-name (car a))
-                                     (symbol-name (car b))))))))
+  "Return list of (face height family) for faces with custom :height."
+  (let ((faces-with-sizes '()))
+    (dolist (face (face-list))
+      (let ((height (face-attribute face :height nil t))
+            (family (face-attribute face :family nil t)))
+        (when (and (numberp height) (not (eq height 'unspecified)))
+          (push (list face height family) faces-with-sizes))))
+    (nreverse faces-with-sizes)))
 
 (defun my-list-font-faces-with-sizes ()
   "Display faces with custom font sizes with clickable links."
@@ -226,6 +267,39 @@
       (goto-char (point-min))
       (pop-to-buffer (current-buffer)))))
 
+(defun my-font-size-tester (&optional font-name start-size end-size step)
+  "Display a popup showing text at various font sizes for testing.
+FONT-NAME defaults to the current `my-graphical-font'.
+START-SIZE and END-SIZE default to 50 and 150.
+STEP defaults to 1 (show every size), but use 2, 4, 8 etc for bitmap fonts like Terminus."
+  (interactive)
+  (let ((font (or font-name my-graphical-font))
+        (start (or start-size 50))
+        (end (or end-size 150))
+        (increment (or step 1))
+        (sample-text "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789"))
+    (with-current-buffer (get-buffer-create "*Font Size Tester*")
+      (erase-buffer)
+      (insert (format "Font Size Tester: %s (step: %d)\n" font increment))
+      (insert (make-string 60 ?=))
+      (insert "\n\n")
+
+      (let ((size start))
+        (while (<= size end)
+          ;; Insert size label
+          (insert (format "Size %d:\n" size))
+
+          ;; Insert sample text with that size
+          (let ((start-pos (point)))
+            (insert sample-text)
+            (put-text-property start-pos (point) 'face
+                               `(:family ,font :height ,size)))
+          (insert "\n\n")
+          (setq size (+ size increment))))
+
+      (goto-char (point-min))
+      (pop-to-buffer (current-buffer)))))
+
 (defun my-display-gui-p ()
   "Return t if running in GUI mode, nil if terminal."
   (display-graphic-p))
@@ -252,8 +326,7 @@
   ;; Keep the symbol font setup
   ;; ;; Is this supposed to set the fallback?
   ;; (set-fontset-font t '(#x2700 . #x27BF) "DepartureMono Nerd Font")
-  (my-use-default-font)
-    )
+  (my-use-default-font))
 
 (defun my-terminal-ui-setup ()
   "Do setup for non-graphical terminals, like disabling the toolbar."
