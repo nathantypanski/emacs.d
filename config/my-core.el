@@ -344,6 +344,7 @@ name of the buffer."
 (set-terminal-coding-system 'utf-8)
 (set-keyboard-coding-system 'utf-8)
 (set-language-environment   'utf-8)
+(set-selection-coding-system 'utf-8)
 
 (defun my-pair-delim (&optional ARG)
   "Set up pairing delim, e.g. disable `electiric-pair-mode' and eventually
