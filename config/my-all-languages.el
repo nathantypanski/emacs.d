@@ -179,18 +179,60 @@ Starts from DIR or current directory if DIR is nil."
        ;; Last resort: current directory
        start-dir)))
 
-  ;; Helper function to check if Gemfile contains ruby-lsp
-  (defun my-gemfile-contains-ruby-lsp-p (gemfile-path)
-    "Check if GEMFILE-PATH contains ruby-lsp gem."
+  ;; Helper function to check if Gemfile contains a gem
+  (defun my-gemfile-contains-gem-p (gemfile-path gem-name)
+    "Check if GEMFILE-PATH contains GEM-NAME gem."
     (when (and gemfile-path (file-exists-p gemfile-path))
       (with-temp-buffer
         (insert-file-contents gemfile-path)
         (goto-char (point-min))
-        (re-search-forward "gem ['\"]ruby-lsp['\"]" nil t))))
+        (re-search-forward (format "gem ['\"]%s['\"]" gem-name) nil t))))
+
+  (defun my-gemfile-contains-ruby-lsp-p (gemfile-path)
+    "Check if GEMFILE-PATH contains ruby-lsp gem."
+    (my-gemfile-contains-gem-p gemfile-path "ruby-lsp"))
+
+  (defun my-gemfile-contains-sorbet-p (gemfile-path)
+    "Check if GEMFILE-PATH contains sorbet gem (for type checking/LSP)."
+    (my-gemfile-contains-gem-p gemfile-path "sorbet"))
+
+  ;; HACK: Sorbet LSP sends non-standard JSON-RPC fields ('requestMethod') that eglot
+  ;; doesn't understand. Sorbet needs this for C++ struct deserialization internally.
+  ;; This advice filters to only valid JSON-RPC 2.0 keys before eglot processes messages.
+  ;; WARNING: This applies to all jsonrpc connections.
+
+  (defvar my-jsonrpc-valid-keys '(:jsonrpc :id :method :params :result :error)
+    "Valid JSON-RPC 2.0 message keys.")
+
+  (defun my-filter-jsonrpc-message (message)
+    "Filter MESSAGE to only include valid JSON-RPC 2.0 keys."
+    (if (listp message)
+        (cl-loop for (key value) on message by #'cddr
+                 when (memq key my-jsonrpc-valid-keys)
+                 collect key and collect value)
+      message))
+
+  (defun my-jsonrpc-connection-receive-advice (orig-fn conn message)
+    "Advice to filter non-standard JSON-RPC keys before processing."
+    (funcall orig-fn conn (my-filter-jsonrpc-message message)))
+
+  (advice-add 'jsonrpc-connection-receive :around #'my-jsonrpc-connection-receive-advice)
+
+  ;; Check if srb (Sorbet) is available in the bundle
+  (defun my-sorbet-available-p (project-root)
+    "Check if Sorbet srb command is available in PROJECT-ROOT's bundle."
+    (when project-root
+      (let ((default-directory project-root)
+            (srb-binstub (expand-file-name "bin/srb" project-root)))
+        (or (file-executable-p srb-binstub)
+            (ignore-errors
+              (zerop (call-process "bundle" nil nil nil "show" "sorbet")))))))
 
   ;; Smart Ruby LSP command that handles different gemfile locations
+  ;; Prefers Sorbet when available in the bundle
   (defun my-ruby-lsp-server-command (&rest _ignored)
     "Return Ruby LSP command with appropriate bundler setup.
+Prefers Sorbet LSP if sorbet gem is in Gemfile, otherwise uses ruby-lsp.
 Detects project gemfile configuration and uses the right bundler command."
     (interactive)
     (let* ((project-root (my-find-project-root))
@@ -199,6 +241,11 @@ Detects project gemfile configuration and uses the right bundler command."
            (main-gemfile (when project-root
                           (expand-file-name "Gemfile" project-root))))
       (cond
+       ;; Sorbet in Gemfile AND available - use Sorbet LSP
+       ((and main-gemfile
+             (my-gemfile-contains-sorbet-p main-gemfile)
+             (my-sorbet-available-p project-root))
+        (list "bundle" "exec" "srb" "tc" "--lsp"))
        ;; Main Gemfile exists and contains ruby-lsp - use standard bundle exec
        ((and main-gemfile (my-gemfile-contains-ruby-lsp-p main-gemfile))
         (list "bundle" "exec" "ruby-lsp"))
@@ -216,28 +263,53 @@ Detects project gemfile configuration and uses the right bundler command."
           ;; Last fallback - try with bundle anyway
           (list "bundle" "exec" "ruby-lsp"))))))
 
+  ;; Debug function to see what LSP command would be used
+  (defun my-ruby-lsp-debug ()
+    "Show what Ruby LSP command would be used for the current buffer."
+    (interactive)
+    (let* ((project-root (my-find-project-root))
+           (main-gemfile (when project-root (expand-file-name "Gemfile" project-root)))
+           (has-sorbet (and main-gemfile (my-gemfile-contains-sorbet-p main-gemfile)))
+           (has-ruby-lsp (and main-gemfile (my-gemfile-contains-ruby-lsp-p main-gemfile)))
+           (cmd (my-ruby-lsp-server-command)))
+      (message "Project: %s\nGemfile has sorbet: %s\nGemfile has ruby-lsp: %s\nCommand: %s"
+               project-root has-sorbet has-ruby-lsp cmd)))
+
   ;; Ruby language server - use smart command for proper project context
   (add-to-list 'eglot-server-programs
                '(ruby-mode . my-ruby-lsp-server-command))
   (add-to-list 'eglot-server-programs
                '(ruby-ts-mode . my-ruby-lsp-server-command))
 
-  ;; Sorbet LSP (alternative Ruby type checker LSP)
-  ;; Use this for projects with Sorbet type annotations
-  ;; To use: M-x my-ruby-use-sorbet-lsp in a Ruby buffer
+  ;; Manual LSP switching functions
+  ;; Sorbet is now auto-detected, but these allow manual override
   (defun my-ruby-use-sorbet-lsp ()
     "Switch to using Sorbet LSP for current Ruby project."
     (interactive)
     (setq-local eglot-server-programs
-                (cons '(ruby-mode . ("bundle" "exec" "srb" "--lsp" "."))
-                      (cons '(ruby-ts-mode . ("bundle" "exec" "srb" "--lsp" "."))
+                (cons '(ruby-mode . ("bundle" "exec" "srb" "tc" "--lsp"))
+                      (cons '(ruby-ts-mode . ("bundle" "exec" "srb" "tc" "--lsp"))
                             (seq-filter (lambda (entry)
                                           (not (memq (car entry) '(ruby-mode ruby-ts-mode))))
                                         eglot-server-programs))))
     (when (eglot-current-server)
       (eglot-shutdown (eglot-current-server)))
     (eglot-ensure)
-    (message "Switched to Sorbet LSP")))
+    (message "Switched to Sorbet LSP"))
+
+  (defun my-ruby-use-ruby-lsp ()
+    "Switch to using ruby-lsp for current Ruby project (override Sorbet auto-detect)."
+    (interactive)
+    (setq-local eglot-server-programs
+                (cons '(ruby-mode . ("bundle" "exec" "ruby-lsp"))
+                      (cons '(ruby-ts-mode . ("bundle" "exec" "ruby-lsp"))
+                            (seq-filter (lambda (entry)
+                                          (not (memq (car entry) '(ruby-mode ruby-ts-mode))))
+                                        eglot-server-programs))))
+    (when (eglot-current-server)
+      (eglot-shutdown (eglot-current-server)))
+    (eglot-ensure)
+    (message "Switched to ruby-lsp")))
 
 
 ;;--------------------------------------------------------------------
@@ -1164,16 +1236,31 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
 ;;
 ;; Complete Ruby development environment with:
 ;; - Tree-sitter syntax highlighting (ruby-ts-mode preferred)
-;; - LSP integration via ruby-lsp (bundle exec for project context)
-;; - Sorbet type checker support with custom functions
+;; - LSP integration via Sorbet (bundle exec srb tc --lsp) when available
+;; - Rubocop linting via flycheck
 ;; - Evil-friendly delimiter pairing via electric-pair-mode
 ;; - Eldoc documentation integration
 ;;
 ;; Setup requirements:
-;; - Ruby 3.x with ruby-lsp gem in project Gemfile
-;; - Optional: sorbet gems for type checking
-;; - Tree-sitter Ruby grammar (automatically installed)
-;;
+;; - Ruby 3.x with sorbet gem in project Gemfile for type checking
+;; - rubocop gem for linting
+;; - Tree-sitter Ruby grammar
+
+;; Flycheck-eglot: pipe eglot (Sorbet) diagnostics into flycheck
+(use-package flycheck-eglot
+  :ensure t
+  :after (flycheck eglot)
+  :config
+  (global-flycheck-eglot-mode 1))
+
+;; Configure flycheck for Ruby: Sorbet (via eglot) + Rubocop
+(with-eval-after-load 'flycheck
+  ;; Use bundle exec for rubocop
+  (setq flycheck-ruby-rubocop-executable "bundle exec rubocop")
+
+  ;; Chain rubocop after eglot checker
+  (flycheck-add-next-checker 'eglot-check 'ruby-rubocop))
+
 ;; Tree-sitter Ruby mode (preferred)
 (use-package ruby-ts-mode
   :straight (:type built-in)
