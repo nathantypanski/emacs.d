@@ -1276,6 +1276,33 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
   (add-hook 'ruby-mode-hook #'flycheck-mode)
   (add-hook 'ruby-ts-mode-hook #'flycheck-mode))
 
+;; Ruby helper functions (shared by ruby-mode and ruby-ts-mode)
+(defun my-ruby-find-executable ()
+  "Find the appropriate Ruby executable for the current project."
+  (or
+   ;; Check for project-specific Ruby (rbenv, rvm, etc.)
+   (when-let* ((project (project-current))
+               (root (project-root project)))
+     (or (executable-find (expand-file-name "bin/ruby" root))))
+   ;; Fall back to system ruby
+   (executable-find "ruby")))
+
+(defun my-ruby-sorbet-typecheck ()
+  "Run Sorbet type checker on current project using bundle exec."
+  (interactive)
+  (if-let ((project-root (project-root (project-current))))
+      (let ((default-directory project-root))
+        (compile "bundle exec srb tc"))
+    (message "Not in a project directory")))
+
+(defun my-ruby-sorbet-init ()
+  "Initialize Sorbet configuration in current project."
+  (interactive)
+  (if-let ((project-root (project-root (project-current))))
+      (let ((default-directory project-root))
+        (shell-command "bundle exec srb init"))
+    (message "Not in a project directory")))
+
 ;; Tree-sitter Ruby mode (preferred)
 (use-package ruby-ts-mode
   :straight (:type built-in)
@@ -1309,35 +1336,6 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
           ruby-indent-tabs-mode nil
           ruby-deep-indent-paren nil
           ruby-bounce-deep-indent nil)
-
-    ;; Helper functions
-    (defun my-ruby-find-executable ()
-      "Find the appropriate Ruby executable for the current project."
-      (or
-       ;; Check for project-specific Ruby (rbenv, rvm, etc.)
-       (when-let* ((project (project-current))
-                   (root (project-root project)))
-         (or (executable-find (expand-file-name "bin/ruby" root))))
-       ;; Fall back to system ruby
-       (executable-find "ruby")))
-
-    ;; Sorbet type checker integration
-    ;; Use M-x my-ruby-use-sorbet-lsp to switch from ruby-lsp to sorbet LSP
-    (defun my-ruby-sorbet-typecheck ()
-      "Run Sorbet type checker on current project using bundle exec."
-      (interactive)
-      (if-let ((project-root (project-root (project-current))))
-          (let ((default-directory project-root))
-            (compile "bundle exec srb tc"))
-        (message "Not in a project directory")))
-
-    (defun my-ruby-sorbet-init ()
-      "Initialize Sorbet configuration in current project."
-      (interactive)
-      (if-let ((project-root (project-root (project-current))))
-          (let ((default-directory project-root))
-            (shell-command "bundle exec srb init"))
-        (message "Not in a project directory")))
 
     ;; Key bindings
     (after 'evil
