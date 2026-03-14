@@ -1,4 +1,4 @@
-;;; my-completion.el --- flycheck customization -*- lexical-binding:t; -*-
+;;; my-completion.el --- completion framework -*- lexical-binding:t; -*-
 ;;; Commentary:
 ;;
 ;;; Code:
@@ -79,47 +79,10 @@
   (semantic-mode -1))
 (setq completion-auto-help t)
 
-(use-package company
-  :straight nil
-  :ensure t
-  :demand t
-  :hook (prog-mode elisp-mode slime-mode)
-  :custom
-  (company-backends '(company-capf))
-  (company-idle-delay nil)
-  (company-minimum-prefix-length 1) ; keyboard-triggered
-  (company-selection-wrap-around t)
-  (company-tooltip-align-annotations t)
-  (company-auto-commit nil)
-  (company-auto-commit-chars nil)
-  :config
-  (define-key company-active-map (kbd "TAB")   #'company-select-next)
-  (define-key company-active-map (kbd "<tab>") #'company-select-next)
-  (define-key company-active-map (kbd "S-TAB") #'company-select-previous)
-  (define-key company-active-map (kbd "<backtab>") #'company-select-previous)
-  (define-key company-active-map (kbd "RET")   #'company-complete-selection)
-
-  ;; Disable company autopopup for completions if point is in a comment.
-  (defun my-company-inhibit-in-comments (fun &rest args)
-    "Inhibit company idle completion in comments."
-    (if (nth 4 (syntax-ppss))
-        ;; If inside a comment, require manual completion
-        (let ((company-idle-delay nil))
-          (apply fun args))
-      ;; Else, follow normal behavior
-      (apply fun args)))
-  (advice-add 'company-idle-begin :around #'my-company-inhibit-in-comments)
-  (global-company-mode -1))
-
-;; better sorting for both minibuffer & company
+;; better sorting for minibuffer completion
 (use-package prescient
   :straight t
   :config (prescient-persist-mode 1))
-
-(use-package company-prescient
-  :straight t
-  :after (company prescient)
-  :config (company-prescient-mode 1))
 
 (use-package corfu
   :straight t
@@ -134,6 +97,15 @@
   ;; Popupinfo settings for docstrings
   (corfu-popupinfo-delay '(0.25 . 0.1))
   (corfu-popupinfo-hide nil)
+  :bind (:map corfu-map
+         ("C-n" . corfu-next)
+         ("C-p" . corfu-previous)
+         ("TAB" . corfu-next)
+         ("<tab>" . corfu-next)
+         ("S-TAB" . corfu-previous)
+         ("<backtab>" . corfu-previous)
+         ("RET" . corfu-complete)
+         ("<escape>" . corfu-quit))
   :config
   (global-corfu-mode)
   (corfu-popupinfo-mode 1))
