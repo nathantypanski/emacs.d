@@ -26,8 +26,6 @@
 
 ;; https://github.com/emacs-evil/evil-collection/issues/60
 (setq evil-want-integration t)
-;; let us load evil-collection separately
-(setq evil-want-keybinding nil)
 ;; Here's what we've all been waiting for.
 ;; Recreate Vim inside Emacs.
 (use-package evil
@@ -48,7 +46,6 @@
   (evil-want-C-u-delete nil)
   (evil-want-C-w-delete nil)
   (evil-want-C-w-in-emacs-state t)
-  (evil-want-keybinding nil)
   (evil-magic 'very-magic)
   (evil-search-module 'isearch)
   (evil-want-fine-undo t)
@@ -233,19 +230,6 @@ Not buffer-local, so it really is per frame.")
                          (= (point) (line-end-position)))))
       (indent-according-to-mode)))
 
-  (defun enable-tabs ()
-    "Enable tabs in a file."
-    (interactive)
-    (setq indent-tabs-mode t)
-    (setq indent-tabs-mode nil)
-    (define-key evil-insert-state-map (kbd "TAB") 'indent-for-tab-command))
-
-  (defun disable-tabs ()
-    "Enable tabs in a file."
-    (interactive)
-    (setq indent-tabs-mode nil)
-    (define-key evil-insert-state-map (kbd "TAB") 'indent-for-tab-command))
-
   ;; exiting insert mode -> delete trailing whitespace
   (my-add-hook 'evil-insert-state-exit-hook 'my-exit-insert-state)
   (my-add-hook 'evil-insert-state-entry-hook 'my-enter-insert-state)
@@ -370,7 +354,7 @@ If LSP isn’t active here, signal a user‑friendly error."
 
   (general-define-key
    :states '(insert)
-   "M-/" 'company-complete)
+   "M-/" 'completion-at-point)
 
 
 
