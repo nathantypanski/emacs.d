@@ -477,15 +477,13 @@ With prefix ARG, use mode-specific documentation if available."
   :after (eldoc general)
   :custom
   (eldoc-box-use-child-frame (display-graphic-p))  ; Use child frames in GUI, overlays in terminal
-      (set-face-attribute 'eldoc-box-body nil
-                          :family "DepartureMono Nerd Font" :height 0.7)
-
-
   (eldoc-box-clear-with-C-g t)                     ; Allow C-g to clear popups
   (eldoc-box-max-pixel-width 800)                  ; Reasonable max width
   (eldoc-box-max-pixel-height 400)                 ; Reasonable max height
   :config
   (when (display-graphic-p)
+    (set-face-attribute 'eldoc-box-body nil
+                        :family "DepartureMono Nerd Font" :height 0.7)
     (message "configuring eldoc-box for graphical mode")
     (eldoc-box-hover-mode 1)
     (eldoc-box-hover-at-point-mode 1)))
