@@ -721,8 +721,7 @@ With prefix ARG, use mode-specific documentation if available."
 
 (when (not (display-graphic-p))
   (setq eldoc-echo-area-prefer-doc-buffer t
-        eldoc-echo-area-use-multiline-p nil
-        eldoc-echo-area-prefer-doc-buffer t))
+        eldoc-echo-area-use-multiline-p nil))
 
 (use-package slime
   :straight nil
