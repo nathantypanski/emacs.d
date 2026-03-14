@@ -205,8 +205,10 @@ Starts from DIR or current directory if DIR is nil."
     "Valid JSON-RPC 2.0 message keys.")
 
   (defun my-filter-jsonrpc-message (message)
-    "Filter MESSAGE to only include valid JSON-RPC 2.0 keys."
-    (if (listp message)
+    "Filter MESSAGE to only include valid JSON-RPC 2.0 keys.
+Only filters when non-standard keys like :requestMethod are present (Sorbet)."
+    (if (and (listp message)
+             (plist-member message :requestMethod))
         (cl-loop for (key value) on message by #'cddr
                  when (memq key my-jsonrpc-valid-keys)
                  collect key and collect value)
