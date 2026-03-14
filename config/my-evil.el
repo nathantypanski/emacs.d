@@ -84,6 +84,8 @@ Not buffer-local, so it really is per frame.")
     (interactive)
     (when (and (not (display-graphic-p))
                (bound-and-true-p evil-local-mode)
+               ;; Terminal.app doesn't support DECSCUSR - skip to avoid unicode corruption
+               (not (string= (getenv "TERM_PROGRAM") "Apple_Terminal"))
                ;; Don't send escapes during potentially problematic states
                (not (minibuffer-window-active-p (minibuffer-window)))
                (not executing-kbd-macro)
