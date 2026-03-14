@@ -1248,7 +1248,7 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
 
 ;; Flycheck-eglot: pipe eglot (Sorbet) diagnostics into flycheck
 (use-package flycheck-eglot
-  :ensure t
+  :straight (flycheck-eglot :type git :host github :repo "flycheck/flycheck-eglot")
   :after (flycheck eglot)
   :config
   (global-flycheck-eglot-mode 1))
