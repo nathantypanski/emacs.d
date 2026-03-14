@@ -577,7 +577,7 @@ With prefix ARG, use mode-specific documentation if available."
 (use-package clojure-mode
   :ensure clojure-mode
   :defer t
-  :commands clojure-mode clojure-mode-men)
+  :commands clojure-mode clojure-mode-menu)
 
 (use-package cider
   :ensure cider
