@@ -832,7 +832,6 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
 (use-package elisp-autofmt
   :ensure t)
 
-;;  -*- lexical-binding: t; -*-
 ;; (eval-after-load "tex"
 ;;   '(remove-from-list 'TeX-command-list
 ;; 		'("Latex Make" "latexmk %(-pdf) %t" TeX-run-TeX) t)
@@ -1181,7 +1180,6 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
   (markdown-pre-face ((t (:family "DepartureMono Nerd Font" :height 100)))))
 
 
-;; -*- lexical-binding: t; -*-
 (use-package js2-mode
   :commands js2-mode
   :ensure js2-mode
@@ -1216,7 +1214,6 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
 (use-package yasnippet
   :ensure yasnippet)
 
-;; -*- lexical-binding: t; -*-
 (use-package dockerfile-mode
   :commands dockerfile-mode
   :ensure dockerfile-mode
