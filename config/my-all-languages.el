@@ -771,15 +771,6 @@ With prefix ARG, use mode-specific documentation if available."
 
   :hook (emacs-lisp-mode . my-setup-elisp-mode))
 
-;; XXX when do we actually use this? For anything?
-(use-package slime-company
-  :straight t
-  :after (slime company)
-  :defer t
-  :custom
-  (slime-company-completion 'fuzzy)
-  (slime-company-after-completion 'slime-company-just-one-space))
-
 ;; -------------------------------------------------------------------
 ;; go language
 ;;
