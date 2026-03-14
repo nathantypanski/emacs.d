@@ -525,16 +525,13 @@ With prefix ARG, use mode-specific documentation if available."
           (js-mode . js-ts-mode)
           (typescript-mode . typescript-ts-mode)
           (ruby-mode . ruby-ts-mode)
-          (bash-mode . bash-ts-mode)
-          (yaml-mode . yaml-ts-mode)
-          (sh-mdoe . bash-ts-mode))))
+          (yaml-mode . yaml-ts-mode))))
 
 ;;--------------------------------------------------------------------
 ;; shell (bash, zsh, ...)
 ;;
 (add-to-list 'auto-mode-alist '("\\.zsh\\'" . shell-script-mode))
 
-;; -*- lexical-binding: t; -*-
 (setq c-default-style '((java-mode . "java")
                         (awk-mode . "awk")
                         (other . "linux")))
