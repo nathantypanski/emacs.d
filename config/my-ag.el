@@ -3,7 +3,7 @@
 (use-package ag
   :ensure ag
   :commands (ag ag-mode ag-files ag-regexp)
-  :hook ((age-mode-hook . my-setup-ag))
+  :hook ((ag-mode . my-setup-ag))
   :custom
   (ag-highlight-search t)
   (ag-reuse-buffers t)
@@ -12,7 +12,6 @@
       "Function called to set my ag stuff up."
       (toggle-truncate-lines t)
       (switch-to-buffer-other-window "*ag search*"))
-    (add-hook 'ag-mode-hook 'my-setup-ag)
     (after 'evil
       (evil-set-initial-state 'ag-mode 'normal))
   :config
