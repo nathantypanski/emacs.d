@@ -102,26 +102,26 @@
   ;; shut down unused servers
   (eglot-autoshutdown t)
   (eglot-code-action-indicator "*")
+  :init
+  ;; Workspace configuration for LSP servers - must be set before eglot connects
+  (setq eglot-workspace-configuration
+        '((:pylsp . (:plugins (:pydocstyle (:enabled t)
+                               :rope_completion (:enabled t)
+                               :jedi_completion (:include_params t :include_class_objects t)
+                               :jedi_hover (:enabled t)
+                               :jedi_signatures (:enabled t)
+                               :jedi_definition (:enabled t)
+                               :jedi_references (:enabled t)
+                               :pylint (:enabled t)
+                               :flake8 (:enabled t))))
+          (:sorbet . (:highlightUntyped "everywhere"
+                      :typedModeEnabled t
+                      :enableTypecheckInfo t))
+          (:rust-analyzer . (:cargo (:buildScripts (:enable t))
+                             :procMacro (:enable t)
+                             :diagnostics (:disabled ["unresolved-proc-macro"
+                                                      "unresolved-macro-call"])))))
   :config
-  (setq-default eglot-workspace-configuration
-                '(:pylsp
-                  (:plugins
-                   (:pydocstyle (:enabled t)
-                                :rope_completion (:enabled t)
-                                :jedi_completion (:include_params t :include_class_objects t)
-                                :jedi_hover (:enabled t)
-                                :jedi_signatures (:enabled t)
-                                :jedi_definition (:enabled t)
-                                :jedi_references (:enabled t)
-                                :pylint (:enabled t)
-                                :flake8 (:enabled t)))
-                  :rust-analyzer
-                  (:cargo
-                   (:buildScripts (:enable t))
-                   :procMacro (:enable t)
-                   :diagnostics (:disabled
-                                 ["unresolved-proc-macro"
-                                  "unresolved-macro-call"]))))
 
   ;; Helper to find project python executable
   (defun my-python-find-executable ()
@@ -1253,13 +1253,44 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
   :config
   (global-flycheck-eglot-mode 1))
 
-;; Configure flycheck for Ruby: Sorbet (via eglot) + Rubocop
+;; Configure flycheck for Ruby: Rubocop via bundle exec
 (with-eval-after-load 'flycheck
-  ;; Use bundle exec for rubocop
-  (setq flycheck-ruby-rubocop-executable "bundle exec rubocop")
+  ;; Helper to find project root for Ruby
+  (defun my-ruby-find-project-root (_checker)
+    "Find Ruby project root by looking for Gemfile."
+    (locate-dominating-file default-directory "Gemfile"))
 
-  ;; Chain rubocop after eglot checker
-  (flycheck-add-next-checker 'eglot-check 'ruby-rubocop))
+  ;; Define a bundler-aware rubocop checker
+  (flycheck-define-checker ruby-rubocop-bundle
+    "A Ruby syntax and style checker using RuboCop via bundle exec."
+    :command ("bundle" "exec" "rubocop"
+              "--display-cop-names"
+              "--force-exclusion"
+              "--format" "emacs"
+              "--stdin" source-original)
+    :standard-input t
+    :working-directory my-ruby-find-project-root
+    :error-patterns
+    ((info line-start (file-name) ":" line ":" column ": C: "
+           (optional (id (one-or-more (not (any ":")))) ": ") (message) line-end)
+     (warning line-start (file-name) ":" line ":" column ": W: "
+              (optional (id (one-or-more (not (any ":")))) ": ") (message) line-end)
+     (error line-start (file-name) ":" line ":" column ": " (or "E" "F") ": "
+            (optional (id (one-or-more (not (any ":")))) ": ") (message) line-end))
+    :modes (ruby-mode ruby-ts-mode)
+    :predicate (lambda ()
+                 (locate-dominating-file default-directory "Gemfile")))
+
+  ;; Add to checker list and enable for Ruby modes
+  (add-to-list 'flycheck-checkers 'ruby-rubocop-bundle)
+
+  ;; Chain: eglot (Sorbet) -> rubocop
+  ;; This runs both checkers - Sorbet type errors + Rubocop linting
+  (flycheck-add-next-checker 'eglot-check '(warning . ruby-rubocop-bundle))
+
+  ;; Ensure flycheck runs in ruby modes
+  (add-hook 'ruby-mode-hook #'flycheck-mode)
+  (add-hook 'ruby-ts-mode-hook #'flycheck-mode))
 
 ;; Tree-sitter Ruby mode (preferred)
 (use-package ruby-ts-mode
