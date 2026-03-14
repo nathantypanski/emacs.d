@@ -87,12 +87,11 @@
 ()
 (add-hook 'after-revert-hook 'my-revert-message)
 
-(global-auto-revert-mode 1)
 (setq auto-revert-verbose t)                     ; Show messages when reverting
 (setq revert-without-query nil)                  ; Always prompt before reverting
 (setq auto-revert-avoid-polling t)               ; Use file system notifications
 (setq auto-revert-check-vc-info t)               ; Check version control info when reverting
-(global-auto-revert-mode 1)                     ; Enable auto-revert globally (with prompting)
+(global-auto-revert-mode 1)                      ; Enable auto-revert globally (with prompting)
 
 ;; Enable syntax highlighting globally
 (global-font-lock-mode 1)
