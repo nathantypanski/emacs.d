@@ -1197,6 +1197,10 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
   :commands yaml-mode
   :mode "\\.yml\\'")
 
+(use-package hcl-mode
+  :ensure hcl-mode
+  :mode ("\\.hcl\\'" "\\.tf\\'" "\\.tfvars\\'" "\\.nomad\\'"))
+
 
 ;;--------------------------------------------------------------------
 ;; yasnippet - Emacs snippets for programming languages

@@ -29,8 +29,8 @@
 
     (defun my-gtags-update-current-file ()
       (interactive)
-      (let ((filename (replace-regexp-in-string (my-gtags-root-dir)
-                                                "." (buffer-file-name (current-buffer)))))
+      (let ((filename (replace-regexp-in-string (regexp-quote (my-gtags-root-dir))
+                                                "" (buffer-file-name (current-buffer)))))
         (my-gtags-update-single filename)
         (message "Gtags updated for %s" filename)))
 
@@ -48,8 +48,9 @@
         (ggtags-mode 1)))
 
     (add-hook 'c-mode-common-hook 'my-setup-ggtags)
-    (after 'evil
-      (evil-define-key 'normal c++-mode-map (kbd "SPC d") 'ggtags-show-definition)
-      (evil-define-key 'normal c++-mode-map (kbd "SPC s") 'ggtags-find-reference))))
+    (after 'cc-mode
+      (after 'evil
+        (evil-define-key 'normal c++-mode-map (kbd "SPC d") 'ggtags-show-definition)
+        (evil-define-key 'normal c++-mode-map (kbd "SPC s") 'ggtags-find-reference)))))
 
 (provide 'my-tags)
