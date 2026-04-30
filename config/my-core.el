@@ -69,6 +69,33 @@
 (setq enable-local-eval nil)           ; Never eval code from files
 (setq enable-dir-local-variables nil)  ; Disable .dir-locals.el files
 
+;; Security: Neutralize git config options that allow arbitrary code
+;; execution in untrusted repositories. Prevents RCE via malicious
+;; .git/config (e.g. core.fsmonitor = <executable>) when
+;; vc-refresh-state probes git on find-file-hook.
+(with-eval-after-load 'vc-git
+  (defvar my-trusted-git-directories
+    (mapcar #'expand-file-name '("~/src" "~/.emacs.d"))
+    "Directories where .git/config is trusted.
+Repos outside these paths get core.fsmonitor and core.hooksPath
+overridden to prevent RCE from malicious git config.")
+
+  (define-advice vc-git--call (:around (orig-fn buffer command &rest args) safe-git-config)
+    "Neutralize dangerous git config options in untrusted repos."
+    (if (and default-directory
+             (seq-some (lambda (dir)
+                         (string-prefix-p dir (expand-file-name default-directory)))
+                       my-trusted-git-directories))
+        (apply orig-fn buffer command args)
+      (let ((process-environment
+             (append '("GIT_CONFIG_COUNT=2"
+                       "GIT_CONFIG_KEY_0=core.fsmonitor"
+                       "GIT_CONFIG_VALUE_0="
+                       "GIT_CONFIG_KEY_1=core.hooksPath"
+                       "GIT_CONFIG_VALUE_1=/dev/null")
+                     process-environment)))
+        (apply orig-fn buffer command args)))))
+
 ;; Always delete trailing whitespace on save
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
