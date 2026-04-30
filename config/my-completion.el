@@ -93,10 +93,12 @@
   :custom
   ;; Auto completion is now safe since file-local variables are disabled
   (corfu-auto t)
+  (corfu-auto-delay 0.3)
+  (corfu-auto-prefix 2)
   (corfu-cycle t) ; Enable cycling for completions
   (corfu-quit-at-boundary nil)
   (corfu-quit-no-match 'separator)
-  (setq corfu-preview-current 'insert)
+  (corfu-preview-current 'insert)
   (global-corfu-modes '((not org-mode) t))
   ;; Popupinfo settings for docstrings
   (corfu-popupinfo-delay '(0.25 . 0.1))
