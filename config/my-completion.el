@@ -14,16 +14,20 @@
   :custom
   ;; cycle from next to prev in vertico
   (vertico-cycle t)
+  ;; Keep prompt selected by default so RET sends your input, not the first candidate
+  (vertico-preselect 'prompt)
+  :config
   (general-define-key :keymaps 'vertico-map
-   "<TAB>"    #'vertico-next
-   "<tab>"    #'vertico-next
+   "<TAB>"    #'vertico-insert
+   "<tab>"    #'vertico-insert
+   "C-n"      #'vertico-next
+   "C-p"      #'vertico-previous
    "<backtab>"#'vertico-previous
    "<RET>"    #'vertico-exit
-   "C-<RET>"  #'vertico-exit-input
-   "C-j"      #'vertico-exit-input
+   "C-<RET>"  #'vertico-exit
+   "C-j"      #'vertico-exit
    "S-<TAB>"  #'vertico-previous
    "<ESC>"    #'vertico-exit-input)
-  :config
   (defun my-vertico-toggle-capf ()
     "Use `consult-completion-in-region` when Vertico is on, else default."
     (setq-local completion-in-region-function
@@ -64,7 +68,7 @@
 (use-package embark
   :ensure t
   :commands (embark-act embark-act-all)
-  :after ('general 'evil)
+  :after (general evil)
   :config
    (general-define-key :keymaps 'embark-collect-mode-map
                        "C-n" nil
@@ -72,7 +76,7 @@
 
 (use-package embark-consult
   :ensure t
-  :after ('consult 'embark)
+  :after (consult embark)
   :bind (("C-." . embark-act)))
 
 (when (bound-and-true-p semantic-mode)
@@ -138,7 +142,8 @@ If BUFFER is provided, operate on that buffer. Otherwise use current buffer."
     (message "Disabled completion in buffer %s" (buffer-name))))
 (add-hook 'git-commit-mode-hook 'my-disable-completion-in-git-commit)
 
-(use-package helpful)
+(use-package helpful
+  :ensure t)
 
 (defun my-disable-completion (&optional buffer)
   "Disable all completion in buffer.
