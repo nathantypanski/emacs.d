@@ -64,13 +64,7 @@
 
 (setq desktop-save-buffer 'my-desktop-save-buffer-p)
 
-;; Conservative settings
-(setq desktop-dirname user-emacs-directory)
-(setq desktop-load-locked-desktop t)
-(setq desktop-restore-eager 3) ; Only restore first 3 buffers
-(setq desktop-auto-save-timeout nil) ; Disable auto-save to prevent corruption
-
-;; Enable desktop-save-mode for session persistence
+;; Desktop session persistence settings
 (setq desktop-dirname user-emacs-directory)
 (setq desktop-path (list desktop-dirname))
 (setq desktop-load-locked-desktop t)
