@@ -33,7 +33,8 @@
 ;; show whitespace
 (require 'whitespace)
 (setq whitespace-style '(trailing))
-(global-whitespace-mode 1)
+(add-hook 'prog-mode-hook #'whitespace-mode)
+(add-hook 'text-mode-hook #'whitespace-mode)
 
 (use-package smart-mode-line
   :ensure smart-mode-line
@@ -111,8 +112,7 @@
 (use-package idle-highlight-mode
   :ensure t
   :straight t
-  :config
-  (global-idle-highlight-mode t))
+  :hook (prog-mode . idle-highlight-mode))
 
 (use-package highlight-parentheses
   :ensure t
@@ -121,7 +121,6 @@
 
   ;; disable show-paren-mode
   (show-paren-mode -1)
-  (global-highlight-parentheses-mode 1)
   (add-hook 'minibuffer-setup-hook #'highlight-parentheses-minibuffer-setup))
 
 (use-package rainbow-delimiters
