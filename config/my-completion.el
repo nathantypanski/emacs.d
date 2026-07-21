@@ -106,13 +106,23 @@
   :bind (:map corfu-map
          ("C-n" . corfu-next)
          ("C-p" . corfu-previous)
-         ("TAB" . corfu-next)
-         ("<tab>" . corfu-next)
+         ("TAB" . my-corfu-complete-or-next)
+         ("<tab>" . my-corfu-complete-or-next)
          ("S-TAB" . corfu-previous)
          ("<backtab>" . corfu-previous)
          ("RET" . corfu-complete)
          ("<escape>" . corfu-quit))
   :config
+  (defun my-corfu-complete-or-next ()
+    "Accept the completion when a single candidate remains, else cycle.
+With more than one candidate, behave like `corfu-next' so TAB keeps
+cycling through the popup.  When narrowing has left exactly one
+candidate, `corfu-next' would be a no-op (cycling one element), so
+finalize the completion with `corfu-complete' instead."
+    (interactive)
+    (if (<= corfu--total 1)
+        (corfu-complete)
+      (corfu-next)))
   (global-corfu-mode)
   (corfu-popupinfo-mode 1))
 
