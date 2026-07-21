@@ -482,8 +482,10 @@ With prefix ARG, use mode-specific documentation if available."
   (eldoc-box-max-pixel-height 400)                 ; Reasonable max height
   :config
   (when (display-graphic-p)
-    (set-face-attribute 'eldoc-box-body nil
-                        :family "DepartureMono Nerd Font" :height 0.7)
+    ;; Inherit the default (Terminus) family and size; icons still render via
+    ;; the fontset fallback configured in `my-setup-font-fallbacks'.
+    (set-face-attribute 'eldoc-box-body nil :inherit 'default
+                        :family 'unspecified :height 'unspecified)
     (message "configuring eldoc-box for graphical mode")
     (eldoc-box-hover-mode 1)
     (eldoc-box-hover-at-point-mode 1)))
@@ -1167,8 +1169,10 @@ Doesn't jump to buffer automatically. Enters help mode on buffer."
   (add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
   (add-to-list 'auto-mode-alist '("\\.page\\'" . markdown-mode))
   (add-hook 'markdown-mode-hook 'visual-line-mode)
+  ;; Code blocks inherit Terminus at the default size (fixed-pitch is pinned to
+  ;; Terminus in `my-set-font-size'); no separate family/height here.
   :custom-face
-  (markdown-pre-face ((t (:family "DepartureMono Nerd Font" :height 100)))))
+  (markdown-pre-face ((t (:inherit fixed-pitch)))))
 
 
 (use-package js2-mode

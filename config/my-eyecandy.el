@@ -185,11 +185,47 @@
   (unless (numberp size)
     (user-error "SIZE must be a number"))
   (let ((clamped (my-clamp-font-size size)))
-    (setq my-default-font-size size)
+    ;; Store the *clamped* value so what we remember matches what we render
+    ;; (Terminus only looks crisp at the sizes in `my-clamped-good-sizes').
+    (setq my-default-font-size clamped)
     (set-face-attribute 'default nil
                         :family my-graphical-font
                         :height clamped)
+    ;; Keep the two monospace/proportional base faces on Terminus too, so faces
+    ;; that inherit from them (not from `default') don't drift to another font.
+    ;; :height 1.0 is a *relative* multiplier, so they track the default size.
+    (set-face-attribute 'fixed-pitch nil :family my-graphical-font :height 1.0)
+    (set-face-attribute 'variable-pitch nil :family my-graphical-font :height 1.0)
     (message "Font size set to %d" clamped)))
+
+(defvar my-fallback-font "DepartureMono Nerd Font Mono"
+  "Last-resort glyph fallback for characters Terminus lacks (nerd-font icons).
+Use the `Mono' variant so fallback glyphs occupy a single, fixed-width cell.")
+
+(defvar my-tui-glyph-font "Iosevka Fixed"
+  "Monospaced font for TUI glyph ranges (braille spinners, box-drawing, blocks).
+Terminus lacks many of these; pinning them all to ONE scalable monospace font
+keeps their width constant frame-to-frame, so animated spinners in vterm don't
+jump as the glyph changes.")
+
+(defun my-setup-font-fallbacks ()
+  "Route glyphs missing from Terminus to consistent fallback fonts.
+Regular text stays Terminus; icons and TUI glyphs render from a single
+monospace font each, so nothing shifts width as glyphs change."
+  (when (display-graphic-p)
+    ;; Pin the ranges a TUI (Claude Code, etc.) cycles through to ONE mono font.
+    ;; The cause of "jumping characters" is different glyphs resolving to
+    ;; different fallback fonts; forcing one font per range removes the drift.
+    (when (find-font (font-spec :name my-tui-glyph-font))
+      (dolist (range '((#x2500 . #x257F)   ; Box Drawing
+                       (#x2580 . #x259F)   ; Block Elements
+                       (#x25A0 . #x25FF)   ; Geometric Shapes
+                       (#x2800 . #x28FF))) ; Braille Patterns (spinners)
+        (set-fontset-font t range my-tui-glyph-font nil 'prepend)))
+    ;; Everything else Terminus can't render (nerd-font icons, misc symbols)
+    ;; falls back to the mono nerd font as a last resort.
+    (when (find-font (font-spec :name my-fallback-font))
+      (set-fontset-font t nil my-fallback-font nil 'append))))
 
 (defun my-use-default-font (&optional frame)
   "Set the frame font to the font name in the variable my-graphical-font.
@@ -199,13 +235,15 @@
     (let ((font-name my-graphical-font))
       (message "Setting font to: %s" font-name)
       (when font-name
-        ;; Use set-frame-font to properly apply the font
+        ;; Use set-frame-font to properly apply the font family to this frame
         (set-frame-font font-name nil t)
-        ;; Set height separately
-        (set-face-attribute 'default nil :height my-default-font-size)
         ;; Set for future frames
         (add-to-list 'default-frame-alist `(font . ,font-name))
+        ;; Route missing glyphs (icons, spinners) to consistent fallback fonts
+        (my-setup-font-fallbacks)
         (message "Font successfully set to: %s" font-name))))
+  ;; `my-set-font-size' applies family + height (clamped) to the base faces.
+  ;; Called once, at the end, so height isn't set twice with differing values.
   (my-set-font-size my-default-font-size))
 
 (defun my-insert-customize-link (face)
