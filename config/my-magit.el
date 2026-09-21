@@ -18,6 +18,8 @@
 (use-package magit
   :ensure magit
   :custom
-  (magit-auto-revert-mode nil))
+  (magit-auto-revert-mode nil)
+  (setq magit-git-executable
+      (format "/etc/profiles/per-user/%s/bin/git" (user-login-name))))
 
 (provide 'my-magit)

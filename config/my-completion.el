@@ -28,13 +28,6 @@
    "C-j"      #'vertico-exit
    "S-<TAB>"  #'vertico-previous
    "<ESC>"    #'vertico-exit-input)
-  (defun my-vertico-toggle-capf ()
-    "Use `consult-completion-in-region` when Vertico is on, else default."
-    (setq-local completion-in-region-function
-                (if (bound-and-true-p vertico-mode)
-                    #'consult-completion-in-region
-                  #'completion--in-region)))
-
   )
 
 
@@ -50,7 +43,6 @@
 (use-package marginalia
   :ensure t
   :init
-  (setq completion-in-region-function #'consult-completion-in-region)
   (marginalia-mode))
 
 (use-package consult

@@ -6,6 +6,8 @@
 ;;--------------------------------------------------------------------
 ;; LSP - language server protocol
 ;;
+(require 'my-proverif)
+
 (use-package eglot
   :straight nil
   :ensure nil  ;; Eglot is built-in since Emacs 29
@@ -114,7 +116,7 @@
                                :jedi_references (:enabled t)
                                :pylint (:enabled t)
                                :flake8 (:enabled t))))
-          (:sorbet . (:highlightUntyped "everywhere"
+          (:sorbet . (:highlightUntyped "all-if-strict"
                       :typedModeEnabled t
                       :enableTypecheckInfo t))
           (:rust-analyzer . (:cargo (:buildScripts (:enable t))

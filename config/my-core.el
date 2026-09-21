@@ -169,8 +169,12 @@ overridden to prevent RCE from malicious git config.")
   `(with-eval-after-load ,feature
      ,@body))
 
-(ignore-errors ;; windows
-  (exec-path-from-shell-initialize))
+(use-package exec-path-from-shell
+    :ensure t
+    :demand t
+    :config
+    (when (memq window-system '(mac ns x))
+      (exec-path-from-shell-initialize)))
 
 ;; Hide startup messages
 (setq inhibit-splash-screen t
